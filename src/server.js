@@ -6,7 +6,8 @@ const multer = require('multer');
 const { parse } = require('csv-parse/sync');
 const fs = require('fs');
 
-const db = require('./database');
+const { pool } = require('./database');
+const db = pool;
 const wpp = require('./whatsapp');
 const { responderIA } = require('./ia');
 
