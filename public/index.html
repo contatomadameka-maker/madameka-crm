@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madame Ka CRM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0ea;color:#1a1a1a}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-card{background:#fff;border-radius:16px;padding:40px;width:340px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo h1{font-size:22px;font-weight:400}
+.login-logo span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#c9a87c}
+.login-card input{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:11px 13px;font-size:15px;margin-bottom:12px;outline:none}
+.login-card input:focus{border-color:#1a1a1a}
+.btn{padding:11px 20px;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s;font-weight:500}
+.btn-primary{background:#1a1a1a;color:#fff;width:100%}
+.btn-primary:hover{background:#c9a87c}
+.btn-gold{background:#c9a87c;color:#fff}
+.btn-gold:hover{background:#b8976b}
+.btn-outline{background:none;border:1.5px solid #e0dbd5;color:#666}
+.btn-outline:hover{border-color:#1a1a1a;color:#1a1a1a}
+.btn-danger{background:#fee2e2;color:#b91c1c;border:none}
+.btn-sm{padding:6px 12px;font-size:12px}
+.app{display:none;min-height:100vh}
+.app.show{display:flex}
+.sidebar{width:220px;background:#1a1a1a;min-height:100vh;position:fixed;left:0;top:0;padding:20px 0}
+.sidebar-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo h2{font-size:15px;font-weight:400;color:#fff}
+.sidebar-logo span{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#c9a87c}
+.sidebar nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-item.ativo{color:#c9a87c;border-left-color:#c9a87c;background:rgba(201,168,124,.08)}
+.wpp-status{margin:16px 20px 0;padding:10px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-conectado{background:#dcfce7;color:#166534}
+.status-conectado .status-dot{background:#16a34a}
+.status-desconectado{background:#fee2e2;color:#991b1b}
+.status-desconectado .status-dot{background:#dc2626}
+.main{margin-left:220px;padding:24px;flex:1}
+.page{display:none}
+.page.ativo{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:500}
+.page-sub{font-size:13px;color:#888;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:#fff;border-radius:12px;padding:16px;border:0.5px solid #e8e2db}
+.stat-lbl{font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.stat-val{font-size:24px;font-weight:500}
+.stat-sub{font-size:11px;color:#c9a87c;margin-top:2px}
+.card{background:#fff;border-radius:12px;padding:20px;border:0.5px solid #e8e2db;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.tabela{width:100%;border-collapse:collapse}
+.tabela th{text-align:left;padding:10px 12px;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #f0ece8}
+.tabela td{padding:10px 12px;font-size:13px;border-bottom:0.5px solid #f5f0eb}
+.tabela tr:hover td{background:#fafaf9}
+.badge{font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px}
+.badge-vip{background:#fef3c7;color:#92400e}
+.badge-ativa{background:#dcfce7;color:#166534}
+.badge-inativa{background:#f3f4f6;color:#6b7280}
+.badge-lead{background:#eff6ff;color:#1d4ed8}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a}
+.form-group textarea{resize:vertical;min-height:100px}
+.fluxo-item{border:0.5px solid #e8e2db;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.fluxo-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f5f0ea}
+.fluxo-info{flex:1}
+.fluxo-nome{font-size:13px;font-weight:500}
+.fluxo-msg{font-size:11px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px}
+.toggle{width:40px;height:22px;background:#e0dbd5;border-radius:20px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:#c9a87c}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle.on::after{transform:translateX(18px)}
+.qr-wrap{text-align:center;padding:20px}
+.qr-wrap img{max-width:220px;border-radius:12px;border:1px solid #e8e2db}
+.msg{display:flex;flex-direction:column;margin-bottom:8px}
+.msg.cliente .bubble{background:#f0ece8;border-radius:0 10px 10px 10px;align-self:flex-start}
+.msg.bot .bubble{background:#c9a87c;color:#fff;border-radius:10px 0 10px 10px;align-self:flex-end}
+.bubble{padding:8px 12px;font-size:13px;line-height:1.5;max-width:75%}
+.msg-time{font-size:10px;color:#aaa;margin-top:2px;padding:0 4px}
+.pag{display:flex;gap:8px;align-items:center;margin-top:16px;justify-content:center}
+.pag-info{font-size:12px;color:#888}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:500}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <div class="login-card">
+    <div class="login-logo">
+      <span>Madame Ka</span>
+      <h1>CRM WhatsApp</h1>
+    </div>
+    <input type="password" id="inp-senha" placeholder="Senha de acesso" onkeyup="if(event.key==='Enter')entrar()">
+    <button class="btn btn-primary" onclick="entrar()">Entrar</button>
+    <div id="login-erro" style="color:#dc2626;font-size:12px;text-align:center;margin-top:8px;display:none">Senha incorreta</div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><span>Madame Ka</span><h2>CRM WhatsApp</h2></div>
+    <nav>
+      <div class="nav-item ativo" onclick="irPara('dashboard',this)">📊 Dashboard</div>
+      <div class="nav-item" onclick="irPara('whatsapp',this)">📱 WhatsApp</div>
+      <div class="nav-item" onclick="irPara('contatos',this)">👥 Contatos</div>
+      <div class="nav-item" onclick="irPara('campanhas',this)">📢 Campanhas</div>
+      <div class="nav-item" onclick="irPara('fluxos',this)">🔄 Fluxos Auto</div>
+      <div class="nav-item" onclick="irPara('conversas',this)">💬 Conversas</div>
+    </nav>
+    <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
+      <div class="status-dot"></div>
+      <span id="wpp-status-txt">Desconectado</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page ativo" id="page-dashboard">
+      <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visao geral do CRM</div></div></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">--</div><div class="stat-sub">contatos</div></div>
+        <div class="stat"><div class="stat-lbl">VIP</div><div class="stat-val" id="s-vip">--</div><div class="stat-sub">R$500+</div></div>
+        <div class="stat"><div class="stat-lbl">Ativas</div><div class="stat-val" id="s-ativas">--</div><div class="stat-sub">60 dias</div></div>
+        <div class="stat"><div class="stat-lbl">Inativas</div><div class="stat-val" id="s-inativas">--</div><div class="stat-sub">+60 dias</div></div>
+        <div class="stat"><div class="stat-lbl">Leads</div><div class="stat-val" id="s-leads">--</div><div class="stat-sub">nunca compraram</div></div>
+        <div class="stat"><div class="stat-lbl">Disparados</div><div class="stat-val" id="s-disparos">--</div><div class="stat-sub">mensagens</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Disparo Rapido</div>
+        <div class="form-row">
+          <div class="form-group"><label>Segmento</label>
+            <select id="aq-seg">
+              <option value="todos">Todos</option>
+              <option value="VIP">VIP</option>
+              <option value="Compradora Ativa">Compradora Ativa</option>
+              <option value="Compradora Inativa">Compradora Inativa</option>
+              <option value="Lead">Lead</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Intervalo</label>
+            <select id="aq-intervalo">
+              <option value="30">30s</option>
+              <option value="45" selected>45s (recomendado)</option>
+              <option value="60">60s</option>
+              <option value="90">90s (muito seguro)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea></div>
+        <button class="btn btn-gold" onclick="disparoRapido()">Disparar agora</button>
+      </div>
+    </div>
+
+    <div class="page" id="page-whatsapp">
+      <div class="page-header"><div><div class="page-title">WhatsApp</div><div class="page-sub">Conexao via QR Code</div></div><button class="btn btn-outline btn-sm" onclick="verificarStatus()">Atualizar</button></div>
+      <div class="card">
+        <div class="card-title">Status da conexao</div>
+        <div id="wpp-info">Verificando...</div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="criarConexao()">Conectar WhatsApp</button>
+          <button class="btn btn-outline btn-sm" onclick="carregarQR()">Ver QR Code</button>
+          <button class="btn btn-danger btn-sm" onclick="desconectar()">Desconectar</button>
+        </div>
+        <div id="qr-wrap" class="qr-wrap" style="display:none">
+          <p style="margin-bottom:12px;font-size:13px;color:#888">Escaneie com o WhatsApp > Dispositivos conectados > Conectar dispositivo</p>
+          <img id="qr-img" src="" alt="QR Code">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Webhooks para configurar</div>
+        <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;margin-bottom:8px">
+          <div style="color:#888;margin-bottom:4px">Yampi:</div>
+          <div id="webhook-yampi">--</div>
+        </div>
+        <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace">
+          <div style="color:#888;margin-bottom:4px">Popup do site:</div>
+          <div id="webhook-popup">--</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-contatos">
+      <div class="page-header">
+        <div><div class="page-title">Contatos</div><div class="page-sub">Base de clientes</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">Importar CSV</button>
+          <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importarCSV(this)">
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <input type="text" placeholder="Buscar..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
+          <select onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+            <option value="todos">Todos</option>
+            <option value="VIP">VIP</option>
+            <option value="Compradora Ativa">Compradora Ativa</option>
+            <option value="Compradora Inativa">Compradora Inativa</option>
+            <option value="Lead">Lead</option>
+          </select>
+        </div>
+        <table class="tabela">
+          <thead><tr><th>Nome</th><th>WhatsApp</th><th>Segmento</th><th>Ultimo pedido</th><th>Cidade</th></tr></thead>
+          <tbody id="tabela-contatos"><tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Carregando...</td></tr></tbody>
+        </table>
+        <div class="pag">
+          <button class="btn btn-outline btn-sm" onclick="paginaAnterior()">Anterior</button>
+          <span class="pag-info" id="pag-info">--</span>
+          <button class="btn btn-outline btn-sm" onclick="proximaPagina()">Proxima</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-campanhas">
+      <div class="page-header">
+        <div><div class="page-title">Campanhas</div><div class="page-sub">Disparos em massa</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-campanha').classList.add('open')">+ Nova campanha</button>
+      </div>
+      <div id="lista-campanhas">Carregando...</div>
+    </div>
+
+    <div class="page" id="page-fluxos">
+      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Mensagens disparadas automaticamente</div></div></div>
+      <div id="lista-fluxos">Carregando...</div>
+    </div>
+
+    <div class="page" id="page-conversas">
+      <div class="page-header"><div><div class="page-title">Conversas</div><div class="page-sub">Mensagens respondidas pela IA</div></div></div>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;font-size:13px;font-weight:500">Recentes</div>
+          <div id="lista-conversas" style="max-height:500px;overflow-y:auto"></div>
+        </div>
+        <div class="card" id="conversa-ativa" style="display:none">
+          <div class="card-title" id="conv-nome">Selecione uma conversa</div>
+          <div id="msgs-conversa" style="max-height:400px;overflow-y:auto;margin-bottom:12px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-campanha">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
+    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Terra Nova"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Segmento</label>
+        <select id="c-seg">
+          <option value="todos">Todos</option>
+          <option value="VIP">VIP</option>
+          <option value="Compradora Ativa">Compradora Ativa</option>
+          <option value="Compradora Inativa">Compradora Inativa</option>
+          <option value="Lead">Lead</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Intervalo (segundos)</label>
+        <select id="c-intervalo">
+          <option value="30">30s</option>
+          <option value="45" selected>45s</option>
+          <option value="60">60s</option>
+          <option value="90">90s</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="criarCampanha()">Criar campanha</button>
+      <button class="btn btn-outline" onclick="document.getElementById('modal-campanha').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='';
+let paginaAtual=0,segmentoAtual='todos',buscaAtual='';
+const POR_PAGINA=50;
+
+async function entrar(){
+  const senha=document.getElementById('inp-senha').value;
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha})});
+  const d=await r.json();
+  if(d.ok){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').classList.add('show');
+    inicializar();
+  } else document.getElementById('login-erro').style.display='block';
+}
+
+function inicializar(){
+  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarConversas();
+  document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
+  document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
+  setInterval(verificarStatus,30000);
+}
+
+function irPara(p,el){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('ativo'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('ativo'));
+  document.getElementById('page-'+p).classList.add('ativo');
+  el.classList.add('ativo');
+}
+
+async function carregarStats(){
+  const d=await(await fetch('/api/contatos/stats')).json();
+  if(!d.ok)return;
+  document.getElementById('s-total').textContent=d.total.toLocaleString('pt-BR');
+  document.getElementById('s-vip').textContent=d.vip.toLocaleString('pt-BR');
+  document.getElementById('s-ativas').textContent=d.ativas.toLocaleString('pt-BR');
+  document.getElementById('s-inativas').textContent=d.inativas.toLocaleString('pt-BR');
+  document.getElementById('s-leads').textContent=d.leads.toLocaleString('pt-BR');
+  document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
+}
+
+async function verificarStatus(){
+  const d=await(await fetch('/api/wpp/status')).json();
+  const ok=d.status==='open'||d.status==='conectado';
+  const sb=document.getElementById('wpp-status-sidebar');
+  sb.className='wpp-status '+(ok?'status-conectado':'status-desconectado');
+  document.getElementById('wpp-status-txt').textContent=ok?'Conectado':'Desconectado';
+  const info=document.getElementById('wpp-info');
+  if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">WhatsApp conectado!</span>':'<span style="color:#dc2626">Desconectado. Clique em Conectar WhatsApp.</span>';
+}
+
+async function criarConexao(){toast('Criando conexao...');await fetch('/api/wpp/criar',{method:'POST'});setTimeout(carregarQR,2000);}
+
+async function carregarQR(){
+  const d=await(await fetch('/api/wpp/qr')).json();
+  if(d.ok&&d.qr){
+    document.getElementById('qr-wrap').style.display='block';
+    document.getElementById('qr-img').src=d.qr.startsWith('data:')?d.qr:'data:image/png;base64,'+d.qr;
+  } else toast('Aguarde e tente novamente');
+}
+
+async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/api/wpp/desconectar',{method:'POST'});toast('Desconectado!');verificarStatus();}
+
+async function carregarContatos(){
+  const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
+  const tb=document.getElementById('tabela-contatos');
+  if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
+  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${c.segmento==='VIP'?'vip':c.segmento==='Compradora Ativa'?'ativa':c.segmento==='Compradora Inativa'?'inativa':'lead'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
+  document.getElementById('pag-info').textContent=`${paginaAtual*POR_PAGINA+1}-${Math.min((paginaAtual+1)*POR_PAGINA,d.total)} de ${d.total.toLocaleString('pt-BR')}`;
+}
+
+function filtrarContatos(v){buscaAtual=v;paginaAtual=0;carregarContatos();}
+function filtrarSegmento(v){segmentoAtual=v;paginaAtual=0;carregarContatos();}
+function proximaPagina(){paginaAtual++;carregarContatos();}
+function paginaAnterior(){if(paginaAtual>0){paginaAtual--;carregarContatos();}}
+
+async function importarCSV(input){
+  const fd=new FormData();fd.append('arquivo',input.files[0]);
+  toast('Importando...');
+  const d=await(await fetch('/api/contatos/importar',{method:'POST',body:fd})).json();
+  if(d.ok){toast(d.importados+' contatos importados!');carregarContatos();carregarStats();}
+  else toast('Erro: '+d.erro);
+  input.value='';
+}
+
+async function carregarCampanhas(){
+  const d=await(await fetch('/api/campanhas')).json();
+  const wrap=document.getElementById('lista-campanhas');
+  if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
+  wrap.innerHTML=d.campanhas.map(c=>`<div class="card"><div class="card-title">${c.nome}<div style="display:flex;gap:8px">${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">Disparar</button>`:''}<span class="badge badge-${c.status==='concluido'?'ativa':'inativa'}">${c.status}</span></div></div><div style="font-size:13px;color:#888;margin-bottom:8px">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s</div><div style="background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px">${c.mensagem.substring(0,150)}</div><div style="font-size:12px;color:#888;margin-top:8px">Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div></div>`).join('');
+}
+
+async function criarCampanha(){
+  const nome=document.getElementById('c-nome').value;
+  const mensagem=document.getElementById('c-msg').value;
+  const segmento=document.getElementById('c-seg').value;
+  const intervalo=document.getElementById('c-intervalo').value;
+  if(!nome||!mensagem){toast('Preencha todos os campos');return;}
+  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo)})})).json();
+  if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
+}
+
+async function dispararCampanha(id){
+  if(!confirm('Disparar esta campanha?'))return;
+  toast('Disparando...');
+  const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST'})).json();
+  if(d.ok){toast(d.mensagem);carregarCampanhas();}
+}
+
+async function disparoRapido(){
+  const msg=document.getElementById('aq-msg').value;
+  const seg=document.getElementById('aq-seg').value;
+  const intervalo=document.getElementById('aq-intervalo').value;
+  if(!msg){toast('Escreva a mensagem');return;}
+  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo Rapido '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo)})})).json();
+  if(cr.ok){const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST'})).json();if(d.ok)toast(d.mensagem);}
+}
+
+async function carregarFluxos(){
+  const d=await(await fetch('/api/fluxos')).json();
+  const icons=['💛','🛒','🛒','📦','⭐'];
+  document.getElementById('lista-fluxos').innerHTML=d.fluxos.map((f,i)=>`<div class="fluxo-item"><div class="fluxo-icon">${icons[i]||'💬'}</div><div class="fluxo-info"><div class="fluxo-nome">${f.nome}</div><div class="fluxo-msg">${f.mensagem.substring(0,80)}...</div></div><div class="toggle ${f.ativo?'on':''}" onclick="toggleFluxo(${f.id},${f.ativo},this)"></div></div>`).join('');
+}
+
+async function toggleFluxo(id,ativo,el){
+  el.classList.toggle('on');
+  toast(ativo?'Fluxo pausado':'Fluxo ativado');
+}
+
+async function carregarConversas(){
+  const d=await(await fetch('/api/conversas')).json();
+  const lista=document.getElementById('lista-conversas');
+  if(!d.conversas?.length){lista.innerHTML='<div style="padding:16px;text-align:center;color:#888;font-size:13px">Nenhuma conversa</div>';return;}
+  lista.innerHTML=d.conversas.map(c=>`<div onclick="abrirConversa('${c.telefone}','${c.nome||'Cliente'}')" style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0">${(c.nome||'?')[0]}</div><div><div style="font-size:13px;font-weight:500">${c.nome||c.telefone}</div><div style="font-size:11px;color:#888">${c.total} mensagens</div></div></div>`).join('');
+}
+
+async function abrirConversa(tel,nome){
+  const d=await(await fetch(`/api/conversas/${tel}`)).json();
+  document.getElementById('conversa-ativa').style.display='block';
+  document.getElementById('conv-nome').textContent=nome||tel;
+  document.getElementById('msgs-conversa').innerHTML=d.mensagens.map(m=>`<div class="msg ${m.de==='cliente'?'cliente':'bot'}"><div class="bubble">${m.mensagem.replace(/\n/g,'<br>')}</div><div class="msg-time">${m.de==='bot'?'IA · ':''} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
+</script>
+</body>
+</html>
