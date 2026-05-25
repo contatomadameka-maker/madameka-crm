@@ -1,31 +1,94 @@
-const axios = require('axios');
-const BASE_URL = process.env.EVOLUTION_API_URL;
-const API_KEY = process.env.EVOLUTION_API_KEY;
-const INSTANCE = process.env.EVOLUTION_INSTANCE || 'madameka';
-const api = axios.create({ baseURL: BASE_URL, headers: { 'apikey': API_KEY, 'Content-Type': 'application/json' } });
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const path = require('path');
+const fs = require('fs');
+
+const SESSION_DIR = path.join(__dirname, '../sessions');
+if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
+
+let sock = null;
+let qrCode = null;
+let status = 'desconectado';
+let qrCallback = null;
+
+async function conectar() {
+  const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
+
+  sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: true,
+    browser: ['Madame Ka CRM', 'Chrome', '1.0.0'],
+  });
+
+  sock.ev.on('creds.update', saveCreds);
+
+  sock.ev.on('connection.update', (update) => {
+    const { connection, lastDisconnect, qr } = update;
+
+    if (qr) {
+      qrCode = qr;
+      status = 'aguardando_qr';
+      console.log('QR Code gerado! Escaneie pelo WhatsApp.');
+    }
+
+    if (connection === 'close') {
+      status = 'desconectado';
+      qrCode = null;
+      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      console.log('Conexao fechada. Reconectando:', shouldReconnect);
+      if (shouldReconnect) setTimeout(conectar, 5000);
+    }
+
+    if (connection === 'open') {
+      status = 'conectado';
+      qrCode = null;
+      console.log('WhatsApp conectado!');
+    }
+  });
+}
 
 async function criarInstancia() {
-  try { const { data } = await api.post('/instance/create', { instanceName: INSTANCE, qrcode: true, integration: 'WHATSAPP-BAILEYS' }); return { ok: true, data }; }
-  catch (e) { return { ok: false, erro: e.message }; }
+  try {
+    await conectar();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
 }
+
 async function getQRCode() {
-  try { const { data } = await api.get(`/instance/connect/${INSTANCE}`); return { ok: true, qr: data.base64 || data.qrcode?.base64 }; }
-  catch (e) { return { ok: false, erro: e.message }; }
+  if (qrCode) return { ok: true, qr: qrCode };
+  return { ok: false, erro: 'QR Code nao disponivel ainda' };
 }
+
 async function getStatus() {
-  try { const { data } = await api.get(`/instance/connectionState/${INSTANCE}`); return { ok: true, status: data.instance?.state || 'desconectado' }; }
-  catch (e) { return { ok: false, status: 'desconectado' }; }
+  return { ok: true, status: status === 'conectado' ? 'open' : status };
 }
+
 async function enviarMensagem(telefone, mensagem) {
+  if (!sock || status !== 'conectado') return { ok: false, erro: 'WhatsApp nao conectado' };
   try {
     let num = telefone.replace(/\D/g, '');
     if (!num.startsWith('55')) num = '55' + num;
-    const { data } = await api.post(`/message/sendText/${INSTANCE}`, { number: num + '@s.whatsapp.net', text: mensagem });
-    return { ok: true, id: data.key?.id };
-  } catch (e) { return { ok: false, erro: e.response?.data?.message || e.message }; }
+    const jid = num + '@s.whatsapp.net';
+    await sock.sendMessage(jid, { text: mensagem });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
 }
+
 async function desconectar() {
-  try { await api.delete(`/instance/logout/${INSTANCE}`); return { ok: true }; }
-  catch (e) { return { ok: false, erro: e.message }; }
+  try {
+    if (sock) await sock.logout();
+    status = 'desconectado';
+    qrCode = null;
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
 }
+
+// Conectar automaticamente ao iniciar
+conectar().catch(console.error);
+
 module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, desconectar };
