@@ -1,16 +1,15 @@
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const path = require('path');
-const fs = require('fs');
-
-const SESSION_DIR = path.join(__dirname, '../sessions');
-if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
-
 let sock = null;
 let qrCode = null;
 let status = 'desconectado';
-let qrCallback = null;
 
 async function conectar() {
+  const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = await import('@whiskeysockets/baileys');
+  const path = await import('path');
+  const { default: fs } = await import('fs');
+
+  const SESSION_DIR = path.join(process.cwd(), 'sessions');
+  if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
+
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
 
   sock = makeWASocket({
@@ -23,21 +22,17 @@ async function conectar() {
 
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
-
     if (qr) {
       qrCode = qr;
       status = 'aguardando_qr';
-      console.log('QR Code gerado! Escaneie pelo WhatsApp.');
+      console.log('QR Code gerado!');
     }
-
     if (connection === 'close') {
       status = 'desconectado';
       qrCode = null;
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log('Conexao fechada. Reconectando:', shouldReconnect);
       if (shouldReconnect) setTimeout(conectar, 5000);
     }
-
     if (connection === 'open') {
       status = 'conectado';
       qrCode = null;
@@ -47,12 +42,8 @@ async function conectar() {
 }
 
 async function criarInstancia() {
-  try {
-    await conectar();
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, erro: e.message };
-  }
+  try { await conectar(); return { ok: true }; }
+  catch (e) { return { ok: false, erro: e.message }; }
 }
 
 async function getQRCode() {
@@ -69,12 +60,9 @@ async function enviarMensagem(telefone, mensagem) {
   try {
     let num = telefone.replace(/\D/g, '');
     if (!num.startsWith('55')) num = '55' + num;
-    const jid = num + '@s.whatsapp.net';
-    await sock.sendMessage(jid, { text: mensagem });
+    await sock.sendMessage(num + '@s.whatsapp.net', { text: mensagem });
     return { ok: true };
-  } catch (e) {
-    return { ok: false, erro: e.message };
-  }
+  } catch (e) { return { ok: false, erro: e.message }; }
 }
 
 async function desconectar() {
@@ -83,12 +71,9 @@ async function desconectar() {
     status = 'desconectado';
     qrCode = null;
     return { ok: true };
-  } catch (e) {
-    return { ok: false, erro: e.message };
-  }
+  } catch (e) { return { ok: false, erro: e.message }; }
 }
 
-// Conectar automaticamente ao iniciar
 conectar().catch(console.error);
 
 module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, desconectar };
