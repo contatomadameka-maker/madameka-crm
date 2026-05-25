@@ -1,8 +1,12 @@
 let sock = null;
 let qrCode = null;
 let status = 'desconectado';
+let conectando = false;
 
 async function conectar() {
+  if (conectando) return;
+  conectando = true;
+
   const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = await import('@whiskeysockets/baileys');
   const path = await import('path');
   const { default: fs } = await import('fs');
@@ -14,41 +18,55 @@ async function conectar() {
 
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,
     browser: ['Madame Ka CRM', 'Chrome', '1.0.0'],
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 10000,
   });
 
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
+
     if (qr) {
       qrCode = qr;
       status = 'aguardando_qr';
-      console.log('QR Code gerado!');
+      console.log('QR Code gerado! Disponivel para scan.');
+      // Mantém o QR por 2 minutos
+      setTimeout(() => { if (qrCode === qr) qrCode = null; }, 120000);
     }
+
     if (connection === 'close') {
+      conectando = false;
       status = 'desconectado';
-      qrCode = null;
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      if (shouldReconnect) setTimeout(conectar, 5000);
+      console.log('Conexao fechada, reconectando:', shouldReconnect);
+      if (shouldReconnect) setTimeout(conectar, 3000);
     }
+
     if (connection === 'open') {
+      conectando = false;
       status = 'conectado';
       qrCode = null;
-      console.log('WhatsApp conectado!');
+      console.log('WhatsApp CONECTADO com sucesso!');
     }
   });
 }
 
 async function criarInstancia() {
-  try { await conectar(); return { ok: true }; }
-  catch (e) { return { ok: false, erro: e.message }; }
+  try {
+    conectando = false;
+    await conectar();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
 }
 
 async function getQRCode() {
   if (qrCode) return { ok: true, qr: qrCode };
-  return { ok: false, erro: 'QR Code nao disponivel ainda' };
+  return { ok: false, erro: 'QR Code nao disponivel. Clique em Conectar WhatsApp primeiro.' };
 }
 
 async function getStatus() {
@@ -62,7 +80,9 @@ async function enviarMensagem(telefone, mensagem) {
     if (!num.startsWith('55')) num = '55' + num;
     await sock.sendMessage(num + '@s.whatsapp.net', { text: mensagem });
     return { ok: true };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  } catch (e) {
+    return { ok: false, erro: e.message }; 
+  }
 }
 
 async function desconectar() {
@@ -70,10 +90,14 @@ async function desconectar() {
     if (sock) await sock.logout();
     status = 'desconectado';
     qrCode = null;
+    conectando = false;
     return { ok: true };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  } catch (e) {
+    return { ok: false, erro: e.message };
+  }
 }
 
+// Iniciar conexão automaticamente
 conectar().catch(console.error);
 
 module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, desconectar };
