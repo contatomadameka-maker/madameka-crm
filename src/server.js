@@ -28,6 +28,18 @@ app.get('/api/wpp/status', async (req, res) => res.json(await wpp.getStatus()));
 app.get('/api/wpp/qr', async (req, res) => res.json(await wpp.getQRCode()));
 app.post('/api/wpp/criar', async (req, res) => res.json(await wpp.criarInstancia()));
 app.post('/api/wpp/desconectar', async (req, res) => res.json(await wpp.desconectar()));
+app.post('/api/wpp/reset', async (req, res) => {
+  try {
+    const sessionDir = path.join(__dirname, '../sessions');
+    if (fs.existsSync(sessionDir)) {
+      fs.rmSync(sessionDir, { recursive: true, force: true });
+      fs.mkdirSync(sessionDir);
+    }
+    res.json({ ok: true, msg: 'Sessao resetada' });
+  } catch(e) {
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
 
 app.post('/webhook/wpp', async (req, res) => {
   res.json({ ok: true });
