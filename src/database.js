@@ -13,7 +13,7 @@ async function init() {
       data_ultimo_pedido TEXT, cidade TEXT, estado TEXT, origem TEXT,
       data_cadastro TEXT, nascimento TEXT, ultimo_disparo TIMESTAMP,
       total_mensagens INTEGER DEFAULT 0, respondeu INTEGER DEFAULT 0,
-      obs TEXT, criado_em TIMESTAMP DEFAULT NOW()
+      total_compras INTEGER DEFAULT 0, obs TEXT, criado_em TIMESTAMP DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS campanhas (
       id SERIAL PRIMARY KEY, nome TEXT NOT NULL, mensagem TEXT NOT NULL,
@@ -36,7 +36,37 @@ async function init() {
       mensagem TEXT NOT NULL, de TEXT DEFAULT 'cliente',
       respondida_ia INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS sequencias (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      descricao TEXT,
+      gatilho TEXT NOT NULL,
+      segmento TEXT DEFAULT 'todos',
+      ativo INTEGER DEFAULT 0,
+      criado_em TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS sequencia_passos (
+      id SERIAL PRIMARY KEY,
+      sequencia_id INTEGER REFERENCES sequencias(id) ON DELETE CASCADE,
+      ordem INTEGER NOT NULL,
+      mensagem TEXT NOT NULL,
+      delay_horas INTEGER DEFAULT 0,
+      delay_label TEXT DEFAULT 'Imediato',
+      criado_em TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS sequencia_execucoes (
+      id SERIAL PRIMARY KEY,
+      sequencia_id INTEGER,
+      contato_id INTEGER,
+      telefone TEXT,
+      passo_atual INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'ativo',
+      iniciado_em TIMESTAMP DEFAULT NOW(),
+      proximo_envio TIMESTAMP
+    );
+    ALTER TABLE contatos ADD COLUMN IF NOT EXISTS total_compras INTEGER DEFAULT 0;
   `);
+
   const { rows } = await pool.query('SELECT COUNT(*) as c FROM fluxos');
   if (rows[0].c === '0' || rows[0].c === 0) {
     const ins = (n,t,m,d) => pool.query('INSERT INTO fluxos (nome,tipo,mensagem,delay_horas) VALUES ($1,$2,$3,$4)',[n,t,m,d]);
@@ -48,6 +78,77 @@ async function init() {
   }
 }
 
+// Função para calcular segmento dinâmico de um contato
+async function calcularSegmento(contato) {
+  const hoje = new Date();
+  
+  // Aniversariante hoje
+  if (contato.nascimento) {
+    const nasc = new Date(contato.nascimento);
+    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) {
+      return 'Aniversariante';
+    }
+  }
+  
+  // Alta frequência: 3+ compras
+  if ((contato.total_compras || 0) >= 3) return 'Alta Frequencia';
+  
+  // VIP: valor acumulado R$500+
+  const valor = parseFloat((contato.valor_ultimo_pedido || '0').replace(/[^0-9.]/g, '')) || 0;
+  if (valor >= 500) return 'VIP';
+  
+  // Compradora Recente: comprou nos últimos 7 dias
+  if (contato.data_ultimo_pedido) {
+    const ultimaCompra = new Date(contato.data_ultimo_pedido);
+    const diasDesdeCompra = (hoje - ultimaCompra) / (1000 * 60 * 60 * 24);
+    if (diasDesdeCompra <= 7) return 'Compradora Recente';
+    if (diasDesdeCompra <= 60) return 'Compradora Ativa';
+    if (diasDesdeCompra <= 90) return 'Em Risco';
+    return 'Compradora Inativa';
+  }
+  
+  return contato.segmento || 'Lead';
+}
+
+// Função para buscar contatos por segmento incluindo dinâmicos
+async function buscarPorSegmento(segmento) {
+  if (segmento === 'todos') {
+    const { rows } = await pool.query('SELECT * FROM contatos');
+    return rows;
+  }
+  if (segmento === 'Aniversariante') {
+    const hoje = new Date();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const { rows } = await pool.query(
+      `SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`,
+      [`%-${mes}-${dia}`, `${dia}/${mes}%`]
+    );
+    return rows;
+  }
+  if (segmento === 'Alta Frequencia') {
+    const { rows } = await pool.query('SELECT * FROM contatos WHERE total_compras >= 3');
+    return rows;
+  }
+  if (segmento === 'Compradora Recente') {
+    const { rows } = await pool.query(
+      `SELECT * FROM contatos WHERE data_ultimo_pedido IS NOT NULL 
+       AND data_ultimo_pedido != '' 
+       AND criado_em >= NOW() - INTERVAL '7 days'`
+    );
+    return rows;
+  }
+  if (segmento === 'Em Risco') {
+    const { rows } = await pool.query(
+      `SELECT * FROM contatos WHERE segmento IN ('Compradora Ativa','Compradora Inativa')
+       AND ultimo_disparo < NOW() - INTERVAL '45 days'`
+    );
+    return rows;
+  }
+  const { rows } = await pool.query('SELECT * FROM contatos WHERE segmento=$1', [segmento]);
+  return rows;
+}
+
 init().catch(console.error);
 
-module.exports = { pool };
+module.exports = { pool, calcularSegmento, buscarPorSegmento };

@@ -5,7 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const { parse } = require('csv-parse/sync');
 const fs = require('fs');
-const { pool } = require('./database');
+const { pool, buscarPorSegmento } = require('./database');
 const wpp = require('./whatsapp');
 const { responderIA } = require('./ia');
 
@@ -136,7 +136,7 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     let sql = 'SELECT * FROM contatos WHERE 1=1';
     const params = [];
     if (campanha.segmento !== 'todos') { sql += ' AND segmento=$1'; params.push(campanha.segmento); }
-    const { rows: contatos } = await pool.query(sql, params);
+    const contatos = await buscarPorSegmento(campanha.segmento);
     await pool.query('UPDATE campanhas SET status=$1, disparado_em=NOW() WHERE id=$2', ['disparando', campanha.id]);
     res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos` });
     let i = 0;
@@ -249,6 +249,73 @@ app.post('/webhook/popup', async (req, res) => {
       await wpp.enviarMensagem(tel, rows[0].mensagem.replace(/{nome}/g, (nome||'Cliente').split(' ')[0]));
     }
   } catch (e) { console.error(e); }
+});
+// ─── SEQUÊNCIAS ───────────────────────────────────────────────────────────────
+app.get('/api/sequencias', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM sequencias ORDER BY criado_em DESC');
+    for (const s of rows) {
+      const { rows: passos } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 ORDER BY ordem', [s.id]);
+      s.passos = passos;
+    }
+    res.json({ ok: true, sequencias: rows });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.post('/api/sequencias', async (req, res) => {
+  try {
+    const { nome, descricao, gatilho, segmento, passos } = req.body;
+    const { rows } = await pool.query(
+      'INSERT INTO sequencias (nome,descricao,gatilho,segmento) VALUES ($1,$2,$3,$4) RETURNING id',
+      [nome, descricao||'', gatilho, segmento||'todos']
+    );
+    const seqId = rows[0].id;
+    for (let i = 0; i < passos.length; i++) {
+      const p = passos[i];
+      await pool.query(
+        'INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label) VALUES ($1,$2,$3,$4,$5)',
+        [seqId, i+1, p.mensagem, p.delay_horas, p.delay_label||'']
+      );
+    }
+    res.json({ ok: true, id: seqId });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.put('/api/sequencias/:id', async (req, res) => {
+  try {
+    const { nome, descricao, gatilho, segmento, ativo, passos } = req.body;
+    await pool.query(
+      'UPDATE sequencias SET nome=$1,descricao=$2,gatilho=$3,segmento=$4,ativo=$5 WHERE id=$6',
+      [nome, descricao||'', gatilho, segmento||'todos', ativo?1:0, req.params.id]
+    );
+    if (passos) {
+      await pool.query('DELETE FROM sequencia_passos WHERE sequencia_id=$1', [req.params.id]);
+      for (let i = 0; i < passos.length; i++) {
+        const p = passos[i];
+        await pool.query(
+          'INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label) VALUES ($1,$2,$3,$4,$5)',
+          [req.params.id, i+1, p.mensagem, p.delay_horas, p.delay_label||'']
+        );
+      }
+    }
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.delete('/api/sequencias/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM sequencias WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.post('/api/sequencias/:id/ativar', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM sequencias WHERE id=$1', [req.params.id]);
+    if (!rows.length) return res.json({ ok: false, erro: 'Não encontrada' });
+    await pool.query('UPDATE sequencias SET ativo=1 WHERE id=$1', [req.params.id]);
+    res.json({ ok: true, msg: 'Sequência ativada!' });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
