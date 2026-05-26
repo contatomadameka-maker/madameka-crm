@@ -37,36 +37,24 @@ async function init() {
       respondida_ia INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS sequencias (
-      id SERIAL PRIMARY KEY,
-      nome TEXT NOT NULL,
-      descricao TEXT,
-      gatilho TEXT NOT NULL,
-      segmento TEXT DEFAULT 'todos',
-      ativo INTEGER DEFAULT 0,
-      criado_em TIMESTAMP DEFAULT NOW()
+      id SERIAL PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT,
+      gatilho TEXT NOT NULL, segmento TEXT DEFAULT 'todos',
+      ativo INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS sequencia_passos (
-  id SERIAL PRIMARY KEY,
-  sequencia_id INTEGER REFERENCES sequencias(id) ON DELETE CASCADE,
-  ordem INTEGER NOT NULL,
-  mensagem TEXT NOT NULL,
-  delay_horas INTEGER DEFAULT 0,
-  delay_label TEXT DEFAULT 'Imediato',
-  midia_tipo TEXT DEFAULT 'texto',
-  midia_url TEXT DEFAULT '',
-  criado_em TIMESTAMP DEFAULT NOW()
-);
-    CREATE TABLE IF NOT EXISTS sequencia_execucoes (
       id SERIAL PRIMARY KEY,
-      sequencia_id INTEGER,
-      contato_id INTEGER,
-      telefone TEXT,
-      passo_atual INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'ativo',
-      iniciado_em TIMESTAMP DEFAULT NOW(),
+      sequencia_id INTEGER REFERENCES sequencias(id) ON DELETE CASCADE,
+      ordem INTEGER NOT NULL, mensagem TEXT NOT NULL,
+      delay_horas INTEGER DEFAULT 0, delay_label TEXT DEFAULT 'Imediato',
+      midia_tipo TEXT DEFAULT 'texto', midia_url TEXT DEFAULT '',
+      criado_em TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS sequencia_execucoes (
+      id SERIAL PRIMARY KEY, sequencia_id INTEGER, contato_id INTEGER,
+      telefone TEXT, passo_atual INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'ativo', iniciado_em TIMESTAMP DEFAULT NOW(),
       proximo_envio TIMESTAMP
     );
-    ALTER TABLE contatos ADD COLUMN IF NOT EXISTS total_compras INTEGER DEFAULT 0;
   `);
 
   const { rows } = await pool.query('SELECT COUNT(*) as c FROM fluxos');
@@ -78,6 +66,7 @@ async function init() {
     await ins('Pos-compra','pos_compra','Oi {nome}!\n\nPedido confirmado! Obrigada por comprar na Madame Ka! Seu pedido esta sendo preparado com carinho',0);
     await ins('Review 7 dias','review','Oi {nome}!\n\nJa chegou seu pedido? Conta pra gente como foi!',168);
   }
+
   // Sempre roda — adiciona colunas se não existirem
   await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
   await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
@@ -87,36 +76,27 @@ async function init() {
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE contatos ADD COLUMN IF NOT EXISTS total_compras INTEGER DEFAULT 0`);
 }
-  
-  // Aniversariante hoje
+
+async function calcularSegmento(contato) {
+  const hoje = new Date();
   if (contato.nascimento) {
     const nasc = new Date(contato.nascimento);
-    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) {
-      return 'Aniversariante';
-    }
+    if (nasc.getDate() === hoje.getDate() && nasc.getMonth() === hoje.getMonth()) return 'Aniversariante';
   }
-  
-  // Alta frequência: 3+ compras
   if ((contato.total_compras || 0) >= 3) return 'Alta Frequencia';
-  
-  // VIP: valor acumulado R$500+
   const valor = parseFloat((contato.valor_ultimo_pedido || '0').replace(/[^0-9.]/g, '')) || 0;
   if (valor >= 500) return 'VIP';
-  
-  // Compradora Recente: comprou nos últimos 7 dias
   if (contato.data_ultimo_pedido) {
     const ultimaCompra = new Date(contato.data_ultimo_pedido);
-    const diasDesdeCompra = (hoje - ultimaCompra) / (1000 * 60 * 60 * 24);
-    if (diasDesdeCompra <= 7) return 'Compradora Recente';
-    if (diasDesdeCompra <= 60) return 'Compradora Ativa';
-    if (diasDesdeCompra <= 90) return 'Em Risco';
+    const dias = (hoje - ultimaCompra) / (1000 * 60 * 60 * 24);
+    if (dias <= 7) return 'Compradora Recente';
+    if (dias <= 60) return 'Compradora Ativa';
+    if (dias <= 90) return 'Em Risco';
     return 'Compradora Inativa';
   }
-  
   return contato.segmento || 'Lead';
 }
 
-// Função para buscar contatos por segmento incluindo dinâmicos
 async function buscarPorSegmento(segmento) {
   if (segmento === 'todos') {
     const { rows } = await pool.query('SELECT * FROM contatos');
@@ -138,16 +118,13 @@ async function buscarPorSegmento(segmento) {
   }
   if (segmento === 'Compradora Recente') {
     const { rows } = await pool.query(
-      `SELECT * FROM contatos WHERE data_ultimo_pedido IS NOT NULL 
-       AND data_ultimo_pedido != '' 
-       AND criado_em >= NOW() - INTERVAL '7 days'`
+      `SELECT * FROM contatos WHERE data_ultimo_pedido IS NOT NULL AND data_ultimo_pedido != '' AND criado_em >= NOW() - INTERVAL '7 days'`
     );
     return rows;
   }
   if (segmento === 'Em Risco') {
     const { rows } = await pool.query(
-      `SELECT * FROM contatos WHERE segmento IN ('Compradora Ativa','Compradora Inativa')
-       AND ultimo_disparo < NOW() - INTERVAL '45 days'`
+      `SELECT * FROM contatos WHERE segmento IN ('Compradora Ativa','Compradora Inativa') AND (ultimo_disparo IS NULL OR ultimo_disparo < NOW() - INTERVAL '45 days')`
     );
     return rows;
   }
