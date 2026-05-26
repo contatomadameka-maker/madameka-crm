@@ -74,6 +74,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a}
 .form-group textarea{resize:vertical;min-height:80px}
+.midia-box{background:#f9f6f2;border:1.5px solid #e8e2db;border-radius:10px;padding:14px;margin-top:10px}
+.midia-box-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.midia-upload-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.midia-upload-status{font-size:11px;color:#888}
+.midia-url-row{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
+.midia-preview{margin-top:8px;border-radius:8px;overflow:hidden;max-width:180px}
+.midia-preview img{width:100%;border-radius:8px;border:1px solid #e8e2db}
 .fluxo-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:20px;margin-bottom:14px}
 .fluxo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .fluxo-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f5f0ea}
@@ -85,17 +92,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
 .toggle.on::after{transform:translateX(18px)}
 .fluxo-editor{border-top:0.5px solid #f0ece8;padding-top:14px;margin-top:4px}
-.fluxo-editor textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:100px;color:#1a1a1a}
+.fluxo-editor textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:100px}
 .fluxo-editor textarea:focus{border-color:#c9a87c}
-.fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
-.fluxo-hint{font-size:11px;color:#aaa}
-.fluxo-hint span{background:#f5f0ea;padding:2px 6px;border-radius:4px;font-family:monospace;color:#c9a87c}
-.saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;margin-left:8px;opacity:0;transition:opacity .3s}
+.fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
+.saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;opacity:0;transition:opacity .3s}
 .saved-badge.show{opacity:1}
-.midia-section{background:#f9f6f2;border:1.5px solid #e8e2db;border-radius:8px;padding:12px;margin-top:10px}
-.midia-section-title{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.midia-preview{margin-top:8px;border-radius:8px;overflow:hidden;max-width:200px}
-.midia-preview img{width:100%;border-radius:8px}
 .seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
 .seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .seq-card-nome{font-size:14px;font-weight:500}
@@ -119,12 +120,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .delay-btn.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
 .seq-passo textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:80px}
 .seq-passo textarea:focus{border-color:#c9a87c}
-.seq-connector{text-align:center;padding:4px 0;color:#c9a87c;font-size:18px}
+.seq-connector{text-align:center;padding:4px 0;color:#c9a87c;font-size:20px}
 .seq-add-btn{border:2px dashed #e8e2db;border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:#888;transition:all .2s;margin-top:8px}
 .seq-add-btn:hover{border-color:#c9a87c;color:#c9a87c;background:#fffbf5}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px}
 .modal-lg{max-width:780px}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .modal-title{font-size:16px;font-weight:500}
@@ -183,7 +184,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="stat" style="cursor:pointer;border-color:#fca5a5" onclick="irParaSegmento('Aniversariante')">
           <div class="stat-lbl">🎂 Aniversariantes</div>
           <div class="stat-val" id="s-aniv">--</div>
-          <div class="stat-sub" style="color:#be123c">hoje · clique para ver</div>
+          <div class="stat-sub" style="color:#be123c">hoje · ver lista</div>
         </div>
       </div>
       <div class="card">
@@ -193,13 +194,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <select id="aq-seg">
               <option value="todos">Todos</option>
               <option value="VIP">VIP</option>
-              <option value="Alta Frequencia">Alta Frequência (3+ compras)</option>
-              <option value="Compradora Recente">Compradora Recente (7 dias)</option>
+              <option value="Alta Frequencia">Alta Frequência</option>
+              <option value="Compradora Recente">Compradora Recente</option>
               <option value="Compradora Ativa">Compradora Ativa</option>
-              <option value="Em Risco">Em Risco (45-90 dias)</option>
+              <option value="Em Risco">Em Risco</option>
               <option value="Compradora Inativa">Compradora Inativa</option>
               <option value="Lead">Lead</option>
-              <option value="Aniversariante">Aniversariantes hoje 🎂</option>
+              <option value="Aniversariante">Aniversariantes 🎂</option>
             </select>
           </div>
           <div class="form-group"><label>Intervalo</label>
@@ -207,26 +208,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="30">30s</option>
               <option value="45" selected>45s (recomendado)</option>
               <option value="60">60s</option>
-              <option value="90">90s (muito seguro)</option>
+              <option value="90">90s</option>
             </select>
           </div>
         </div>
         <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea></div>
-        <div class="midia-section">
-          <div class="midia-section-title">📎 Mídia opcional (imagem ou vídeo)</div>
-          <div class="form-row" style="margin-bottom:0">
-            <div class="form-group" style="margin-bottom:0">
-              <label>Tipo</label>
-              <select id="aq-midia-tipo">
-                <option value="texto">Sem mídia</option>
-                <option value="imagem">📸 Imagem</option>
-                <option value="video">🎥 Vídeo</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0">
-              <label>URL da mídia</label>
-              <input type="text" id="aq-midia-url" placeholder="https://..." oninput="previewMidia('aq-midia-url','aq-midia-preview')">
-            </div>
+        <div class="midia-box">
+          <div class="midia-box-title">📎 Mídia opcional</div>
+          <div class="midia-upload-row">
+            <input type="file" id="uf-aq" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-aq').click()">📤 Enviar arquivo</button>
+            <span class="midia-upload-status" id="aq-upload-status"></span>
+          </div>
+          <div class="midia-url-row">
+            <select id="aq-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+              <option value="texto">Sem mídia</option>
+              <option value="imagem">📸 Imagem</option>
+              <option value="video">🎥 Vídeo</option>
+            </select>
+            <input type="text" id="aq-midia-url" placeholder="URL da mídia (preenchida automaticamente)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('aq-midia-url','aq-midia-preview')">
           </div>
           <div id="aq-midia-preview" class="midia-preview" style="display:none"></div>
         </div>
@@ -308,9 +308,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- FLUXOS -->
     <div class="page" id="page-fluxos">
-      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative cada fluxo</div></div></div>
+      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative</div></div></div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        💡 Use <strong>{nome}</strong> para personalizar. Adicione imagem ou vídeo opcionalmente. Clique em <strong>Salvar</strong> após editar.
+        💡 Use <strong>{nome}</strong> para personalizar. Adicione imagem ou vídeo. Clique em <strong>Salvar</strong> após editar.
       </div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
@@ -322,7 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequência</button>
       </div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        ⚡ Crie funis com várias mensagens encadeadas. Cada passo tem delay e mídia configuráveis. Use <strong>{nome}</strong> para personalizar.
+        ⚡ Cada passo tem delay, mensagem e mídia próprios. Use <strong>{nome}</strong> para personalizar.
       </div>
       <div id="lista-sequencias">Carregando...</div>
     </div>
@@ -363,7 +363,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="Aniversariante">Aniversariantes 🎂</option>
         </select>
       </div>
-      <div class="form-group"><label>Intervalo (segundos)</label>
+      <div class="form-group"><label>Intervalo</label>
         <select id="c-intervalo">
           <option value="30">30s</option>
           <option value="45" selected>45s</option>
@@ -373,19 +373,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
-    <div class="midia-section">
-      <div class="midia-section-title">📎 Mídia opcional</div>
-      <div class="form-row" style="margin-bottom:0">
-        <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
-          <select id="c-midia-tipo">
-            <option value="texto">Sem mídia</option>
-            <option value="imagem">📸 Imagem</option>
-            <option value="video">🎥 Vídeo</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
-          <input type="text" id="c-midia-url" placeholder="https://..." oninput="previewMidia('c-midia-url','c-midia-preview')">
-        </div>
+    <div class="midia-box">
+      <div class="midia-box-title">📎 Mídia opcional</div>
+      <div class="midia-upload-row">
+        <input type="file" id="uf-c" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-c').click()">📤 Enviar arquivo</button>
+        <span class="midia-upload-status" id="c-upload-status"></span>
+      </div>
+      <div class="midia-url-row">
+        <select id="c-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+          <option value="texto">Sem mídia</option>
+          <option value="imagem">📸 Imagem</option>
+          <option value="video">🎥 Vídeo</option>
+        </select>
+        <input type="text" id="c-midia-url" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('c-midia-url','c-midia-preview')">
       </div>
       <div id="c-midia-preview" class="midia-preview" style="display:none"></div>
     </div>
@@ -410,8 +411,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="carrinho_abandonado">🛒 Carrinho Abandonado</option>
           <option value="boas_vindas">💛 Boas-vindas (Popup)</option>
           <option value="pos_compra">📦 Pós-compra</option>
-          <option value="reativacao">😴 Reativação de Inativas</option>
-          <option value="manual">✋ Disparo Manual</option>
+          <option value="reativacao">😴 Reativação</option>
+          <option value="manual">✋ Manual</option>
         </select>
       </div>
     </div>
@@ -433,7 +434,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="border-top:0.5px solid #f0ece8;margin:8px -24px;padding:0 24px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px">
       <div style="font-size:13px;font-weight:500">Mensagens da sequência</div>
-      <div style="font-size:11px;color:#888">Use {nome} · Cada passo tem delay e mídia próprios</div>
+      <div style="font-size:11px;color:#888">Cada passo tem delay e mídia próprios</div>
     </div>
     <div id="seq-passos-container"></div>
     <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
@@ -449,8 +450,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 let paginaAtual=0,segmentoAtual='todos',buscaAtual='';
 const POR_PAGINA=50;
-let seqEditandoId=null;
-let passoCount=0;
+let seqEditandoId=null,passoCount=0;
 
 async function entrar(){
   const senha=document.getElementById('inp-senha').value;
@@ -476,12 +476,50 @@ function irPara(p,el){
 
 function irParaSegmento(seg){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('ativo'));
-  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('ativo'));
-  document.getElementById('page-contatos').classList.add('ativo');
   document.querySelectorAll('.nav-item')[2].classList.add('ativo');
+  document.getElementById('page-contatos').classList.add('ativo');
   segmentoAtual=seg;paginaAtual=0;
   document.getElementById('seg-filtro').value=seg;
   carregarContatos();
+}
+
+// ─── UPLOAD MÍDIA ─────────────────────────────────────────────────────────────
+async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById(statusId);
+  status.textContent = '⏳ Enviando...';
+  const fd = new FormData();
+  fd.append('arquivo', file);
+  try {
+    const r = await fetch('/api/upload', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById(urlId).value = d.url;
+      document.getElementById(tipoId).value = d.tipo;
+      status.textContent = '✅ Enviado!';
+      status.style.color = '#16a34a';
+      previewMidia(urlId, previewId);
+      setTimeout(() => { status.textContent = ''; }, 3000);
+    } else {
+      status.textContent = '❌ Erro: ' + d.erro;
+      status.style.color = '#dc2626';
+    }
+  } catch(e) {
+    status.textContent = '❌ Erro no upload';
+    status.style.color = '#dc2626';
+  }
+  input.value = '';
+}
+
+function previewMidia(urlId, previewId) {
+  const url = document.getElementById(urlId)?.value;
+  const preview = document.getElementById(previewId);
+  if (!preview) return;
+  if (url && /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)) {
+    preview.style.display = 'block';
+    preview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
+  } else { preview.style.display = 'none'; }
 }
 
 async function carregarStats(){
@@ -513,16 +551,6 @@ async function carregarQR(){
   else toast('Aguarde e tente novamente');
 }
 async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/api/wpp/desconectar',{method:'POST'});toast('Desconectado!');verificarStatus();}
-
-function previewMidia(urlId,previewId){
-  const url=document.getElementById(urlId)?.value;
-  const preview=document.getElementById(previewId);
-  if(!preview)return;
-  if(url&&(url.endsWith('.jpg')||url.endsWith('.jpeg')||url.endsWith('.png')||url.endsWith('.gif')||url.endsWith('.webp'))){
-    preview.style.display='block';
-    preview.innerHTML=`<img src="${url}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
-  } else { preview.style.display='none'; }
-}
 
 async function carregarContatos(){
   const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
@@ -569,8 +597,10 @@ async function criarCampanha(){
   const mensagem=document.getElementById('c-msg').value;
   const segmento=document.getElementById('c-seg').value;
   const intervalo=document.getElementById('c-intervalo').value;
+  const midTipo=document.getElementById('c-midia-tipo').value;
+  const midUrl=document.getElementById('c-midia-url').value;
   if(!nome||!mensagem){toast('Preencha todos os campos');return;}
-  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo)})})).json();
+  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
 }
 
@@ -594,7 +624,7 @@ async function disparoRapido(){
   const midTipo=document.getElementById('aq-midia-tipo').value;
   const midUrl=document.getElementById('aq-midia-url').value;
   if(!msg){toast('Escreva a mensagem');return;}
-  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo Rapido '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
+  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(cr.ok){const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST'})).json();if(d.ok)toast(d.mensagem);}
 }
 
@@ -607,7 +637,7 @@ async function carregarFluxos(){
     <div class="fluxo-card" id="fluxo-card-${f.id}">
       <div class="fluxo-header">
         <div class="fluxo-icon">${FLUXO_ICONS[i]||'💬'}</div>
-        <div class="fluxo-info"><div class="fluxo-nome">${f.nome}</div><div class="fluxo-tipo">${f.delay_horas>0?'Delay: '+f.delay_horas+'h após o gatilho':'Disparo imediato'}</div></div>
+        <div class="fluxo-info"><div class="fluxo-nome">${f.nome}</div><div class="fluxo-tipo">${f.delay_horas>0?'Delay: '+f.delay_horas+'h':'Disparo imediato'}</div></div>
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:11px;color:${f.ativo?'#16a34a':'#aaa'}" id="status-txt-${f.id}">${f.ativo?'Ativo':'Inativo'}</span>
           <div class="toggle ${f.ativo?'on':''}" id="toggle-${f.id}" onclick="toggleFluxo(${f.id},this)"></div>
@@ -619,24 +649,25 @@ async function carregarFluxos(){
           <span class="saved-badge" id="saved-${f.id}">✓ Salvo</span>
         </div>
         <textarea id="fluxo-msg-${f.id}">${f.mensagem}</textarea>
-        <div class="midia-section" style="margin-top:10px">
-          <div class="midia-section-title">📎 Mídia opcional</div>
-          <div class="form-row" style="margin-bottom:0">
-            <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
-              <select id="fluxo-midia-tipo-${f.id}">
-                <option value="texto" ${(!f.midia_tipo||f.midia_tipo==='texto')?'selected':''}>Sem mídia</option>
-                <option value="imagem" ${f.midia_tipo==='imagem'?'selected':''}>📸 Imagem</option>
-                <option value="video" ${f.midia_tipo==='video'?'selected':''}>🎥 Vídeo</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
-              <input type="text" id="fluxo-midia-url-${f.id}" value="${f.midia_url||''}" placeholder="https://..." oninput="previewMidia('fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}')">
-            </div>
+        <div class="midia-box">
+          <div class="midia-box-title">📎 Mídia opcional</div>
+          <div class="midia-upload-row">
+            <input type="file" id="uf-f${f.id}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-f${f.id}').click()">📤 Enviar arquivo</button>
+            <span class="midia-upload-status" id="fluxo-upload-status-${f.id}"></span>
           </div>
-          <div id="fluxo-midia-preview-${f.id}" class="midia-preview" style="display:${f.midia_url?'block':'none'}">${f.midia_url?`<img src="${f.midia_url}" alt="Preview" onerror="this.parentElement.style.display='none'">`:''}</div>
+          <div class="midia-url-row">
+            <select id="fluxo-midia-tipo-${f.id}" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+              <option value="texto" ${(!f.midia_tipo||f.midia_tipo==='texto')?'selected':''}>Sem mídia</option>
+              <option value="imagem" ${f.midia_tipo==='imagem'?'selected':''}>📸 Imagem</option>
+              <option value="video" ${f.midia_tipo==='video'?'selected':''}>🎥 Vídeo</option>
+            </select>
+            <input type="text" id="fluxo-midia-url-${f.id}" value="${f.midia_url||''}" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}')">
+          </div>
+          <div id="fluxo-midia-preview-${f.id}" class="midia-preview" style="display:${f.midia_url?'block':'none'}">${f.midia_url?`<img src="${f.midia_url}" onerror="this.parentElement.style.display='none'">`:''}</div>
         </div>
         <div class="fluxo-footer">
-          <div class="fluxo-hint">Use <span>{nome}</span> para o primeiro nome</div>
+          <div style="font-size:11px;color:#aaa">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code></div>
           <div style="display:flex;gap:8px;align-items:center">
             <div style="display:flex;align-items:center;gap:6px">
               <label style="font-size:11px;color:#888">Delay (h):</label>
@@ -679,13 +710,13 @@ async function salvarFluxo(id){
 // ─── SEQUÊNCIAS ───────────────────────────────────────────────────────────────
 const GATILHO_LABELS={carrinho_abandonado:'🛒 Carrinho Abandonado',boas_vindas:'💛 Boas-vindas',pos_compra:'📦 Pós-compra',reativacao:'😴 Reativação',manual:'✋ Manual'};
 const GATILHO_BADGE={carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual'};
-const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1 hora',horas:1},{label:'3 horas',horas:3},{label:'6 horas',horas:6},{label:'12 horas',horas:12},{label:'1 dia',horas:24},{label:'2 dias',horas:48},{label:'3 dias',horas:72},{label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}];
+const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1h',horas:1},{label:'3h',horas:3},{label:'6h',horas:6},{label:'12h',horas:12},{label:'1 dia',horas:24},{label:'2 dias',horas:48},{label:'3 dias',horas:72},{label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}];
 
 async function carregarSequencias(){
   const d=await(await fetch('/api/sequencias')).json();
   const wrap=document.getElementById('lista-sequencias');
   if(!d.sequencias?.length){
-    wrap.innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><div style="font-size:13px;color:#888;margin-bottom:16px">Crie funis de mensagens encadeadas com delays configuráveis</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';
+    wrap.innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';
     return;
   }
   wrap.innerHTML=d.sequencias.map(s=>`
@@ -714,12 +745,7 @@ async function carregarSequencias(){
   `).join('');
 }
 
-function formatDelay(h){
-  if(!h||h===0)return'Imediato';
-  if(h===0.5)return'30min';
-  if(h<24)return h+'h';
-  const d=Math.floor(h/24);return d+' dia'+(d>1?'s':'');
-}
+function formatDelay(h){if(!h||h===0)return'Imediato';if(h===0.5)return'30min';if(h<24)return h+'h';const d=Math.floor(h/24);return d+' dia'+(d>1?'s':'');}
 
 function abrirNovaSequencia(){
   seqEditandoId=null;passoCount=0;
@@ -775,23 +801,24 @@ function adicionarPasso(dados){
         <input type="hidden" id="passo-delay-val-${idx}" value="${delayH}">
         <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Mensagem:</div>
         <textarea id="passo-msg-${idx}" placeholder="Oi {nome}! ...">${msg}</textarea>
-        <div class="midia-section" style="margin-top:10px">
-          <div class="midia-section-title">📎 Mídia opcional (imagem ou vídeo)</div>
-          <div class="form-row" style="margin-bottom:0">
-            <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
-              <select id="passo-midia-tipo-${idx}">
-                <option value="texto" ${midTipo==='texto'?'selected':''}>Sem mídia</option>
-                <option value="imagem" ${midTipo==='imagem'?'selected':''}>📸 Imagem</option>
-                <option value="video" ${midTipo==='video'?'selected':''}>🎥 Vídeo</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
-              <input type="text" id="passo-midia-url-${idx}" value="${midUrl}" placeholder="https://..." oninput="previewMidia('passo-midia-url-${idx}','passo-midia-preview-${idx}')">
-            </div>
+        <div class="midia-box" style="margin-top:10px">
+          <div class="midia-box-title">📎 Mídia opcional</div>
+          <div class="midia-upload-row">
+            <input type="file" id="uf-p${idx}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-p${idx}').click()">📤 Enviar arquivo</button>
+            <span class="midia-upload-status" id="passo-upload-status-${idx}"></span>
           </div>
-          <div id="passo-midia-preview-${idx}" class="midia-preview" style="display:${midUrl?'block':'none'}">${midUrl?`<img src="${midUrl}" alt="Preview" onerror="this.parentElement.style.display='none'">`:''}</div>
+          <div class="midia-url-row">
+            <select id="passo-midia-tipo-${idx}" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+              <option value="texto" ${midTipo==='texto'?'selected':''}>Sem mídia</option>
+              <option value="imagem" ${midTipo==='imagem'?'selected':''}>📸 Imagem</option>
+              <option value="video" ${midTipo==='video'?'selected':''}>🎥 Vídeo</option>
+            </select>
+            <input type="text" id="passo-midia-url-${idx}" value="${midUrl}" placeholder="URL preenchida automaticamente" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('passo-midia-url-${idx}','passo-midia-preview-${idx}')">
+          </div>
+          <div id="passo-midia-preview-${idx}" class="midia-preview" style="display:${midUrl?'block':'none'}">${midUrl?`<img src="${midUrl}" onerror="this.parentElement.style.display='none'">`:''}</div>
         </div>
-        <div style="font-size:11px;color:#aaa;margin-top:8px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code> para personalizar</div>
+        <div style="font-size:11px;color:#aaa;margin-top:8px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code></div>
       </div>
     </div>
   `);
