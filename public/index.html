@@ -67,15 +67,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a}
 .form-group textarea{resize:vertical;min-height:100px}
-.fluxo-item{border:0.5px solid #e8e2db;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.fluxo-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:20px;margin-bottom:14px}
+.fluxo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .fluxo-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f5f0ea}
 .fluxo-info{flex:1}
-.fluxo-nome{font-size:13px;font-weight:500}
-.fluxo-msg{font-size:11px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px}
+.fluxo-nome{font-size:14px;font-weight:500}
+.fluxo-tipo{font-size:11px;color:#888;margin-top:2px}
 .toggle{width:40px;height:22px;background:#e0dbd5;border-radius:20px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
 .toggle.on{background:#c9a87c}
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
 .toggle.on::after{transform:translateX(18px)}
+.fluxo-editor{border-top:0.5px solid #f0ece8;padding-top:14px;margin-top:4px}
+.fluxo-editor textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:100px;color:#1a1a1a}
+.fluxo-editor textarea:focus{border-color:#c9a87c}
+.fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
+.fluxo-hint{font-size:11px;color:#aaa}
+.fluxo-hint span{background:#f5f0ea;padding:2px 6px;border-radius:4px;font-family:monospace;color:#c9a87c}
 .qr-wrap{text-align:center;padding:20px}
 .qr-wrap img{max-width:220px;border-radius:12px;border:1px solid #e8e2db}
 .msg{display:flex;flex-direction:column;margin-bottom:8px}
@@ -92,6 +99,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .modal-title{font-size:16px;font-weight:500}
 .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
 .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none}
+.saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;margin-left:8px;opacity:0;transition:opacity .3s}
+.saved-badge.show{opacity:1}
 </style>
 </head>
 <body>
@@ -126,6 +135,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div class="main">
+    <!-- DASHBOARD -->
     <div class="page ativo" id="page-dashboard">
       <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visao geral do CRM</div></div></div>
       <div class="stats">
@@ -162,6 +172,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
+    <!-- WHATSAPP -->
     <div class="page" id="page-whatsapp">
       <div class="page-header"><div><div class="page-title">WhatsApp</div><div class="page-sub">Conexao via QR Code</div></div><button class="btn btn-outline btn-sm" onclick="verificarStatus()">Atualizar</button></div>
       <div class="card">
@@ -190,6 +201,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
+    <!-- CONTATOS -->
     <div class="page" id="page-contatos">
       <div class="page-header">
         <div><div class="page-title">Contatos</div><div class="page-sub">Base de clientes</div></div>
@@ -221,6 +233,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
+    <!-- CAMPANHAS -->
     <div class="page" id="page-campanhas">
       <div class="page-header">
         <div><div class="page-title">Campanhas</div><div class="page-sub">Disparos em massa</div></div>
@@ -229,11 +242,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="lista-campanhas">Carregando...</div>
     </div>
 
+    <!-- FLUXOS -->
     <div class="page" id="page-fluxos">
-      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Mensagens disparadas automaticamente</div></div></div>
+      <div class="page-header">
+        <div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative cada fluxo</div></div>
+      </div>
+      <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
+        💡 Use <strong>{nome}</strong> para personalizar com o primeiro nome da cliente. Clique em <strong>Salvar</strong> após editar.
+      </div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
 
+    <!-- CONVERSAS -->
     <div class="page" id="page-conversas">
       <div class="page-header"><div><div class="page-title">Conversas</div><div class="page-sub">Mensagens respondidas pela IA</div></div></div>
       <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
@@ -250,6 +270,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL CAMPANHA -->
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
@@ -401,16 +422,74 @@ async function disparoRapido(){
   if(cr.ok){const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST'})).json();if(d.ok)toast(d.mensagem);}
 }
 
+// ─── FLUXOS ───────────────────────────────────────────────────────────────────
+const FLUXO_ICONS = ['💛','🛒','🛒','📦','⭐'];
+
 async function carregarFluxos(){
-  const d=await(await fetch('/api/fluxos')).json();
-  const icons=['💛','🛒','🛒','📦','⭐'];
-  document.getElementById('lista-fluxos').innerHTML=d.fluxos.map((f,i)=>`<div class="fluxo-item"><div class="fluxo-icon">${icons[i]||'💬'}</div><div class="fluxo-info"><div class="fluxo-nome">${f.nome}</div><div class="fluxo-msg">${f.mensagem.substring(0,80)}...</div></div><div class="toggle ${f.ativo?'on':''}" onclick="toggleFluxo(${f.id},${f.ativo},this)"></div></div>`).join('');
+  const d = await(await fetch('/api/fluxos')).json();
+  if(!d.fluxos?.length){
+    document.getElementById('lista-fluxos').innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhum fluxo encontrado</div>';
+    return;
+  }
+  document.getElementById('lista-fluxos').innerHTML = d.fluxos.map((f,i) => `
+    <div class="fluxo-card" id="fluxo-card-${f.id}">
+      <div class="fluxo-header">
+        <div class="fluxo-icon">${FLUXO_ICONS[i]||'💬'}</div>
+        <div class="fluxo-info">
+          <div class="fluxo-nome">${f.nome}</div>
+          <div class="fluxo-tipo">${f.delay_horas > 0 ? 'Delay: '+f.delay_horas+'h após o gatilho' : 'Disparo imediato'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:${f.ativo?'#16a34a':'#aaa'}">${f.ativo?'Ativo':'Inativo'}</span>
+          <div class="toggle ${f.ativo?'on':''}" id="toggle-${f.id}" onclick="toggleFluxo(${f.id},this)"></div>
+        </div>
+      </div>
+      <div class="fluxo-editor">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em">Mensagem</label>
+          <span class="saved-badge" id="saved-${f.id}">✓ Salvo</span>
+        </div>
+        <textarea id="fluxo-msg-${f.id}" placeholder="Digite a mensagem...">${f.mensagem}</textarea>
+        <div class="fluxo-footer">
+          <div class="fluxo-hint">Use <span>{nome}</span> para o primeiro nome da cliente</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;align-items:center;gap:6px">
+              <label style="font-size:11px;color:#888">Delay (h):</label>
+              <input type="number" id="fluxo-delay-${f.id}" value="${f.delay_horas||0}" min="0" max="72" style="width:60px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="salvarFluxo(${f.id},'${f.nome}')">💾 Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
-async function toggleFluxo(id,ativo,el){
+async function toggleFluxo(id, el){
+  const ativo = el.classList.contains('on') ? 0 : 1;
   el.classList.toggle('on');
-  toast(ativo?'Fluxo pausado':'Fluxo ativado');
+  const statusTxt = el.previousElementSibling;
+  if(statusTxt) { statusTxt.textContent = ativo ? 'Ativo' : 'Inativo'; statusTxt.style.color = ativo ? '#16a34a' : '#aaa'; }
+  const msg = document.getElementById('fluxo-msg-'+id)?.value || '';
+  const delay = parseInt(document.getElementById('fluxo-delay-'+id)?.value || 0);
+  const nome = document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent || '';
+  await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay})});
+  toast(ativo ? 'Fluxo ativado ✅' : 'Fluxo pausado ⏸');
 }
+
+async function salvarFluxo(id, nome){
+  const msg = document.getElementById('fluxo-msg-'+id)?.value;
+  const delay = parseInt(document.getElementById('fluxo-delay-'+id)?.value || 0);
+  const ativo = document.getElementById('toggle-'+id)?.classList.contains('on') ? 1 : 0;
+  const fluxoNome = document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent || nome;
+  const d = await(await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:fluxoNome,mensagem:msg,ativo,delay_horas:delay})})).json();
+  if(d.ok){
+    const badge = document.getElementById('saved-'+id);
+    if(badge){ badge.classList.add('show'); setTimeout(()=>badge.classList.remove('show'),2500); }
+    toast('Mensagem salva! ✅');
+  } else toast('Erro ao salvar');
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 async function carregarConversas(){
   const d=await(await fetch('/api/conversas')).json();
