@@ -164,22 +164,75 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const { rows: camp } = await pool.query('SELECT * FROM campanhas WHERE id=$1', [req.params.id]);
     if (!camp.length) return res.json({ ok: false, erro: 'Nao encontrada' });
     const campanha = camp[0];
-    const contatos = await buscarPorSegmento(campanha.segmento);
+
+    // Busca quem JÁ recebeu essa campanha
+    const { rows: jaEnviados } = await pool.query(
+      "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'",
+      [campanha.id]
+    );
+    const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
+
+    // Busca todos os contatos do segmento
+    const todosContatos = await buscarPorSegmento(campanha.segmento);
+
+    // Filtra quem ainda NÃO recebeu
+    const contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
+
+    if (!contatos.length) {
+      await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
+      return res.json({ ok: true, total: 0, mensagem: 'Todos já receberam esta campanha!' });
+    }
+
     await pool.query('UPDATE campanhas SET status=$1, disparado_em=NOW() WHERE id=$2', ['disparando', campanha.id]);
-    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos` });
+    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos (${jaEnviadosSet.size} já receberam)` });
+
     let i = 0;
     const intervalo = (campanha.intervalo_segundos || 45) * 1000;
+
     async function enviarProximo() {
-      if (i >= contatos.length) { await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]); return; }
+      // Verifica se campanha foi pausada
+      const { rows: status } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
+      if (status[0]?.status === 'pausado') {
+        console.log(`Campanha ${campanha.id} pausada em ${i} de ${contatos.length}`);
+        return;
+      }
+
+      if (i >= contatos.length) {
+        await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
+        console.log(`Campanha ${campanha.id} concluida!`);
+        return;
+      }
+
       const c = contatos[i++];
-      const msg = campanha.mensagem.replace(/{nome}/g, (c.nome||'Cliente').split(' ')[0]).replace(/{email}/g, c.email||'').replace(/{cidade}/g, c.cidade||'');
-      const resultado = await wpp.enviarMensagem(c.telefone, msg);
-      const status = resultado.ok ? 'enviado' : 'erro';
-      await pool.query('INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())', [campanha.id, c.id, c.telefone, msg, status, resultado.erro||null]);
-      await pool.query('UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3', [resultado.ok?1:0, resultado.ok?0:1, campanha.id]);
-      await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
+      const msg = campanha.mensagem
+        .replace(/{nome}/g, (c.nome||'Cliente').split(' ')[0])
+        .replace(/{email}/g, c.email||'')
+        .replace(/{cidade}/g, c.cidade||'');
+
+      let resultado;
+      if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
+        resultado = await wpp.enviarMidia(c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
+      } else {
+        resultado = await wpp.enviarMensagem(c.telefone, msg);
+      }
+
+      const statusEnvio = resultado.ok ? 'enviado' : 'erro';
+      await pool.query(
+        'INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())',
+        [campanha.id, c.id, c.telefone, msg, statusEnvio, resultado.erro||null]
+      );
+      await pool.query(
+        'UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3',
+        [resultado.ok?1:0, resultado.ok?0:1, campanha.id]
+      );
+      await pool.query(
+        'UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1',
+        [c.id]
+      );
+
       setTimeout(enviarProximo, intervalo);
     }
+
     enviarProximo();
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
