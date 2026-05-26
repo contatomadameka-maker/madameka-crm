@@ -23,6 +23,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-outline:hover{border-color:#1a1a1a;color:#1a1a1a}
 .btn-danger{background:#fee2e2;color:#b91c1c;border:none}
 .btn-danger:hover{background:#fecaca}
+.btn-success{background:#dcfce7;color:#166534;border:none}
+.btn-success:hover{background:#bbf7d0}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-xs{padding:4px 8px;font-size:11px}
 .btn-full{width:100%}
@@ -68,18 +70,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge-recente{background:#f0fdf4;color:#15803d}
 .badge-freq{background:#fdf4ff;color:#7e22ce}
 .badge-aniv{background:#fff1f2;color:#be123c}
+.badge-disparando{background:#fef3c7;color:#92400e}
+.badge-pausado{background:#f3f4f6;color:#6b7280}
+.badge-concluido{background:#dcfce7;color:#166534}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a}
 .form-group textarea{resize:vertical;min-height:80px}
 .midia-box{background:#f9f6f2;border:1.5px solid #e8e2db;border-radius:10px;padding:14px;margin-top:10px}
-.midia-box-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.midia-box-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
 .midia-upload-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.midia-upload-status{font-size:11px;color:#888}
 .midia-url-row{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
-.midia-preview{margin-top:8px;border-radius:8px;overflow:hidden;max-width:180px}
+.midia-preview{margin-top:8px;max-width:180px}
 .midia-preview img{width:100%;border-radius:8px;border:1px solid #e8e2db}
 .fluxo-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:20px;margin-bottom:14px}
 .fluxo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
@@ -97,6 +102,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
 .saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;opacity:0;transition:opacity .3s}
 .saved-badge.show{opacity:1}
+.seguranca-bar{background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px}
+.seguranca-item{display:flex;align-items:center;gap:5px}
+.seguranca-dot{width:8px;height:8px;border-radius:50%}
 .seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
 .seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .seq-card-nome{font-size:14px;font-weight:500}
@@ -138,6 +146,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .msg-time{font-size:10px;color:#aaa;margin-top:2px;padding:0 4px}
 .pag{display:flex;gap:8px;align-items:center;margin-top:16px;justify-content:center}
 .pag-info{font-size:12px;color:#888}
+.camp-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:18px;margin-bottom:12px}
+.camp-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.camp-card-nome{font-size:14px;font-weight:500}
+.camp-card-meta{font-size:12px;color:#888;margin-bottom:8px}
+.camp-card-msg{background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px;margin-bottom:10px}
+.camp-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.progress-bar{height:4px;background:#e8e2db;border-radius:4px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;background:#c9a87c;border-radius:4px;transition:width .3s}
 </style>
 </head>
 <body>
@@ -167,6 +183,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="status-dot"></div>
       <span id="wpp-status-txt">Desconectado</span>
     </div>
+    <div style="margin:12px 20px 0;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:11px;color:#aaa">
+      <div>📨 Hoje: <span id="sb-envios">--</span>/200</div>
+      <div id="sb-horario" style="margin-top:4px"></div>
+    </div>
   </div>
 
   <div class="main">
@@ -174,6 +194,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- DASHBOARD -->
     <div class="page ativo" id="page-dashboard">
       <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visao geral do CRM</div></div></div>
+      <div id="seguranca-bar" class="seguranca-bar" style="display:none"></div>
       <div class="stats">
         <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">--</div><div class="stat-sub">contatos</div></div>
         <div class="stat"><div class="stat-lbl">VIP</div><div class="stat-val" id="s-vip">--</div><div class="stat-sub">R$500+</div></div>
@@ -185,6 +206,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div class="stat-lbl">🎂 Aniversariantes</div>
           <div class="stat-val" id="s-aniv">--</div>
           <div class="stat-sub" style="color:#be123c">hoje · ver lista</div>
+        </div>
+        <div class="stat" style="border-color:#fed7aa">
+          <div class="stat-lbl">📨 Enviados hoje</div>
+          <div class="stat-val" id="s-hoje">--</div>
+          <div class="stat-sub" style="color:#c2410c">limite: 200/dia</div>
         </div>
       </div>
       <div class="card">
@@ -203,14 +229,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="Aniversariante">Aniversariantes 🎂</option>
             </select>
           </div>
-          <div class="form-group"><label>Intervalo</label>
+          <div class="form-group"><label>Intervalo entre envios</label>
             <select id="aq-intervalo">
-              <option value="30">30s</option>
-              <option value="45" selected>45s (recomendado)</option>
-              <option value="60">60s</option>
-              <option value="90">90s</option>
+              <option value="45">45s</option>
+              <option value="60" selected>60s (recomendado)</option>
+              <option value="90">90s (seguro)</option>
+              <option value="120">2 min</option>
+              <option value="180">3 min</option>
+              <option value="240">4 min</option>
+              <option value="300">5 min (muito seguro)</option>
             </select>
           </div>
+        </div>
+        <div class="form-group"><label>Limite de contatos (0 = todos)</label>
+          <input type="number" id="aq-limite" value="0" min="0" placeholder="Ex: 50 para enviar só 50 hoje">
         </div>
         <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea></div>
         <div class="midia-box">
@@ -219,7 +251,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <input type="file" id="uf-aq" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-aq').click()">📤 Enviar arquivo</button>
             <button class="btn btn-danger btn-sm" onclick="limparMidia('aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">✕ Remover</button>
-            <span class="midia-upload-status" id="aq-upload-status"></span>
+            <span style="font-size:11px;color:#888" id="aq-upload-status"></span>
           </div>
           <div class="midia-url-row">
             <select id="aq-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
@@ -227,7 +259,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="imagem">📸 Imagem</option>
               <option value="video">🎥 Vídeo</option>
             </select>
-            <input type="text" id="aq-midia-url" placeholder="URL da mídia (preenchida automaticamente)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('aq-midia-url','aq-midia-preview')">
+            <input type="text" id="aq-midia-url" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('aq-midia-url','aq-midia-preview')">
           </div>
           <div id="aq-midia-preview" class="midia-preview" style="display:none"></div>
         </div>
@@ -252,12 +284,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Webhooks para configurar</div>
+        <div class="card-title">Webhooks</div>
         <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;margin-bottom:8px">
           <div style="color:#888;margin-bottom:4px">Yampi:</div><div id="webhook-yampi">--</div>
         </div>
         <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace">
-          <div style="color:#888;margin-bottom:4px">Popup do site:</div><div id="webhook-popup">--</div>
+          <div style="color:#888;margin-bottom:4px">Popup:</div><div id="webhook-popup">--</div>
         </div>
       </div>
     </div>
@@ -311,7 +343,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="page" id="page-fluxos">
       <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative</div></div></div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        💡 Use <strong>{nome}</strong> para personalizar. Adicione imagem ou vídeo. Clique em <strong>Salvar</strong> após editar.
+        💡 Use <strong>{nome}</strong> para personalizar. Clique em <strong>Salvar</strong> após editar.
       </div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
@@ -338,7 +370,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div class="card" id="conversa-ativa" style="display:none">
           <div class="card-title" id="conv-nome">Selecione uma conversa</div>
-          <div id="msgs-conversa" style="max-height:400px;overflow-y:auto;margin-bottom:12px"></div>
+          <div id="msgs-conversa" style="max-height:400px;overflow-y:auto"></div>
         </div>
       </div>
     </div>
@@ -349,7 +381,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">×</button></div>
-    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Terra Nova"></div>
+    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Namorados"></div>
     <div class="form-row">
       <div class="form-group"><label>Segmento</label>
         <select id="c-seg">
@@ -364,14 +396,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="Aniversariante">Aniversariantes 🎂</option>
         </select>
       </div>
-      <div class="form-group"><label>Intervalo</label>
-        <select id="c-intervalo">
-          <option value="30">30s</option>
-          <option value="45" selected>45s</option>
-          <option value="60">60s</option>
-          <option value="90">90s</option>
-        </select>
+      <div class="form-group"><label>Limite de contatos (0 = todos)</label>
+        <input type="number" id="c-limite" value="0" min="0" placeholder="0 = sem limite">
       </div>
+    </div>
+    <div class="form-group"><label>Intervalo entre envios</label>
+      <select id="c-intervalo">
+        <option value="45">45s</option>
+        <option value="60" selected>60s (recomendado)</option>
+        <option value="90">90s (seguro)</option>
+        <option value="120">2 min</option>
+        <option value="180">3 min</option>
+        <option value="240">4 min</option>
+        <option value="300">5 min (muito seguro)</option>
+      </select>
     </div>
     <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
     <div class="midia-box">
@@ -379,8 +417,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="midia-upload-row">
         <input type="file" id="uf-c" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-c').click()">📤 Enviar arquivo</button>
-            <button class="btn btn-danger btn-sm" onclick="limparMidia('c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">✕ Remover</button>
-        <span class="midia-upload-status" id="c-upload-status"></span>
+        <button class="btn btn-danger btn-sm" onclick="limparMidia('c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">✕ Remover</button>
+        <span style="font-size:11px;color:#888" id="c-upload-status"></span>
       </div>
       <div class="midia-url-row">
         <select id="c-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
@@ -467,6 +505,8 @@ function inicializar(){
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
   setInterval(verificarStatus,30000);
+  setInterval(carregarStats,60000);
+  setInterval(carregarCampanhas,30000);
 }
 
 function irPara(p,el){
@@ -485,53 +525,45 @@ function irParaSegmento(seg){
   carregarContatos();
 }
 
-// ─── UPLOAD MÍDIA ─────────────────────────────────────────────────────────────
-async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
-  const file = input.files[0];
-  if (!file) return;
-  const status = document.getElementById(statusId);
-  status.textContent = '⏳ Enviando...';
-  const fd = new FormData();
-  fd.append('arquivo', file);
-  try {
-    const r = await fetch('/api/upload', { method: 'POST', body: fd });
-    const d = await r.json();
-    if (d.ok) {
-      document.getElementById(urlId).value = d.url;
-      document.getElementById(tipoId).value = d.tipo;
-      status.textContent = '✅ Enviado!';
-      status.style.color = '#16a34a';
-      previewMidia(urlId, previewId);
-      setTimeout(() => { status.textContent = ''; }, 3000);
-    } else {
-      status.textContent = '❌ Erro: ' + d.erro;
-      status.style.color = '#dc2626';
-    }
-  } catch(e) {
-    status.textContent = '❌ Erro no upload';
-    status.style.color = '#dc2626';
-  }
-  input.value = '';
+// ─── UPLOAD ───────────────────────────────────────────────────────────────────
+async function fazerUpload(input,tipoId,urlId,previewId,statusId){
+  const file=input.files[0];if(!file)return;
+  const status=document.getElementById(statusId);
+  status.textContent='⏳ Enviando...';status.style.color='#888';
+  const fd=new FormData();fd.append('arquivo',file);
+  try{
+    const r=await fetch('/api/upload',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.ok){
+      document.getElementById(urlId).value=d.url;
+      document.getElementById(tipoId).value=d.tipo;
+      status.textContent='✅ Enviado!';status.style.color='#16a34a';
+      previewMidia(urlId,previewId);
+      setTimeout(()=>status.textContent='',3000);
+    } else {status.textContent='❌ '+d.erro;status.style.color='#dc2626';}
+  } catch(e){status.textContent='❌ Erro no upload';status.style.color='#dc2626';}
+  input.value='';
 }
 
 function limparMidia(tipoId,urlId,previewId,statusId){
-  document.getElementById(tipoId).value="texto";
-  document.getElementById(urlId).value="";
-  document.getElementById(previewId).style.display="none";
-  document.getElementById(previewId).innerHTML="";
-  if(statusId){var s=document.getElementById(statusId);if(s)s.textContent="";}
+  document.getElementById(tipoId).value='texto';
+  document.getElementById(urlId).value='';
+  document.getElementById(previewId).style.display='none';
+  document.getElementById(previewId).innerHTML='';
+  const s=document.getElementById(statusId);if(s)s.textContent='';
 }
 
-function previewMidia(urlId, previewId) {
-  const url = document.getElementById(urlId)?.value;
-  const preview = document.getElementById(previewId);
-  if (!preview) return;
-  if (url && /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)) {
-    preview.style.display = 'block';
-    preview.innerHTML = `<img src="${url}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
-  } else { preview.style.display = 'none'; }
+function previewMidia(urlId,previewId){
+  const url=document.getElementById(urlId)?.value;
+  const preview=document.getElementById(previewId);
+  if(!preview)return;
+  if(url&&/\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)){
+    preview.style.display='block';
+    preview.innerHTML=`<img src="${url}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
+  } else preview.style.display='none';
 }
 
+// ─── STATS ────────────────────────────────────────────────────────────────────
 async function carregarStats(){
   const d=await(await fetch('/api/contatos/stats')).json();
   if(!d.ok)return;
@@ -542,6 +574,21 @@ async function carregarStats(){
   document.getElementById('s-leads').textContent=d.leads.toLocaleString('pt-BR');
   document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
   document.getElementById('s-aniv').textContent=d.aniversariantes||0;
+  document.getElementById('s-hoje').textContent=d.enviosHoje||0;
+  document.getElementById('sb-envios').textContent=d.enviosHoje||0;
+  const hora=new Date().getHours();
+  const horarioOk=hora>=9&&hora<20;
+  document.getElementById('sb-horario').textContent=horarioOk?'🟢 Horário ok':'🔴 Fora do horário';
+  // Barra de segurança
+  const bar=document.getElementById('seguranca-bar');
+  const pct=Math.round(((d.enviosHoje||0)/200)*100);
+  if((d.enviosHoje||0)>0){
+    bar.style.display='flex';
+    bar.innerHTML=`<span style="font-weight:500">📊 Segurança:</span>
+      <div class="seguranca-item"><div class="seguranca-dot" style="background:${horarioOk?'#16a34a':'#dc2626'}"></div>${horarioOk?'Horário permitido':'Fora do horário (9h-20h)'}</div>
+      <div class="seguranca-item"><div class="seguranca-dot" style="background:${pct<80?'#16a34a':'#dc2626'}"></div>${d.enviosHoje||0}/200 enviados hoje (${pct}%)</div>
+      <div style="margin-left:auto;font-size:11px;color:#888">${200-(d.enviosHoje||0)} restantes hoje</div>`;
+  }
 }
 
 async function verificarStatus(){
@@ -562,12 +609,13 @@ async function carregarQR(){
 }
 async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/api/wpp/desconectar',{method:'POST'});toast('Desconectado!');verificarStatus();}
 
+// ─── CONTATOS ─────────────────────────────────────────────────────────────────
 async function carregarContatos(){
   const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
   const tb=document.getElementById('tabela-contatos');
   if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
   const bm={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
-  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${bm[c.segmento]||'inativa'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
+  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome||'--'}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${bm[c.segmento]||'inativa'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
   document.getElementById('pag-info').textContent=`${paginaAtual*POR_PAGINA+1}-${Math.min((paginaAtual+1)*POR_PAGINA,d.total)} de ${d.total.toLocaleString('pt-BR')}`;
 }
 function filtrarContatos(v){buscaAtual=v;paginaAtual=0;carregarContatos();}
@@ -583,23 +631,30 @@ async function importarCSV(input){
   input.value='';
 }
 
+// ─── CAMPANHAS ────────────────────────────────────────────────────────────────
 async function carregarCampanhas(){
   const d=await(await fetch('/api/campanhas')).json();
   const wrap=document.getElementById('lista-campanhas');
   if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
-  wrap.innerHTML=d.campanhas.map(c=>`
-    <div class="card">
-      <div class="card-title">${c.nome}
-        <div style="display:flex;gap:8px;align-items:center">
-          ${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">▶ Disparar</button>`:''}
-          ${c.status==='disparando'?`<button class="btn btn-danger btn-sm" onclick="pausarCampanha(${c.id})">⏹ Parar</button>`:''}
-          <span class="badge badge-${c.status==='concluido'?'ativa':c.status==='disparando'?'vip':'inativa'}">${c.status}</span>
-        </div>
+  wrap.innerHTML=d.campanhas.map(c=>{
+    const pct=c.total_envios>0?Math.min(100,Math.round((c.total_envios/(c.total_envios+1))*100)):0;
+    const statusBadge={rascunho:'inativa',disparando:'disparando',pausado:'pausado',concluido:'concluido'}[c.status]||'inativa';
+    return `<div class="camp-card">
+      <div class="camp-card-header">
+        <div class="camp-card-nome">${c.nome}</div>
+        <span class="badge badge-${statusBadge}">${c.status}</span>
       </div>
-      <div style="font-size:13px;color:#888;margin-bottom:8px">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s · Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div>
-      <div style="background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px">${c.mensagem.substring(0,150)}${c.mensagem.length>150?'...':''}</div>
-    </div>
-  `).join('');
+      <div class="camp-card-meta">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s · Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div>
+      <div class="camp-card-msg">${c.mensagem.substring(0,120)}${c.mensagem.length>120?'...':''}</div>
+      ${c.status==='disparando'?`<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`:''}
+      <div class="camp-acoes" style="margin-top:10px">
+        ${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">▶ Disparar</button>`:''}
+        ${c.status==='disparando'?`<button class="btn btn-danger btn-sm" onclick="pausarCampanha(${c.id})">⏹ Parar</button>`:''}
+        ${c.status==='pausado'?`<button class="btn btn-success btn-sm" onclick="retomarCampanha(${c.id})">▶ Retomar</button>`:''}
+        ${c.status==='concluido'?`<button class="btn btn-outline btn-sm" onclick="retomarCampanha(${c.id})">🔄 Disparar novamente</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function criarCampanha(){
@@ -607,18 +662,21 @@ async function criarCampanha(){
   const mensagem=document.getElementById('c-msg').value;
   const segmento=document.getElementById('c-seg').value;
   const intervalo=document.getElementById('c-intervalo').value;
+  const limite=document.getElementById('c-limite').value;
   const midTipo=document.getElementById('c-midia-tipo').value;
   const midUrl=document.getElementById('c-midia-url').value;
   if(!nome||!mensagem){toast('Preencha todos os campos');return;}
-  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
+  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
 }
 
 async function dispararCampanha(id){
   if(!confirm('Disparar esta campanha?'))return;
   toast('Disparando...');
-  const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST'})).json();
-  if(d.ok){toast(d.mensagem);carregarCampanhas();}
+  const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
+  if(d.ok)toast(d.mensagem);
+  else toast('❌ '+d.erro);
+  carregarCampanhas();
 }
 
 async function pausarCampanha(id){
@@ -627,15 +685,29 @@ async function pausarCampanha(id){
   toast('Campanha pausada!');carregarCampanhas();
 }
 
+async function retomarCampanha(id){
+  toast('Retomando...');
+  const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
+  if(d.ok)toast(d.mensagem);
+  else toast('❌ '+d.erro);
+  carregarCampanhas();
+}
+
 async function disparoRapido(){
   const msg=document.getElementById('aq-msg').value;
   const seg=document.getElementById('aq-seg').value;
   const intervalo=document.getElementById('aq-intervalo').value;
+  const limite=document.getElementById('aq-limite').value;
   const midTipo=document.getElementById('aq-midia-tipo').value;
   const midUrl=document.getElementById('aq-midia-url').value;
   if(!msg){toast('Escreva a mensagem');return;}
-  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
-  if(cr.ok){const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST'})).json();if(d.ok)toast(d.mensagem);}
+  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl})})).json();
+  if(cr.ok){
+    const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
+    if(d.ok)toast(d.mensagem);
+    else toast('❌ '+d.erro);
+    carregarCampanhas();
+  }
 }
 
 // ─── FLUXOS ───────────────────────────────────────────────────────────────────
@@ -663,27 +735,25 @@ async function carregarFluxos(){
           <div class="midia-box-title">📎 Mídia opcional</div>
           <div class="midia-upload-row">
             <input type="file" id="uf-f${f.id}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">
-            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-f${f.id}').click()">📤 Enviar arquivo</button>
-            <button class="btn btn-danger btn-sm" onclick="limparMidia('fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">✕ Remover</button>
-            <span class="midia-upload-status" id="fluxo-upload-status-${f.id}"></span>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-f${f.id}').click()">📤 Enviar</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">✕</button>
+            <span style="font-size:11px;color:#888" id="fluxo-upload-status-${f.id}"></span>
           </div>
           <div class="midia-url-row">
-            <select id="fluxo-midia-tipo-${f.id}" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+            <select id="fluxo-midia-tipo-${f.id}" style="width:120px;border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none">
               <option value="texto" ${(!f.midia_tipo||f.midia_tipo==='texto')?'selected':''}>Sem mídia</option>
               <option value="imagem" ${f.midia_tipo==='imagem'?'selected':''}>📸 Imagem</option>
               <option value="video" ${f.midia_tipo==='video'?'selected':''}>🎥 Vídeo</option>
             </select>
-            <input type="text" id="fluxo-midia-url-${f.id}" value="${f.midia_url||''}" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}')">
+            <input type="text" id="fluxo-midia-url-${f.id}" value="${f.midia_url||''}" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:6px 12px;font-size:13px;outline:none" oninput="previewMidia('fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}')">
           </div>
           <div id="fluxo-midia-preview-${f.id}" class="midia-preview" style="display:${f.midia_url?'block':'none'}">${f.midia_url?`<img src="${f.midia_url}" onerror="this.parentElement.style.display='none'">`:''}</div>
         </div>
         <div class="fluxo-footer">
           <div style="font-size:11px;color:#aaa">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code></div>
           <div style="display:flex;gap:8px;align-items:center">
-            <div style="display:flex;align-items:center;gap:6px">
-              <label style="font-size:11px;color:#888">Delay (h):</label>
-              <input type="number" id="fluxo-delay-${f.id}" value="${f.delay_horas||0}" min="0" max="720" style="width:65px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
-            </div>
+            <label style="font-size:11px;color:#888">Delay (h):</label>
+            <input type="number" id="fluxo-delay-${f.id}" value="${f.delay_horas||0}" min="0" max="720" style="width:65px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
             <button class="btn btn-gold btn-sm" onclick="salvarFluxo(${f.id})">💾 Salvar</button>
           </div>
         </div>
@@ -726,10 +796,7 @@ const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'30min',horas:0.5},{labe
 async function carregarSequencias(){
   const d=await(await fetch('/api/sequencias')).json();
   const wrap=document.getElementById('lista-sequencias');
-  if(!d.sequencias?.length){
-    wrap.innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';
-    return;
-  }
+  if(!d.sequencias?.length){wrap.innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';return;}
   wrap.innerHTML=d.sequencias.map(s=>`
     <div class="seq-card">
       <div class="seq-card-header">
@@ -816,17 +883,17 @@ function adicionarPasso(dados){
           <div class="midia-box-title">📎 Mídia opcional</div>
           <div class="midia-upload-row">
             <input type="file" id="uf-p${idx}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">
-            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-p${idx}').click()">📤 Enviar arquivo</button>
-            <button class="btn btn-danger btn-sm" onclick="limparMidia('passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">✕ Remover</button>
-            <span class="midia-upload-status" id="passo-upload-status-${idx}"></span>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-p${idx}').click()">📤 Enviar</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">✕</button>
+            <span style="font-size:11px;color:#888" id="passo-upload-status-${idx}"></span>
           </div>
           <div class="midia-url-row">
-            <select id="passo-midia-tipo-${idx}" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
+            <select id="passo-midia-tipo-${idx}" style="width:120px;border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none">
               <option value="texto" ${midTipo==='texto'?'selected':''}>Sem mídia</option>
               <option value="imagem" ${midTipo==='imagem'?'selected':''}>📸 Imagem</option>
               <option value="video" ${midTipo==='video'?'selected':''}>🎥 Vídeo</option>
             </select>
-            <input type="text" id="passo-midia-url-${idx}" value="${midUrl}" placeholder="URL preenchida automaticamente" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('passo-midia-url-${idx}','passo-midia-preview-${idx}')">
+            <input type="text" id="passo-midia-url-${idx}" value="${midUrl}" placeholder="URL automática" style="border:1.5px solid #e8e2db;border-radius:8px;padding:6px 12px;font-size:13px;outline:none" oninput="previewMidia('passo-midia-url-${idx}','passo-midia-preview-${idx}')">
           </div>
           <div id="passo-midia-preview-${idx}" class="midia-preview" style="display:${midUrl?'block':'none'}">${midUrl?`<img src="${midUrl}" onerror="this.parentElement.style.display='none'">`:''}</div>
         </div>
@@ -898,6 +965,7 @@ async function deletarSequencia(id){
   toast('Excluída!');carregarSequencias();
 }
 
+// ─── CONVERSAS ────────────────────────────────────────────────────────────────
 async function carregarConversas(){
   const d=await(await fetch('/api/conversas')).json();
   const lista=document.getElementById('lista-conversas');
@@ -911,7 +979,7 @@ async function abrirConversa(tel,nome){
   document.getElementById('msgs-conversa').innerHTML=d.mensagens.map(m=>`<div class="msg ${m.de==='cliente'?'cliente':'bot'}"><div class="bubble">${m.mensagem.replace(/\n/g,'<br>')}</div><div class="msg-time">${m.de==='bot'?'IA · ':''} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
 }
 
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000);}
 </script>
 </body>
 </html>
