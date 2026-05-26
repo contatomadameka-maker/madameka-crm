@@ -46,14 +46,16 @@ async function init() {
       criado_em TIMESTAMP DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS sequencia_passos (
-      id SERIAL PRIMARY KEY,
-      sequencia_id INTEGER REFERENCES sequencias(id) ON DELETE CASCADE,
-      ordem INTEGER NOT NULL,
-      mensagem TEXT NOT NULL,
-      delay_horas INTEGER DEFAULT 0,
-      delay_label TEXT DEFAULT 'Imediato',
-      criado_em TIMESTAMP DEFAULT NOW()
-    );
+  id SERIAL PRIMARY KEY,
+  sequencia_id INTEGER REFERENCES sequencias(id) ON DELETE CASCADE,
+  ordem INTEGER NOT NULL,
+  mensagem TEXT NOT NULL,
+  delay_horas INTEGER DEFAULT 0,
+  delay_label TEXT DEFAULT 'Imediato',
+  midia_tipo TEXT DEFAULT 'texto',
+  midia_url TEXT DEFAULT '',
+  criado_em TIMESTAMP DEFAULT NOW()
+);
     CREATE TABLE IF NOT EXISTS sequencia_execucoes (
       id SERIAL PRIMARY KEY,
       sequencia_id INTEGER,
@@ -75,6 +77,10 @@ async function init() {
     await ins('Carrinho Abandonado 12h','carrinho_abandonado_2','Oi {nome}!\n\nUltima chance! Leve 2+ pecas com cupom *MADAME8* = 8% off\n\nmadameka.com.br/cart',12);
     await ins('Pos-compra','pos_compra','Oi {nome}!\n\nPedido confirmado! Obrigada por comprar na Madame Ka! Seu pedido esta sendo preparado com carinho',0);
     await ins('Review 7 dias','review','Oi {nome}!\n\nJa chegou seu pedido? Conta pra gente como foi!',168);
+    await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
+    await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
+    await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
+    await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
   }
 }
 

@@ -29,11 +29,42 @@ async function enviarMensagem(telefone, mensagem) {
     let num = telefone.replace(/\D/g, '');
     if (!num.startsWith('55')) num = '55' + num;
     const { data } = await axios.post(`${ZAPI_BASE}/send-text`, {
-      phone: num,
-      message: mensagem
+      phone: num, message: mensagem
     }, { headers: HEADERS });
     return { ok: true, data };
   } catch (e) { return { ok: false, erro: e.message }; }
+}
+
+async function enviarImagem(telefone, imageUrl, legenda) {
+  try {
+    let num = telefone.replace(/\D/g, '');
+    if (!num.startsWith('55')) num = '55' + num;
+    const { data } = await axios.post(`${ZAPI_BASE}/send-image`, {
+      phone: num,
+      image: imageUrl,
+      caption: legenda || ''
+    }, { headers: HEADERS });
+    return { ok: true, data };
+  } catch (e) { return { ok: false, erro: e.message }; }
+}
+
+async function enviarVideo(telefone, videoUrl, legenda) {
+  try {
+    let num = telefone.replace(/\D/g, '');
+    if (!num.startsWith('55')) num = '55' + num;
+    const { data } = await axios.post(`${ZAPI_BASE}/send-video`, {
+      phone: num,
+      video: videoUrl,
+      caption: legenda || ''
+    }, { headers: HEADERS });
+    return { ok: true, data };
+  } catch (e) { return { ok: false, erro: e.message }; }
+}
+
+async function enviarMidia(telefone, tipo, url, legenda) {
+  if (tipo === 'imagem') return enviarImagem(telefone, url, legenda);
+  if (tipo === 'video') return enviarVideo(telefone, url, legenda);
+  return enviarMensagem(telefone, legenda || url);
 }
 
 async function desconectar() {
@@ -43,4 +74,4 @@ async function desconectar() {
   } catch (e) { return { ok: false, erro: e.message }; }
 }
 
-module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, desconectar };
+module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, enviarImagem, enviarVideo, enviarMidia, desconectar };
