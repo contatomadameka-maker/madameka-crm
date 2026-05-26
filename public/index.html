@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .page-title{font-size:20px;font-weight:500}
 .page-sub{font-size:13px;color:#888;margin-top:2px}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px}
 .stat{background:#fff;border-radius:12px;padding:16px;border:0.5px solid #e8e2db}
 .stat-lbl{font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
 .stat-val{font-size:24px;font-weight:500}
@@ -92,32 +92,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .fluxo-hint span{background:#f5f0ea;padding:2px 6px;border-radius:4px;font-family:monospace;color:#c9a87c}
 .saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;margin-left:8px;opacity:0;transition:opacity .3s}
 .saved-badge.show{opacity:1}
-
-/* ── SEQUÊNCIAS ── */
-.seq-builder{background:#fff;border-radius:14px;border:0.5px solid #e8e2db;overflow:hidden}
-.seq-builder-header{padding:20px;border-bottom:0.5px solid #f0ece8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.seq-builder-form{padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;border-bottom:0.5px solid #f0ece8}
-@media(max-width:800px){.seq-builder-form{grid-template-columns:1fr}}
-.seq-passos{padding:20px}
-.seq-passo{border:1.5px solid #e8e2db;border-radius:12px;margin-bottom:12px;overflow:hidden;position:relative}
-.seq-passo-header{background:#f5f0ea;padding:12px 16px;display:flex;align-items:center;gap:10px}
-.seq-passo-num{width:28px;height:28px;border-radius:50%;background:#c9a87c;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.seq-passo-title{flex:1;font-size:13px;font-weight:500}
-.seq-passo-body{padding:14px 16px}
-.seq-passo-delay{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.delay-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #e8e2db;background:#fff;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
-.delay-btn.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
-.delay-custom{display:flex;align-items:center;gap:6px;margin-top:8px}
-.delay-custom input{width:80px;border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none}
-.delay-custom select{border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit}
-.seq-passo textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:90px}
-.seq-passo textarea:focus{border-color:#c9a87c}
-.seq-passo-footer{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid #f5f0ea}
-.seq-connector{text-align:center;padding:6px 0;color:#c9a87c;font-size:20px;position:relative}
-.seq-connector::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:#e8e2db;z-index:0}
-.seq-connector span{position:relative;z-index:1;background:#f5f0ea;padding:0 8px}
-.seq-add-btn{border:2px dashed #e8e2db;border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:#888;transition:all .2s;margin-top:8px}
-.seq-add-btn:hover{border-color:#c9a87c;color:#c9a87c;background:#fffbf5}
+.midia-section{background:#f9f6f2;border:1.5px solid #e8e2db;border-radius:8px;padding:12px;margin-top:10px}
+.midia-section-title{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.midia-preview{margin-top:8px;border-radius:8px;overflow:hidden;max-width:200px}
+.midia-preview img{width:100%;border-radius:8px}
 .seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
 .seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .seq-card-nome{font-size:14px;font-weight:500}
@@ -131,17 +109,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gatilho-compra{background:#f0fdf4;color:#15803d}
 .gatilho-inativa{background:#fdf4ff;color:#7e22ce}
 .gatilho-manual{background:#f3f4f6;color:#6b7280}
-
+.seq-passo{border:1.5px solid #e8e2db;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.seq-passo-header{background:#f5f0ea;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.seq-passo-num{width:28px;height:28px;border-radius:50%;background:#c9a87c;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.seq-passo-title{flex:1;font-size:13px;font-weight:500}
+.seq-passo-body{padding:14px 16px}
+.seq-passo-delay{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.delay-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #e8e2db;background:#fff;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.delay-btn.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
+.seq-passo textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:80px}
+.seq-passo textarea:focus{border-color:#c9a87c}
+.seq-connector{text-align:center;padding:4px 0;color:#c9a87c;font-size:18px}
+.seq-add-btn{border:2px dashed #e8e2db;border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:#888;transition:all .2s;margin-top:8px}
+.seq-add-btn:hover{border-color:#c9a87c;color:#c9a87c;background:#fffbf5}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-lg{max-width:780px}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .modal-title{font-size:16px;font-weight:500}
 .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
-.modal-lg{max-width:760px}
 .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none}
-.qr-wrap{text-align:center;padding:20px}
-.qr-wrap img{max-width:220px;border-radius:12px;border:1px solid #e8e2db}
 .msg{display:flex;flex-direction:column;margin-bottom:8px}
 .msg.cliente .bubble{background:#f0ece8;border-radius:0 10px 10px 10px;align-self:flex-start}
 .msg.bot .bubble{background:#c9a87c;color:#fff;border-radius:10px 0 10px 10px;align-self:flex-end}
@@ -192,7 +180,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="stat"><div class="stat-lbl">Inativas</div><div class="stat-val" id="s-inativas">--</div><div class="stat-sub">+60 dias</div></div>
         <div class="stat"><div class="stat-lbl">Leads</div><div class="stat-val" id="s-leads">--</div><div class="stat-sub">nunca compraram</div></div>
         <div class="stat"><div class="stat-lbl">Disparados</div><div class="stat-val" id="s-disparos">--</div><div class="stat-sub">mensagens</div></div>
-        <div class="stat" style="cursor:pointer" onclick="filtrarSegmento('Aniversariante')"><div class="stat-lbl">🎂 Aniversariantes</div><div class="stat-val" id="s-aniv">--</div><div class="stat-sub">hoje</div></div>
+        <div class="stat" style="cursor:pointer;border-color:#fca5a5" onclick="irParaSegmento('Aniversariante')">
+          <div class="stat-lbl">🎂 Aniversariantes</div>
+          <div class="stat-val" id="s-aniv">--</div>
+          <div class="stat-sub" style="color:#be123c">hoje · clique para ver</div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title">Disparo Rapido</div>
@@ -207,7 +199,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="Em Risco">Em Risco (45-90 dias)</option>
               <option value="Compradora Inativa">Compradora Inativa</option>
               <option value="Lead">Lead</option>
-              <option value="Aniversariante">Aniversariantes hoje</option>
+              <option value="Aniversariante">Aniversariantes hoje 🎂</option>
             </select>
           </div>
           <div class="form-group"><label>Intervalo</label>
@@ -220,7 +212,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
         <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea></div>
-        <button class="btn btn-gold" onclick="disparoRapido()">Disparar agora</button>
+        <div class="midia-section">
+          <div class="midia-section-title">📎 Mídia opcional (imagem ou vídeo)</div>
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Tipo</label>
+              <select id="aq-midia-tipo">
+                <option value="texto">Sem mídia</option>
+                <option value="imagem">📸 Imagem</option>
+                <option value="video">🎥 Vídeo</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>URL da mídia</label>
+              <input type="text" id="aq-midia-url" placeholder="https://..." oninput="previewMidia('aq-midia-url','aq-midia-preview')">
+            </div>
+          </div>
+          <div id="aq-midia-preview" class="midia-preview" style="display:none"></div>
+        </div>
+        <button class="btn btn-gold" style="margin-top:14px" onclick="disparoRapido()">Disparar agora</button>
       </div>
     </div>
 
@@ -235,9 +245,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <button class="btn btn-outline btn-sm" onclick="carregarQR()">Ver QR Code</button>
           <button class="btn btn-danger btn-sm" onclick="desconectar()">Desconectar</button>
         </div>
-        <div id="qr-wrap" class="qr-wrap" style="display:none">
+        <div id="qr-wrap" style="text-align:center;padding:20px;display:none">
           <p style="margin-bottom:12px;font-size:13px;color:#888">Escaneie com o WhatsApp</p>
-          <img id="qr-img" src="" alt="QR Code">
+          <img id="qr-img" src="" alt="QR Code" style="max-width:220px;border-radius:12px;border:1px solid #e8e2db">
         </div>
       </div>
       <div class="card">
@@ -263,7 +273,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="card">
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
           <input type="text" placeholder="Buscar..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
-          <select onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+          <select id="seg-filtro" onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
             <option value="todos">Todos</option>
             <option value="VIP">VIP</option>
             <option value="Alta Frequencia">Alta Frequência</option>
@@ -300,7 +310,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="page" id="page-fluxos">
       <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative cada fluxo</div></div></div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        💡 Use <strong>{nome}</strong> para personalizar. Clique em <strong>Salvar</strong> após editar.
+        💡 Use <strong>{nome}</strong> para personalizar. Adicione imagem ou vídeo opcionalmente. Clique em <strong>Salvar</strong> após editar.
       </div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
@@ -312,7 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequência</button>
       </div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        ⚡ Crie funis com várias mensagens encadeadas. Cada passo tem delay configurável. Use <strong>{nome}</strong> para personalizar.
+        ⚡ Crie funis com várias mensagens encadeadas. Cada passo tem delay e mídia configuráveis. Use <strong>{nome}</strong> para personalizar.
       </div>
       <div id="lista-sequencias">Carregando...</div>
     </div>
@@ -331,7 +341,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -351,7 +360,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="Em Risco">Em Risco</option>
           <option value="Compradora Inativa">Compradora Inativa</option>
           <option value="Lead">Lead</option>
-          <option value="Aniversariante">Aniversariantes</option>
+          <option value="Aniversariante">Aniversariantes 🎂</option>
         </select>
       </div>
       <div class="form-group"><label>Intervalo (segundos)</label>
@@ -364,7 +373,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
     <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
-    <div style="display:flex;gap:10px">
+    <div class="midia-section">
+      <div class="midia-section-title">📎 Mídia opcional</div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
+          <select id="c-midia-tipo">
+            <option value="texto">Sem mídia</option>
+            <option value="imagem">📸 Imagem</option>
+            <option value="video">🎥 Vídeo</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
+          <input type="text" id="c-midia-url" placeholder="https://..." oninput="previewMidia('c-midia-url','c-midia-preview')">
+        </div>
+      </div>
+      <div id="c-midia-preview" class="midia-preview" style="display:none"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px">
       <button class="btn btn-primary" onclick="criarCampanha()">Criar campanha</button>
       <button class="btn btn-outline" onclick="document.getElementById('modal-campanha').classList.remove('open')">Cancelar</button>
     </div>
@@ -378,10 +403,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="modal-title" id="modal-seq-titulo">Nova Sequência</div>
       <button class="modal-close" onclick="fecharModalSeq()">×</button>
     </div>
-
     <div class="form-row">
       <div class="form-group"><label>Nome da sequência</label><input type="text" id="seq-nome" placeholder="Ex: Recuperação Carrinho"></div>
-      <div class="form-group"><label>Objetivo / Gatilho</label>
+      <div class="form-group"><label>Gatilho</label>
         <select id="seq-gatilho">
           <option value="carrinho_abandonado">🛒 Carrinho Abandonado</option>
           <option value="boas_vindas">💛 Boas-vindas (Popup)</option>
@@ -404,18 +428,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="Lead">Lead</option>
         </select>
       </div>
-      <div class="form-group"><label>Descrição (opcional)</label><input type="text" id="seq-desc" placeholder="Ex: Funil de 3 dias para recuperar carrinho"></div>
+      <div class="form-group"><label>Descrição (opcional)</label><input type="text" id="seq-desc" placeholder="Ex: Funil 3 dias carrinho"></div>
     </div>
-
     <div style="border-top:0.5px solid #f0ece8;margin:8px -24px;padding:0 24px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px">
       <div style="font-size:13px;font-weight:500">Mensagens da sequência</div>
-      <div style="font-size:11px;color:#888">Use {nome} para personalizar</div>
+      <div style="font-size:11px;color:#888">Use {nome} · Cada passo tem delay e mídia próprios</div>
     </div>
-
     <div id="seq-passos-container"></div>
     <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
-
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-primary" onclick="salvarSequencia()">💾 Salvar sequência</button>
       <button class="btn btn-outline" onclick="fecharModalSeq()">Cancelar</button>
@@ -429,17 +450,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 let paginaAtual=0,segmentoAtual='todos',buscaAtual='';
 const POR_PAGINA=50;
 let seqEditandoId=null;
-let seqPassos=[];
+let passoCount=0;
 
 async function entrar(){
   const senha=document.getElementById('inp-senha').value;
   const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha})});
   const d=await r.json();
-  if(d.ok){
-    document.getElementById('login').style.display='none';
-    document.getElementById('app').classList.add('show');
-    inicializar();
-  } else document.getElementById('login-erro').style.display='block';
+  if(d.ok){document.getElementById('login').style.display='none';document.getElementById('app').classList.add('show');inicializar();}
+  else document.getElementById('login-erro').style.display='block';
 }
 
 function inicializar(){
@@ -456,6 +474,16 @@ function irPara(p,el){
   el.classList.add('ativo');
 }
 
+function irParaSegmento(seg){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('ativo'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('ativo'));
+  document.getElementById('page-contatos').classList.add('ativo');
+  document.querySelectorAll('.nav-item')[2].classList.add('ativo');
+  segmentoAtual=seg;paginaAtual=0;
+  document.getElementById('seg-filtro').value=seg;
+  carregarContatos();
+}
+
 async function carregarStats(){
   const d=await(await fetch('/api/contatos/stats')).json();
   if(!d.ok)return;
@@ -467,6 +495,7 @@ async function carregarStats(){
   document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
   document.getElementById('s-aniv').textContent=d.aniversariantes||0;
 }
+
 async function verificarStatus(){
   const d=await(await fetch('/api/wpp/status')).json();
   const ok=d.status==='open'||d.status==='conectado';
@@ -474,7 +503,7 @@ async function verificarStatus(){
   sb.className='wpp-status '+(ok?'status-conectado':'status-desconectado');
   document.getElementById('wpp-status-txt').textContent=ok?'Conectado':'Desconectado';
   const info=document.getElementById('wpp-info');
-  if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">✅ WhatsApp conectado!</span>':'<span style="color:#dc2626">❌ Desconectado. Clique em Conectar WhatsApp.</span>';
+  if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">✅ WhatsApp conectado!</span>':'<span style="color:#dc2626">❌ Desconectado.</span>';
 }
 
 async function criarConexao(){toast('Criando conexao...');await fetch('/api/wpp/criar',{method:'POST'});setTimeout(carregarQR,2000);}
@@ -485,19 +514,28 @@ async function carregarQR(){
 }
 async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/api/wpp/desconectar',{method:'POST'});toast('Desconectado!');verificarStatus();}
 
+function previewMidia(urlId,previewId){
+  const url=document.getElementById(urlId)?.value;
+  const preview=document.getElementById(previewId);
+  if(!preview)return;
+  if(url&&(url.endsWith('.jpg')||url.endsWith('.jpeg')||url.endsWith('.png')||url.endsWith('.gif')||url.endsWith('.webp'))){
+    preview.style.display='block';
+    preview.innerHTML=`<img src="${url}" alt="Preview" onerror="this.parentElement.style.display='none'">`;
+  } else { preview.style.display='none'; }
+}
+
 async function carregarContatos(){
   const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
   const tb=document.getElementById('tabela-contatos');
   if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
-  const badgeMap={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
-  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${badgeMap[c.segmento]||'inativa'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
+  const bm={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
+  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${bm[c.segmento]||'inativa'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
   document.getElementById('pag-info').textContent=`${paginaAtual*POR_PAGINA+1}-${Math.min((paginaAtual+1)*POR_PAGINA,d.total)} de ${d.total.toLocaleString('pt-BR')}`;
 }
 function filtrarContatos(v){buscaAtual=v;paginaAtual=0;carregarContatos();}
 function filtrarSegmento(v){segmentoAtual=v;paginaAtual=0;carregarContatos();}
 function proximaPagina(){paginaAtual++;carregarContatos();}
 function paginaAnterior(){if(paginaAtual>0){paginaAtual--;carregarContatos();}}
-
 async function importarCSV(input){
   const fd=new FormData();fd.append('arquivo',input.files[0]);
   toast('Importando...');
@@ -511,8 +549,21 @@ async function carregarCampanhas(){
   const d=await(await fetch('/api/campanhas')).json();
   const wrap=document.getElementById('lista-campanhas');
   if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
-  wrap.innerHTML=d.campanhas.map(c=>`<div class="card"><div class="card-title">${c.nome}<div style="display:flex;gap:8px">${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">Disparar</button>`:c.status==='disparando'?`<button class="btn btn-danger btn-sm" onclick="pausarCampanha(${c.id})">⏹ Parar</button>`:''}<span class="badge badge-${c.status==='concluido'?'ativa':c.status==='disparando'?'vip':'inativa'}">${c.status}</span></div></div>><div style="font-size:13px;color:#888;margin-bottom:8px">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s</div><div style="background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px">${c.mensagem.substring(0,150)}</div><div style="font-size:12px;color:#888;margin-top:8px">Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div></div>`).join('');
+  wrap.innerHTML=d.campanhas.map(c=>`
+    <div class="card">
+      <div class="card-title">${c.nome}
+        <div style="display:flex;gap:8px;align-items:center">
+          ${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">▶ Disparar</button>`:''}
+          ${c.status==='disparando'?`<button class="btn btn-danger btn-sm" onclick="pausarCampanha(${c.id})">⏹ Parar</button>`:''}
+          <span class="badge badge-${c.status==='concluido'?'ativa':c.status==='disparando'?'vip':'inativa'}">${c.status}</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#888;margin-bottom:8px">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s · Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div>
+      <div style="background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px">${c.mensagem.substring(0,150)}${c.mensagem.length>150?'...':''}</div>
+    </div>
+  `).join('');
 }
+
 async function criarCampanha(){
   const nome=document.getElementById('c-nome').value;
   const mensagem=document.getElementById('c-msg').value;
@@ -522,24 +573,28 @@ async function criarCampanha(){
   const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo)})})).json();
   if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
 }
+
 async function dispararCampanha(id){
   if(!confirm('Disparar esta campanha?'))return;
   toast('Disparando...');
   const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST'})).json();
   if(d.ok){toast(d.mensagem);carregarCampanhas();}
 }
+
 async function pausarCampanha(id){
   if(!confirm('Parar esta campanha?'))return;
   await fetch(`/api/campanhas/${id}/pausar`,{method:'POST'});
-  toast('Campanha pausada!');
-  carregarCampanhas();
+  toast('Campanha pausada!');carregarCampanhas();
 }
+
 async function disparoRapido(){
   const msg=document.getElementById('aq-msg').value;
   const seg=document.getElementById('aq-seg').value;
   const intervalo=document.getElementById('aq-intervalo').value;
+  const midTipo=document.getElementById('aq-midia-tipo').value;
+  const midUrl=document.getElementById('aq-midia-url').value;
   if(!msg){toast('Escreva a mensagem');return;}
-  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo Rapido '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo)})})).json();
+  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo Rapido '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(cr.ok){const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST'})).json();if(d.ok)toast(d.mensagem);}
 }
 
@@ -564,6 +619,22 @@ async function carregarFluxos(){
           <span class="saved-badge" id="saved-${f.id}">✓ Salvo</span>
         </div>
         <textarea id="fluxo-msg-${f.id}">${f.mensagem}</textarea>
+        <div class="midia-section" style="margin-top:10px">
+          <div class="midia-section-title">📎 Mídia opcional</div>
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
+              <select id="fluxo-midia-tipo-${f.id}">
+                <option value="texto" ${(!f.midia_tipo||f.midia_tipo==='texto')?'selected':''}>Sem mídia</option>
+                <option value="imagem" ${f.midia_tipo==='imagem'?'selected':''}>📸 Imagem</option>
+                <option value="video" ${f.midia_tipo==='video'?'selected':''}>🎥 Vídeo</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
+              <input type="text" id="fluxo-midia-url-${f.id}" value="${f.midia_url||''}" placeholder="https://..." oninput="previewMidia('fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}')">
+            </div>
+          </div>
+          <div id="fluxo-midia-preview-${f.id}" class="midia-preview" style="display:${f.midia_url?'block':'none'}">${f.midia_url?`<img src="${f.midia_url}" alt="Preview" onerror="this.parentElement.style.display='none'">`:''}</div>
+        </div>
         <div class="fluxo-footer">
           <div class="fluxo-hint">Use <span>{nome}</span> para o primeiro nome</div>
           <div style="display:flex;gap:8px;align-items:center">
@@ -578,6 +649,7 @@ async function carregarFluxos(){
     </div>
   `).join('');
 }
+
 async function toggleFluxo(id,el){
   const ativo=el.classList.contains('on')?0:1;
   el.classList.toggle('on');
@@ -585,16 +657,21 @@ async function toggleFluxo(id,el){
   if(txt){txt.textContent=ativo?'Ativo':'Inativo';txt.style.color=ativo?'#16a34a':'#aaa';}
   const msg=document.getElementById('fluxo-msg-'+id)?.value||'';
   const delay=parseInt(document.getElementById('fluxo-delay-'+id)?.value||0);
+  const midTipo=document.getElementById('fluxo-midia-tipo-'+id)?.value||'texto';
+  const midUrl=document.getElementById('fluxo-midia-url-'+id)?.value||'';
   const nome=document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent||'';
-  await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay})});
+  await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay,midia_tipo:midTipo,midia_url:midUrl})});
   toast(ativo?'Fluxo ativado ✅':'Fluxo pausado ⏸');
 }
+
 async function salvarFluxo(id){
   const msg=document.getElementById('fluxo-msg-'+id)?.value;
   const delay=parseInt(document.getElementById('fluxo-delay-'+id)?.value||0);
   const ativo=document.getElementById('toggle-'+id)?.classList.contains('on')?1:0;
   const nome=document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent||'';
-  const d=await(await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay})})).json();
+  const midTipo=document.getElementById('fluxo-midia-tipo-'+id)?.value||'texto';
+  const midUrl=document.getElementById('fluxo-midia-url-'+id)?.value||'';
+  const d=await(await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay,midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(d.ok){const b=document.getElementById('saved-'+id);if(b){b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2500);}toast('Salvo ✅');}
   else toast('Erro ao salvar');
 }
@@ -602,7 +679,7 @@ async function salvarFluxo(id){
 // ─── SEQUÊNCIAS ───────────────────────────────────────────────────────────────
 const GATILHO_LABELS={carrinho_abandonado:'🛒 Carrinho Abandonado',boas_vindas:'💛 Boas-vindas',pos_compra:'📦 Pós-compra',reativacao:'😴 Reativação',manual:'✋ Manual'};
 const GATILHO_BADGE={carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual'};
-const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'1 hora',horas:1},{label:'3 horas',horas:3},{label:'6 horas',horas:6},{label:'12 horas',horas:12},{label:'1 dia',horas:24},{label:'2 dias',horas:48},{label:'3 dias',horas:72},{label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}];
+const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1 hora',horas:1},{label:'3 horas',horas:3},{label:'6 horas',horas:6},{label:'12 horas',horas:12},{label:'1 dia',horas:24},{label:'2 dias',horas:48},{label:'3 dias',horas:72},{label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}];
 
 async function carregarSequencias(){
   const d=await(await fetch('/api/sequencias')).json();
@@ -617,9 +694,9 @@ async function carregarSequencias(){
         <div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <div class="seq-card-nome">${s.nome}</div>
-            <span class="badge ${GATILHO_BADGE[s.gatilho]||'gatilho-manual'}">${GATILHO_LABELS[s.gatilho]||s.gatilho}</span>
+            <span class="badge ${GATILHO_BADGE[s.gatilho]||'gatilho-manual'} gatilho-badge">${GATILHO_LABELS[s.gatilho]||s.gatilho}</span>
           </div>
-          <div class="seq-card-meta">Público: ${s.segmento} · ${s.passos?.length||0} mensagens ${s.descricao?'· '+s.descricao:''}</div>
+          <div class="seq-card-meta">Público: ${s.segmento} · ${s.passos?.length||0} mensagens${s.descricao?' · '+s.descricao:''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:11px;color:${s.ativo?'#16a34a':'#aaa'}">${s.ativo?'Ativo':'Inativo'}</span>
@@ -627,7 +704,7 @@ async function carregarSequencias(){
         </div>
       </div>
       <div class="seq-passos-preview">
-        ${(s.passos||[]).map((p,i)=>`<div class="seq-passo-pill"><div class="dot"></div>${i+1}. ${p.delay_label||formatDelay(p.delay_horas)}: ${p.mensagem.substring(0,30)}...</div>`).join('')}
+        ${(s.passos||[]).map((p,i)=>`<div class="seq-passo-pill"><div class="dot"></div>${i+1}. ${p.delay_label||formatDelay(p.delay_horas)}${p.midia_tipo&&p.midia_tipo!=='texto'?' 📎':''}: ${p.mensagem.substring(0,25)}...</div>`).join('')}
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline btn-sm" onclick="editarSequencia(${s.id})">✏️ Editar</button>
@@ -639,13 +716,13 @@ async function carregarSequencias(){
 
 function formatDelay(h){
   if(!h||h===0)return'Imediato';
+  if(h===0.5)return'30min';
   if(h<24)return h+'h';
   const d=Math.floor(h/24);return d+' dia'+(d>1?'s':'');
 }
 
 function abrirNovaSequencia(){
-  seqEditandoId=null;
-  seqPassos=[];
+  seqEditandoId=null;passoCount=0;
   document.getElementById('modal-seq-titulo').textContent='Nova Sequência';
   document.getElementById('seq-nome').value='';
   document.getElementById('seq-gatilho').value='carrinho_abandonado';
@@ -660,8 +737,7 @@ async function editarSequencia(id){
   const d=await(await fetch('/api/sequencias')).json();
   const seq=d.sequencias.find(s=>s.id===id);
   if(!seq)return;
-  seqEditandoId=id;
-  seqPassos=seq.passos||[];
+  seqEditandoId=id;passoCount=0;
   document.getElementById('modal-seq-titulo').textContent='Editar: '+seq.nome;
   document.getElementById('seq-nome').value=seq.nome;
   document.getElementById('seq-gatilho').value=seq.gatilho;
@@ -672,21 +748,18 @@ async function editarSequencia(id){
   document.getElementById('modal-sequencia').classList.add('open');
 }
 
-function fecharModalSeq(){
-  document.getElementById('modal-sequencia').classList.remove('open');
-}
+function fecharModalSeq(){document.getElementById('modal-sequencia').classList.remove('open');}
 
-let passoCount=0;
 function adicionarPasso(dados){
   passoCount++;
   const idx=passoCount;
   const container=document.getElementById('seq-passos-container');
   const delayH=dados?.delay_horas||0;
   const msg=dados?.mensagem||'';
-
-  const connector=container.children.length>0?`<div class="seq-connector"><span>↓ próxima mensagem</span></div>`:''  ;
-
-  const html=`
+  const midTipo=dados?.midia_tipo||'texto';
+  const midUrl=dados?.midia_url||'';
+  const connector=container.children.length>0?`<div class="seq-connector">↓</div>`:'';
+  container.insertAdjacentHTML('beforeend',`
     ${connector}
     <div class="seq-passo" id="passo-${idx}">
       <div class="seq-passo-header">
@@ -699,44 +772,47 @@ function adicionarPasso(dados){
         <div class="seq-passo-delay" id="delay-btns-${idx}">
           ${DELAYS_RAPIDOS.map(d=>`<button class="delay-btn ${d.horas===delayH?'ativo':''}" onclick="selecionarDelay(${idx},${d.horas},this)">${d.label}</button>`).join('')}
         </div>
+        <input type="hidden" id="passo-delay-val-${idx}" value="${delayH}">
         <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Mensagem:</div>
         <textarea id="passo-msg-${idx}" placeholder="Oi {nome}! ...">${msg}</textarea>
-        <div style="font-size:11px;color:#aaa;margin-top:6px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code> para personalizar</div>
+        <div class="midia-section" style="margin-top:10px">
+          <div class="midia-section-title">📎 Mídia opcional (imagem ou vídeo)</div>
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0"><label>Tipo</label>
+              <select id="passo-midia-tipo-${idx}">
+                <option value="texto" ${midTipo==='texto'?'selected':''}>Sem mídia</option>
+                <option value="imagem" ${midTipo==='imagem'?'selected':''}>📸 Imagem</option>
+                <option value="video" ${midTipo==='video'?'selected':''}>🎥 Vídeo</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0"><label>URL da mídia</label>
+              <input type="text" id="passo-midia-url-${idx}" value="${midUrl}" placeholder="https://..." oninput="previewMidia('passo-midia-url-${idx}','passo-midia-preview-${idx}')">
+            </div>
+          </div>
+          <div id="passo-midia-preview-${idx}" class="midia-preview" style="display:${midUrl?'block':'none'}">${midUrl?`<img src="${midUrl}" alt="Preview" onerror="this.parentElement.style.display='none'">`:''}</div>
+        </div>
+        <div style="font-size:11px;color:#aaa;margin-top:8px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code> para personalizar</div>
       </div>
     </div>
-  `;
-  container.insertAdjacentHTML('beforeend',html);
-  document.getElementById('passo-delay-val-'+idx)||(()=>{
-    const el=document.createElement('input');
-    el.type='hidden';el.id='passo-delay-val-'+idx;el.value=delayH;
-    document.getElementById('passo-'+idx).appendChild(el);
-  })();
+  `);
 }
 
 function selecionarDelay(idx,horas,btn){
   document.querySelectorAll(`#delay-btns-${idx} .delay-btn`).forEach(b=>b.classList.remove('ativo'));
   btn.classList.add('ativo');
-  let el=document.getElementById('passo-delay-val-'+idx);
-  if(!el){el=document.createElement('input');el.type='hidden';el.id='passo-delay-val-'+idx;document.getElementById('passo-'+idx).appendChild(el);}
-  el.value=horas;
+  document.getElementById('passo-delay-val-'+idx).value=horas;
 }
 
 function removerPasso(idx){
   const el=document.getElementById('passo-'+idx);
-  if(el){
-    const prev=el.previousElementSibling;
-    if(prev&&prev.classList.contains('seq-connector'))prev.remove();
-    el.remove();
-  }
+  if(el){const prev=el.previousElementSibling;if(prev&&prev.classList.contains('seq-connector'))prev.remove();el.remove();}
   renumerarPassos();
 }
 
 function renumerarPassos(){
   document.querySelectorAll('#seq-passos-container .seq-passo').forEach((el,i)=>{
-    const num=el.querySelector('.seq-passo-num');
-    const title=el.querySelector('.seq-passo-title');
-    if(num)num.textContent=i+1;
-    if(title)title.textContent='Mensagem '+(i+1);
+    const num=el.querySelector('.seq-passo-num');const title=el.querySelector('.seq-passo-title');
+    if(num)num.textContent=i+1;if(title)title.textContent='Mensagem '+(i+1);
   });
 }
 
@@ -746,28 +822,24 @@ async function salvarSequencia(){
   const segmento=document.getElementById('seq-segmento').value;
   const descricao=document.getElementById('seq-desc').value.trim();
   if(!nome){toast('Dê um nome para a sequência');return;}
-
   const passosEls=document.querySelectorAll('#seq-passos-container .seq-passo');
   const passos=[];
   for(const el of passosEls){
     const id=el.id.replace('passo-','');
     const msg=document.getElementById('passo-msg-'+id)?.value?.trim()||'';
-    const delayEl=document.getElementById('passo-delay-val-'+id);
-    const delay=parseInt(delayEl?.value||0);
+    const delay=parseFloat(document.getElementById('passo-delay-val-'+id)?.value||0);
     const delayBtn=el.querySelector('.delay-btn.ativo');
     const delayLabel=delayBtn?.textContent||formatDelay(delay);
+    const midTipo=document.getElementById('passo-midia-tipo-'+id)?.value||'texto';
+    const midUrl=document.getElementById('passo-midia-url-'+id)?.value||'';
     if(!msg){toast('Preencha todas as mensagens');return;}
-    passos.push({mensagem:msg,delay_horas:delay,delay_label:delayLabel});
+    passos.push({mensagem:msg,delay_horas:delay,delay_label:delayLabel,midia_tipo:midTipo,midia_url:midUrl});
   }
   if(!passos.length){toast('Adicione pelo menos uma mensagem');return;}
-
   const body={nome,gatilho,segmento,descricao,passos};
   let d;
-  if(seqEditandoId){
-    d=await(await fetch(`/api/sequencias/${seqEditandoId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
-  } else {
-    d=await(await fetch('/api/sequencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
-  }
+  if(seqEditandoId){d=await(await fetch(`/api/sequencias/${seqEditandoId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
+  else{d=await(await fetch('/api/sequencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
   if(d.ok){toast('Sequência salva! ✅');fecharModalSeq();carregarSequencias();}
   else toast('Erro: '+d.erro);
 }
@@ -787,7 +859,6 @@ async function deletarSequencia(id){
   toast('Excluída!');carregarSequencias();
 }
 
-// ─── CONVERSAS ────────────────────────────────────────────────────────────────
 async function carregarConversas(){
   const d=await(await fetch('/api/conversas')).json();
   const lista=document.getElementById('lista-conversas');
