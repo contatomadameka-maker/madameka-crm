@@ -458,15 +458,16 @@ cron.schedule('* * * * *', async () => {
   try {
     // Busca execuções ativas cujo próximo envio já chegou
     const { rows: execucoes } = await pool.query(`
-      SELECT se.*, sp.mensagem, sp.delay_horas, sp.ordem,
-             s.nome as seq_nome, s.gatilho
-      FROM sequencia_execucoes se
-      JOIN sequencias s ON s.id = se.sequencia_id
-      JOIN sequencia_passos sp ON sp.sequencia_id = se.sequencia_id 
-        AND sp.ordem = se.passo_atual + 1
-      WHERE se.status = 'ativo'
-        AND se.proximo_envio <= NOW()
-    `);
+  SELECT se.*, sp.mensagem, sp.delay_horas, sp.ordem,
+         sp.midia_tipo, sp.midia_url,
+         s.nome as seq_nome, s.gatilho
+  FROM sequencia_execucoes se
+  JOIN sequencias s ON s.id = se.sequencia_id
+  JOIN sequencia_passos sp ON sp.sequencia_id = se.sequencia_id 
+    AND sp.ordem = se.passo_atual + 1
+  WHERE se.status = 'ativo'
+    AND se.proximo_envio <= NOW()
+`);
 
     for (const exec of execucoes) {
       try {
@@ -483,16 +484,20 @@ cron.schedule('* * * * *', async () => {
             continue;
           }
         }
-
-        // Busca nome do contato
+      // Busca nome do contato
         const { rows: contato } = await pool.query(
           'SELECT nome FROM contatos WHERE telefone=$1', [exec.telefone]
         );
         const nome = contato[0]?.nome || 'Cliente';
         const msg = exec.mensagem.replace(/{nome}/g, nome.split(' ')[0]);
 
-        // Envia a mensagem
-        const resultado = await wpp.enviarMensagem(exec.telefone, msg);
+        // Envia a mensagem ou mídia
+        let resultado;
+        if (exec.midia_tipo && exec.midia_tipo !== 'texto' && exec.midia_url) {
+          resultado = await wpp.enviarMidia(exec.telefone, exec.midia_tipo, exec.midia_url, msg);
+        } else {
+          resultado = await wpp.enviarMensagem(exec.telefone, msg);
+        }
         console.log(`Sequencia ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok ? 'OK' : 'ERRO'}`);
 
         // Verifica se tem próximo passo
