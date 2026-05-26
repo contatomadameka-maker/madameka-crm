@@ -218,6 +218,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div class="midia-upload-row">
             <input type="file" id="uf-aq" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-aq').click()">📤 Enviar arquivo</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">✕ Remover</button>
             <span class="midia-upload-status" id="aq-upload-status"></span>
           </div>
           <div class="midia-url-row">
@@ -378,6 +379,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="midia-upload-row">
         <input type="file" id="uf-c" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-c').click()">📤 Enviar arquivo</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">✕ Remover</button>
         <span class="midia-upload-status" id="c-upload-status"></span>
       </div>
       <div class="midia-url-row">
@@ -510,6 +512,14 @@ async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
     status.style.color = '#dc2626';
   }
   input.value = '';
+}
+
+function limparMidia(tipoId,urlId,previewId,statusId){
+  document.getElementById(tipoId).value="texto";
+  document.getElementById(urlId).value="";
+  document.getElementById(previewId).style.display="none";
+  document.getElementById(previewId).innerHTML="";
+  if(statusId){var s=document.getElementById(statusId);if(s)s.textContent="";}
 }
 
 function previewMidia(urlId, previewId) {
@@ -654,6 +664,7 @@ async function carregarFluxos(){
           <div class="midia-upload-row">
             <input type="file" id="uf-f${f.id}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-f${f.id}').click()">📤 Enviar arquivo</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('fluxo-midia-tipo-${f.id}','fluxo-midia-url-${f.id}','fluxo-midia-preview-${f.id}','fluxo-upload-status-${f.id}')">✕ Remover</button>
             <span class="midia-upload-status" id="fluxo-upload-status-${f.id}"></span>
           </div>
           <div class="midia-url-row">
@@ -806,6 +817,7 @@ function adicionarPasso(dados){
           <div class="midia-upload-row">
             <input type="file" id="uf-p${idx}" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-p${idx}').click()">📤 Enviar arquivo</button>
+            <button class="btn btn-danger btn-sm" onclick="limparMidia('passo-midia-tipo-${idx}','passo-midia-url-${idx}','passo-midia-preview-${idx}','passo-upload-status-${idx}')">✕ Remover</button>
             <span class="midia-upload-status" id="passo-upload-status-${idx}"></span>
           </div>
           <div class="midia-url-row">
