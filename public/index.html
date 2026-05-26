@@ -192,6 +192,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="stat"><div class="stat-lbl">Inativas</div><div class="stat-val" id="s-inativas">--</div><div class="stat-sub">+60 dias</div></div>
         <div class="stat"><div class="stat-lbl">Leads</div><div class="stat-val" id="s-leads">--</div><div class="stat-sub">nunca compraram</div></div>
         <div class="stat"><div class="stat-lbl">Disparados</div><div class="stat-val" id="s-disparos">--</div><div class="stat-sub">mensagens</div></div>
+        <div class="stat" style="cursor:pointer" onclick="filtrarSegmento('Aniversariante')"><div class="stat-lbl">🎂 Aniversariantes</div><div class="stat-val" id="s-aniv">--</div><div class="stat-sub">hoje</div></div>
       </div>
       <div class="card">
         <div class="card-title">Disparo Rapido</div>
@@ -464,8 +465,8 @@ async function carregarStats(){
   document.getElementById('s-inativas').textContent=d.inativas.toLocaleString('pt-BR');
   document.getElementById('s-leads').textContent=d.leads.toLocaleString('pt-BR');
   document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
+  document.getElementById('s-aniv').textContent=d.aniversariantes||0;
 }
-
 async function verificarStatus(){
   const d=await(await fetch('/api/wpp/status')).json();
   const ok=d.status==='open'||d.status==='conectado';
