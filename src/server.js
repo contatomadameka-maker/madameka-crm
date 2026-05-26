@@ -166,7 +166,7 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     async function enviarProximo() {
       if (i >= contatos.length) { await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]); return; }
       const c = contatos[i++];
-      const msg = campanha.mensagem.replace(/{nome}/g, (c.nome||'').split(' ')[0]).replace(/{email}/g, c.email||'').replace(/{cidade}/g, c.cidade||'');
+      const msg = campanha.mensagem.replace(/{nome}/g, (c.nome||'Cliente').split(' ')[0]).replace(/{email}/g, c.email||'').replace(/{cidade}/g, c.cidade||'');
       const resultado = await wpp.enviarMensagem(c.telefone, msg);
       const status = resultado.ok ? 'enviado' : 'erro';
       await pool.query('INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())', [campanha.id, c.id, c.telefone, msg, status, resultado.erro||null]);
@@ -538,6 +538,12 @@ cron.schedule('0 9 * * *', async () => {
       await new Promise(r => setTimeout(r, 45000));
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
+});
+app.post('/api/campanhas/:id/pausar', async (req, res) => {
+  try {
+    await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
