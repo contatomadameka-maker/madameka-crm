@@ -8,6 +8,12 @@ const fs = require('fs');
 const { pool, buscarPorSegmento } = require('./database');
 const wpp = require('./whatsapp');
 const { responderIA } = require('./ia');
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -548,6 +554,18 @@ app.post('/api/campanhas/:id/pausar', async (req, res) => {
   try {
     await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [req.params.id]);
     res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+// ─── UPLOAD MÍDIA ─────────────────────────────────────────────────────────────
+const uploadMidia = multer({ dest: '/tmp/midia/' });
+app.post('/api/upload', uploadMidia.single('arquivo'), async (req, res) => {
+  try {
+    const resultado = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'madameka-crm',
+      resource_type: 'auto'
+    });
+    fs.unlinkSync(req.file.path);
+    res.json({ ok: true, url: resultado.secure_url, tipo: resultado.resource_type === 'video' ? 'video' : 'imagem' });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
