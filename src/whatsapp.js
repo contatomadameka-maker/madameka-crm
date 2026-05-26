@@ -2,18 +2,20 @@ const axios = require('axios');
 
 const ZAPI_INSTANCE = '3F3B33A2992E1162E39B6627BE24201D';
 const ZAPI_TOKEN = 'C8C9AEE300AE3E2B586CF1B3';
+const ZAPI_CLIENT_TOKEN = 'F8d6cdf1bbebe419abdb464fbf2c74bb2S';
 const ZAPI_BASE = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
+const HEADERS = { 'Client-Token': ZAPI_CLIENT_TOKEN };
 
 async function getStatus() {
   try {
-    const { data } = await axios.get(`${ZAPI_BASE}/status`);
+    const { data } = await axios.get(`${ZAPI_BASE}/status`, { headers: HEADERS });
     return { ok: true, status: data.connected ? 'open' : 'desconectado' };
   } catch (e) { return { ok: false, status: 'desconectado' }; }
 }
 
 async function getQRCode() {
   try {
-    const { data } = await axios.get(`${ZAPI_BASE}/qr-code`);
+    const { data } = await axios.get(`${ZAPI_BASE}/qr-code`, { headers: HEADERS });
     return { ok: true, qr: data.value };
   } catch (e) { return { ok: false, erro: e.message }; }
 }
@@ -29,14 +31,14 @@ async function enviarMensagem(telefone, mensagem) {
     const { data } = await axios.post(`${ZAPI_BASE}/send-text`, {
       phone: num,
       message: mensagem
-    });
+    }, { headers: HEADERS });
     return { ok: true, data };
   } catch (e) { return { ok: false, erro: e.message }; }
 }
 
 async function desconectar() {
   try {
-    await axios.get(`${ZAPI_BASE}/disconnect`);
+    await axios.get(`${ZAPI_BASE}/disconnect`, { headers: HEADERS });
     return { ok: true };
   } catch (e) { return { ok: false, erro: e.message }; }
 }
