@@ -451,5 +451,93 @@ async function iniciarSequencia(gatilho, telefone, nome) {
     }
   } catch(e) { console.error('Erro iniciarSequencia:', e.message); }
 }
+// ─── CRON JOB — processa sequências a cada minuto ─────────────────────────────
+const cron = require('node-cron');
+
+cron.schedule('* * * * *', async () => {
+  try {
+    // Busca execuções ativas cujo próximo envio já chegou
+    const { rows: execucoes } = await pool.query(`
+      SELECT se.*, sp.mensagem, sp.delay_horas, sp.ordem,
+             s.nome as seq_nome, s.gatilho
+      FROM sequencia_execucoes se
+      JOIN sequencias s ON s.id = se.sequencia_id
+      JOIN sequencia_passos sp ON sp.sequencia_id = se.sequencia_id 
+        AND sp.ordem = se.passo_atual + 1
+      WHERE se.status = 'ativo'
+        AND se.proximo_envio <= NOW()
+    `);
+
+    for (const exec of execucoes) {
+      try {
+        // Se for carrinho abandonado, verifica se já comprou
+        if (exec.gatilho === 'carrinho_abandonado') {
+          const { rows: check } = await pool.query(
+            "SELECT segmento FROM contatos WHERE telefone=$1", [exec.telefone]
+          );
+          if (check[0]?.segmento === 'Compradora Ativa' || check[0]?.segmento === 'VIP') {
+            await pool.query(
+              "UPDATE sequencia_execucoes SET status='cancelado' WHERE id=$1", [exec.id]
+            );
+            console.log(`Sequencia cancelada - ${exec.telefone} ja comprou`);
+            continue;
+          }
+        }
+
+        // Busca nome do contato
+        const { rows: contato } = await pool.query(
+          'SELECT nome FROM contatos WHERE telefone=$1', [exec.telefone]
+        );
+        const nome = contato[0]?.nome || 'Cliente';
+        const msg = exec.mensagem.replace(/{nome}/g, nome.split(' ')[0]);
+
+        // Envia a mensagem
+        const resultado = await wpp.enviarMensagem(exec.telefone, msg);
+        console.log(`Sequencia ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok ? 'OK' : 'ERRO'}`);
+
+        // Verifica se tem próximo passo
+        const { rows: proximo } = await pool.query(
+          'SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2',
+          [exec.sequencia_id, exec.ordem + 1]
+        );
+
+        if (proximo.length) {
+          // Agenda próximo passo
+          const proximoEnvio = new Date(Date.now() + (proximo[0].delay_horas || 1) * 3600000);
+          await pool.query(
+            'UPDATE sequencia_execucoes SET passo_atual=$1, proximo_envio=$2 WHERE id=$3',
+            [exec.ordem, proximoEnvio, exec.id]
+          );
+        } else {
+          // Última mensagem — marca como concluído
+          await pool.query(
+            "UPDATE sequencia_execucoes SET status='concluido', passo_atual=$1 WHERE id=$2",
+            [exec.ordem, exec.id]
+          );
+          console.log(`Sequencia ${exec.seq_nome} concluida para ${exec.telefone}`);
+        }
+      } catch(e) { console.error('Erro processando execucao:', e.message); }
+    }
+  } catch(e) { console.error('Erro cron sequencias:', e.message); }
+});
+
+// Cron aniversariantes — roda todo dia às 9h
+cron.schedule('0 9 * * *', async () => {
+  try {
+    const hoje = new Date();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const { rows } = await pool.query(
+      `SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`,
+      [`%-${mes}-${dia}`, `${dia}/${mes}%`]
+    );
+    console.log(`Aniversariantes hoje: ${rows.length}`);
+    for (const c of rows) {
+      const nome = c.nome.split(' ')[0];
+      await wpp.enviarMensagem(c.telefone, `🎂 Feliz aniversário, ${nome}!\n\nA Madame Ka tem um presente especial para você hoje!\n\nUse o cupom *ANIVER15* e ganhe 15% de desconto em qualquer peça! 🎁\n\nmadameka.com.br`);
+      await new Promise(r => setTimeout(r, 45000));
+    }
+  } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
+});
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
