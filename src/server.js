@@ -24,7 +24,33 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 const upload = multer({ dest: '/tmp/uploads/' });
 
-// ─── AUTH ────────────────────────────────────────────────────────────────────
+// Variações de saudação para evitar bloqueio
+const SAUDACOES = ['Oi','Olá','Ei','Boa tarde','Bom dia','Oi, tudo bem?'];
+const EMOJIS_FINAL = ['💛','✨','🌟','💕','🛍️','👗'];
+function variarMensagem(msg, nome, idx) {
+  // Substitui {nome}
+  let m = msg.replace(/{nome}/g, nome||'Cliente');
+  // Adiciona variação sutil no final para diferenciar mensagens
+  const emoji = EMOJIS_FINAL[idx % EMOJIS_FINAL.length];
+  if (!m.endsWith(emoji)) m = m + ' ' + emoji;
+  return m;
+}
+
+// Verifica se está no horário permitido (9h-20h)
+function horarioPermitido() {
+  const hora = new Date().getHours();
+  return hora >= 9 && hora < 20;
+}
+
+// Conta envios do dia
+async function enviosHoje() {
+  const { rows } = await pool.query(
+    "SELECT COUNT(*) as c FROM disparos WHERE status='enviado' AND enviado_em >= NOW() - INTERVAL '24 hours'"
+  );
+  return parseInt(rows[0].c);
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
 app.post('/api/login', (req, res) => {
   const { senha } = req.body;
   if (senha === PASS) return res.json({ ok: true });
@@ -44,7 +70,16 @@ app.post('/api/wpp/reset', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// ─── WEBHOOK WHATSAPP (receber mensagens) ─────────────────────────────────────
+// ─── STATS SEGURANÇA ──────────────────────────────────────────────────────────
+app.get('/api/seguranca/stats', async (req, res) => {
+  try {
+    const hoje = await enviosHoje();
+    const horario = horarioPermitido();
+    res.json({ ok: true, enviosHoje: hoje, limiteHoje: 200, horarioPermitido: horario, horaAtual: new Date().getHours() });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// ─── WEBHOOK WPP ──────────────────────────────────────────────────────────────
 app.post('/webhook/wpp', async (req, res) => {
   res.json({ ok: true });
   try {
@@ -75,24 +110,12 @@ app.get('/api/contatos/stats', async (req, res) => {
     const inativas = await pool.query("SELECT COUNT(*) as c FROM contatos WHERE segmento='Compradora Inativa'");
     const leads = await pool.query("SELECT COUNT(*) as c FROM contatos WHERE segmento='Lead'");
     const disparos = await pool.query("SELECT COUNT(*) as c FROM disparos WHERE status='enviado'");
-    // Aniversariantes hoje
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
-    const aniv = await pool.query(
-      `SELECT COUNT(*) as c FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`,
-      [`%-${mes}-${dia}`, `${dia}/${mes}%`]
-    );
-    res.json({
-      ok: true,
-      total: parseInt(total.rows[0].c),
-      vip: parseInt(vip.rows[0].c),
-      ativas: parseInt(ativas.rows[0].c),
-      inativas: parseInt(inativas.rows[0].c),
-      leads: parseInt(leads.rows[0].c),
-      disparos: parseInt(disparos.rows[0].c),
-      aniversariantes: parseInt(aniv.rows[0].c)
-    });
+    const aniv = await pool.query(`SELECT COUNT(*) as c FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
+    const envHoje = await enviosHoje();
+    res.json({ ok: true, total: parseInt(total.rows[0].c), vip: parseInt(vip.rows[0].c), ativas: parseInt(ativas.rows[0].c), inativas: parseInt(inativas.rows[0].c), leads: parseInt(leads.rows[0].c), disparos: parseInt(disparos.rows[0].c), aniversariantes: parseInt(aniv.rows[0].c), enviosHoje: envHoje });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
@@ -150,13 +173,20 @@ app.get('/api/campanhas', async (req, res) => {
 
 app.post('/api/campanhas', async (req, res) => {
   try {
-    const { nome, mensagem, segmento, intervalo_segundos } = req.body;
+    const { nome, mensagem, segmento, intervalo_segundos, midia_tipo, midia_url, limite } = req.body;
     const { rows } = await pool.query(
-      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos) VALUES ($1,$2,$3,$4) RETURNING id',
-      [nome, mensagem, segmento||'todos', intervalo_segundos||45]
+      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos,midia_tipo,midia_url) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+      [nome, mensagem, segmento||'todos', intervalo_segundos||60, midia_tipo||'texto', midia_url||'']
     );
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.post('/api/campanhas/:id/pausar', async (req, res) => {
+  try {
+    await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.post('/api/campanhas/:id/disparar', async (req, res) => {
@@ -164,36 +194,68 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const { rows: camp } = await pool.query('SELECT * FROM campanhas WHERE id=$1', [req.params.id]);
     if (!camp.length) return res.json({ ok: false, erro: 'Nao encontrada' });
     const campanha = camp[0];
+    const { limite } = req.body; // limite opcional de contatos
 
-    // Busca quem JÁ recebeu essa campanha
+    // Verifica horário
+    if (!horarioPermitido()) {
+      return res.json({ ok: false, erro: 'Fora do horário permitido (9h-20h). Aguarde para disparar.' });
+    }
+
+    // Verifica limite diário
+    const envHoje = await enviosHoje();
+    const restante = 200 - envHoje;
+    if (restante <= 0) {
+      return res.json({ ok: false, erro: `Limite diário de 200 mensagens atingido. Enviadas hoje: ${envHoje}. Tente amanhã após as 9h.` });
+    }
+
+    // Busca quem JÁ recebeu
     const { rows: jaEnviados } = await pool.query(
-      "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'",
-      [campanha.id]
+      "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'", [campanha.id]
     );
     const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
 
-    // Busca todos os contatos do segmento
+    // Busca contatos do segmento
     const todosContatos = await buscarPorSegmento(campanha.segmento);
+    let contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
 
-    // Filtra quem ainda NÃO recebeu
-    const contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
+    // Aplica limite de contatos se definido
+    const limiteNum = parseInt(limite) || 0;
+    if (limiteNum > 0) contatos = contatos.slice(0, limiteNum);
+
+    // Respeita limite diário restante
+    if (contatos.length > restante) contatos = contatos.slice(0, restante);
 
     if (!contatos.length) {
       await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
-      return res.json({ ok: true, total: 0, mensagem: 'Todos já receberam esta campanha!' });
+      return res.json({ ok: true, total: 0, mensagem: 'Todos já receberam ou limite diário atingido!' });
     }
 
     await pool.query('UPDATE campanhas SET status=$1, disparado_em=NOW() WHERE id=$2', ['disparando', campanha.id]);
-    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos (${jaEnviadosSet.size} já receberam)` });
+    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos · ${restante} restantes hoje · ${jaEnviadosSet.size} já receberam` });
 
     let i = 0;
-    const intervalo = (campanha.intervalo_segundos || 45) * 1000;
+    const intervalo = (campanha.intervalo_segundos || 60) * 1000;
 
     async function enviarProximo() {
-      // Verifica se campanha foi pausada
-      const { rows: status } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
-      if (status[0]?.status === 'pausado') {
-        console.log(`Campanha ${campanha.id} pausada em ${i} de ${contatos.length}`);
+      // Verifica pausada
+      const { rows: statusRows } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
+      if (statusRows[0]?.status === 'pausado') {
+        console.log(`Campanha ${campanha.id} pausada em ${i}/${contatos.length}`);
+        return;
+      }
+
+      // Verifica horário a cada envio
+      if (!horarioPermitido()) {
+        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
+        console.log(`Campanha ${campanha.id} pausada — fora do horário`);
+        return;
+      }
+
+      // Verifica limite diário a cada envio
+      const envHojeNow = await enviosHoje();
+      if (envHojeNow >= 200) {
+        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
+        console.log(`Campanha ${campanha.id} pausada — limite diário atingido`);
         return;
       }
 
@@ -204,10 +266,8 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       }
 
       const c = contatos[i++];
-      const msg = campanha.mensagem
-        .replace(/{nome}/g, (c.nome||'Cliente').split(' ')[0])
-        .replace(/{email}/g, c.email||'')
-        .replace(/{cidade}/g, c.cidade||'');
+      const nomeCliente = (c.nome||'').split(' ')[0] || 'Cliente';
+      const msg = variarMensagem(campanha.mensagem, nomeCliente, i);
 
       let resultado;
       if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
@@ -221,15 +281,10 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
         'INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())',
         [campanha.id, c.id, c.telefone, msg, statusEnvio, resultado.erro||null]
       );
-      await pool.query(
-        'UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3',
-        [resultado.ok?1:0, resultado.ok?0:1, campanha.id]
-      );
-      await pool.query(
-        'UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1',
-        [c.id]
-      );
+      await pool.query('UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3', [resultado.ok?1:0, resultado.ok?0:1, campanha.id]);
+      await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
 
+      console.log(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ${resultado.ok?'OK':'ERRO'}`);
       setTimeout(enviarProximo, intervalo);
     }
 
@@ -247,8 +302,11 @@ app.get('/api/fluxos', async (req, res) => {
 
 app.put('/api/fluxos/:id', async (req, res) => {
   try {
-    const { nome, mensagem, ativo, delay_horas } = req.body;
-    await pool.query('UPDATE fluxos SET nome=$1, mensagem=$2, ativo=$3, delay_horas=$4 WHERE id=$5', [nome, mensagem, ativo?1:0, delay_horas, req.params.id]);
+    const { nome, mensagem, ativo, delay_horas, midia_tipo, midia_url } = req.body;
+    await pool.query(
+      'UPDATE fluxos SET nome=$1, mensagem=$2, ativo=$3, delay_horas=$4, midia_tipo=$5, midia_url=$6 WHERE id=$7',
+      [nome, mensagem, ativo?1:0, delay_horas, midia_tipo||'texto', midia_url||'', req.params.id]
+    );
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
@@ -279,67 +337,38 @@ app.post('/webhook/yampi', async (req, res) => {
     const email = data.customer?.email || data.email || '';
     const nascimento = data.customer?.birthdate || data.birthdate || '';
     if (!telefone) return;
-
-    // Salva/atualiza contato com nascimento
     await pool.query(
-      `INSERT INTO contatos (nome,telefone,email,segmento,nascimento)
-       VALUES ($1,$2,$3,'Compradora Ativa',$4)
-       ON CONFLICT (telefone) DO UPDATE SET
-         nome=EXCLUDED.nome,
-         segmento='Compradora Ativa',
-         nascimento=COALESCE(NULLIF(EXCLUDED.nascimento,''), contatos.nascimento)`,
+      `INSERT INTO contatos (nome,telefone,email,segmento,nascimento) VALUES ($1,$2,$3,'Compradora Ativa',$4)
+       ON CONFLICT (telefone) DO UPDATE SET nome=EXCLUDED.nome, segmento='Compradora Ativa', nascimento=COALESCE(NULLIF(EXCLUDED.nascimento,''), contatos.nascimento)`,
       [nome, telefone, email, nascimento]
     );
-
-    // Incrementa total_compras se for compra
     if (['order.created','order.approved','payment.approved'].includes(event)) {
       await pool.query('UPDATE contatos SET total_compras=COALESCE(total_compras,0)+1 WHERE telefone=$1', [telefone]);
     }
-
     const primeiro = nome.split(' ')[0];
     let mensagem = null;
-
     if (['order.created','order.approved','payment.approved'].includes(event)) {
       const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='pos_compra' AND ativo=1");
       if (rows[0]) mensagem = rows[0].mensagem.replace(/{nome}/g, primeiro);
     }
-
     if (['order.payment_failed','transaction.denied'].includes(event)) {
       mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar a finalizar sua compra? 💜`;
     }
-
     if (['checkout.abandoned','cart.abandoned'].includes(event)) {
-      // Delay mínimo de 30 minutos + delay configurado no fluxo
       const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='carrinho_abandonado' AND ativo=1");
       if (rows[0]) {
-        const delayMinutos = Math.max(30, (rows[0].delay_horas || 1) * 60);
-        const delayMs = delayMinutos * 60 * 1000;
+        const delayMs = Math.max(30, (rows[0].delay_horas || 1) * 60) * 60 * 1000;
         setTimeout(async () => {
-          // Verifica se já comprou antes de enviar
           const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [telefone]);
-          if (check[0]?.segmento === 'Compradora Ativa') return; // Já comprou, não manda
+          if (check[0]?.segmento === 'Compradora Ativa') return;
           await wpp.enviarMensagem(telefone, rows[0].mensagem.replace(/{nome}/g, primeiro));
-          // Dispara sequências de carrinho se houver
           await iniciarSequencia('carrinho_abandonado', telefone, nome);
         }, delayMs);
         return;
       }
     }
-
-    if (event === 'customer.created') {
-      // Não faz nada extra, contato já foi salvo
-    }
-
-    if (mensagem) {
-      await new Promise(r => setTimeout(r, 3000));
-      await wpp.enviarMensagem(telefone, mensagem);
-    }
-
-    // Dispara sequências de pós-compra se houver
-    if (['order.created','order.approved','payment.approved'].includes(event)) {
-      await iniciarSequencia('pos_compra', telefone, nome);
-    }
-
+    if (mensagem) { await new Promise(r => setTimeout(r, 3000)); await wpp.enviarMensagem(telefone, mensagem); }
+    if (['order.created','order.approved','payment.approved'].includes(event)) await iniciarSequencia('pos_compra', telefone, nome);
   } catch (e) { console.error('Webhook Yampi erro:', e.message); }
 });
 
@@ -350,33 +379,21 @@ app.post('/webhook/popup', async (req, res) => {
     const { nome, whatsapp, email } = req.body;
     if (!whatsapp) return;
     const tel = whatsapp.replace(/\D/g, '');
-
-    // Salva como Lead só se não existir (preserva segmento se já for compradora)
     await pool.query(
-      `INSERT INTO contatos (nome,telefone,email,segmento,origem)
-       VALUES ($1,$2,$3,'Lead','popup')
-       ON CONFLICT (telefone) DO NOTHING`,
+      `INSERT INTO contatos (nome,telefone,email,segmento,origem) VALUES ($1,$2,$3,'Lead','popup') ON CONFLICT (telefone) DO NOTHING`,
       [nome||'', tel, email||'']
     );
-
-    // Verifica se já é compradora — se sim, não manda cupom
     const { rows: check } = await pool.query('SELECT segmento FROM contatos WHERE telefone=$1', [tel]);
-    const jaComprou = check[0]?.segmento === 'Compradora Ativa' || check[0]?.segmento === 'VIP';
-
+    const jaComprou = ['Compradora Ativa','VIP','Compradora Recente'].includes(check[0]?.segmento);
     const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='boas_vindas' AND ativo=1");
     if (rows[0]) {
       await new Promise(r => setTimeout(r, 3000));
-      let msg = rows[0].mensagem.replace(/{nome}/g, (nome||'Cliente').split(' ')[0]);
-      // Se já comprou, adapta a mensagem removendo o cupom
-      if (jaComprou) {
-        msg = `Oi ${(nome||'Cliente').split(' ')[0]}! Que bom ter você aqui! 💛\n\nSeja bem-vinda de volta à Madame Ka!\nmadameka.com.br`;
-      }
+      let msg = jaComprou
+        ? `Oi ${(nome||'Cliente').split(' ')[0]}! Que bom ter você aqui! 💛\n\nSeja bem-vinda de volta à Madame Ka!\nmadameka.com.br`
+        : rows[0].mensagem.replace(/{nome}/g, (nome||'Cliente').split(' ')[0]);
       await wpp.enviarMensagem(tel, msg);
     }
-
-    // Inicia sequência de boas-vindas se houver
     await iniciarSequencia('boas_vindas', tel, nome||'Cliente');
-
   } catch (e) { console.error(e); }
 });
 
@@ -395,17 +412,12 @@ app.get('/api/sequencias', async (req, res) => {
 app.post('/api/sequencias', async (req, res) => {
   try {
     const { nome, descricao, gatilho, segmento, passos } = req.body;
-    const { rows } = await pool.query(
-      'INSERT INTO sequencias (nome,descricao,gatilho,segmento) VALUES ($1,$2,$3,$4) RETURNING id',
-      [nome, descricao||'', gatilho, segmento||'todos']
-    );
+    const { rows } = await pool.query('INSERT INTO sequencias (nome,descricao,gatilho,segmento) VALUES ($1,$2,$3,$4) RETURNING id', [nome, descricao||'', gatilho, segmento||'todos']);
     const seqId = rows[0].id;
     for (let i = 0; i < passos.length; i++) {
       const p = passos[i];
-      await pool.query(
-        'INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label) VALUES ($1,$2,$3,$4,$5)',
-        [seqId, i+1, p.mensagem, p.delay_horas, p.delay_label||'']
-      );
+      await pool.query('INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label,midia_tipo,midia_url) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+        [seqId, i+1, p.mensagem, p.delay_horas, p.delay_label||'', p.midia_tipo||'texto', p.midia_url||'']);
     }
     res.json({ ok: true, id: seqId });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -414,18 +426,14 @@ app.post('/api/sequencias', async (req, res) => {
 app.put('/api/sequencias/:id', async (req, res) => {
   try {
     const { nome, descricao, gatilho, segmento, ativo, passos } = req.body;
-    await pool.query(
-      'UPDATE sequencias SET nome=$1,descricao=$2,gatilho=$3,segmento=$4,ativo=$5 WHERE id=$6',
-      [nome||'', descricao||'', gatilho||'manual', segmento||'todos', ativo?1:0, req.params.id]
-    );
+    await pool.query('UPDATE sequencias SET nome=$1,descricao=$2,gatilho=$3,segmento=$4,ativo=$5 WHERE id=$6',
+      [nome||'', descricao||'', gatilho||'manual', segmento||'todos', ativo?1:0, req.params.id]);
     if (passos && passos.length > 0) {
       await pool.query('DELETE FROM sequencia_passos WHERE sequencia_id=$1', [req.params.id]);
       for (let i = 0; i < passos.length; i++) {
         const p = passos[i];
-        await pool.query(
-          'INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label) VALUES ($1,$2,$3,$4,$5)',
-          [req.params.id, i+1, p.mensagem, p.delay_horas, p.delay_label||'']
-        );
+        await pool.query('INSERT INTO sequencia_passos (sequencia_id,ordem,mensagem,delay_horas,delay_label,midia_tipo,midia_url) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [req.params.id, i+1, p.mensagem, p.delay_horas, p.delay_label||'', p.midia_tipo||'texto', p.midia_url||'']);
       }
     }
     res.json({ ok: true });
@@ -439,187 +447,85 @@ app.delete('/api/sequencias/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// Função para iniciar uma sequência para um contato
 async function iniciarSequencia(gatilho, telefone, nome) {
   try {
-    const { rows: seqs } = await pool.query(
-      'SELECT * FROM sequencias WHERE gatilho=$1 AND ativo=1', [gatilho]
-    );
+    const { rows: seqs } = await pool.query('SELECT * FROM sequencias WHERE gatilho=$1 AND ativo=1', [gatilho]);
     for (const seq of seqs) {
-      const { rows: passos } = await pool.query(
-        'SELECT * FROM sequencia_passos WHERE sequencia_id=$1 ORDER BY ordem', [seq.id]
-      );
+      const { rows: passos } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 ORDER BY ordem', [seq.id]);
       if (!passos.length) continue;
-
-      // Verifica se já tem execução ativa para esse contato nessa sequência
-      const { rows: exec } = await pool.query(
-        "SELECT id FROM sequencia_execucoes WHERE sequencia_id=$1 AND telefone=$2 AND status='ativo'",
-        [seq.id, telefone]
-      );
-      if (exec.length) continue; // Já está em execução
-
-      // Registra execução
+      const { rows: exec } = await pool.query("SELECT id FROM sequencia_execucoes WHERE sequencia_id=$1 AND telefone=$2 AND status='ativo'", [seq.id, telefone]);
+      if (exec.length) continue;
       const proximo = new Date(Date.now() + (passos[0].delay_horas || 0) * 3600000);
-      await pool.query(
-        'INSERT INTO sequencia_execucoes (sequencia_id,telefone,passo_atual,status,proximo_envio) VALUES ($1,$2,$3,$4,$5)',
-        [seq.id, telefone, 0, 'ativo', proximo]
-      );
-
-      // Agenda cada passo
-      let acumulado = 0;
-      for (const passo of passos) {
-        acumulado += (passo.delay_horas || 0) * 3600000;
-        const msgFinal = acumulado === 0 ? 0 : acumulado;
-        setTimeout(async () => {
-          try {
-            // Verifica se deve ainda enviar (contato pode ter comprado)
-            const { rows: checkSeq } = await pool.query(
-              "SELECT status FROM sequencia_execucoes WHERE sequencia_id=$1 AND telefone=$2",
-              [seq.id, telefone]
-            );
-            if (checkSeq[0]?.status !== 'ativo') return;
-
-            // Se for carrinho abandonado, verifica se já comprou
-            if (gatilho === 'carrinho_abandonado') {
-              const { rows: checkCompra } = await pool.query(
-                "SELECT segmento FROM contatos WHERE telefone=$1", [telefone]
-              );
-              if (checkCompra[0]?.segmento === 'Compradora Ativa') {
-                await pool.query(
-                  "UPDATE sequencia_execucoes SET status='cancelado' WHERE sequencia_id=$1 AND telefone=$2",
-                  [seq.id, telefone]
-                );
-                return;
-              }
-            }
-
-            const msg = passo.mensagem.replace(/{nome}/g, (nome||'Cliente').split(' ')[0]);
-            await wpp.enviarMensagem(telefone, msg);
-          } catch(e) { console.error('Erro sequencia passo:', e.message); }
-        }, msgFinal > 0 ? msgFinal : 3000);
-      }
-
-      // Marca como concluído após o último passo
-      const totalMs = passos.reduce((acc, p) => acc + (p.delay_horas||0)*3600000, 0) + 5000;
-      setTimeout(async () => {
-        await pool.query(
-          "UPDATE sequencia_execucoes SET status='concluido' WHERE sequencia_id=$1 AND telefone=$2 AND status='ativo'",
-          [seq.id, telefone]
-        );
-      }, totalMs);
+      await pool.query('INSERT INTO sequencia_execucoes (sequencia_id,telefone,passo_atual,status,proximo_envio) VALUES ($1,$2,$3,$4,$5)', [seq.id, telefone, 0, 'ativo', proximo]);
     }
   } catch(e) { console.error('Erro iniciarSequencia:', e.message); }
 }
-// ─── CRON JOB — processa sequências a cada minuto ─────────────────────────────
+
+// ─── UPLOAD MÍDIA ─────────────────────────────────────────────────────────────
+const uploadMidia = multer({ dest: '/tmp/midia/' });
+app.post('/api/upload', uploadMidia.single('arquivo'), async (req, res) => {
+  try {
+    const resultado = await cloudinary.uploader.upload(req.file.path, { folder: 'madameka-crm', resource_type: 'auto' });
+    fs.unlinkSync(req.file.path);
+    res.json({ ok: true, url: resultado.secure_url, tipo: resultado.resource_type === 'video' ? 'video' : 'imagem' });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// ─── CRON ─────────────────────────────────────────────────────────────────────
 const cron = require('node-cron');
 
 cron.schedule('* * * * *', async () => {
   try {
-    // Busca execuções ativas cujo próximo envio já chegou
     const { rows: execucoes } = await pool.query(`
-  SELECT se.*, sp.mensagem, sp.delay_horas, sp.ordem,
-         sp.midia_tipo, sp.midia_url,
-         s.nome as seq_nome, s.gatilho
-  FROM sequencia_execucoes se
-  JOIN sequencias s ON s.id = se.sequencia_id
-  JOIN sequencia_passos sp ON sp.sequencia_id = se.sequencia_id 
-    AND sp.ordem = se.passo_atual + 1
-  WHERE se.status = 'ativo'
-    AND se.proximo_envio <= NOW()
-`);
-
+      SELECT se.*, sp.mensagem, sp.delay_horas, sp.ordem, sp.midia_tipo, sp.midia_url, s.nome as seq_nome, s.gatilho
+      FROM sequencia_execucoes se
+      JOIN sequencias s ON s.id = se.sequencia_id
+      JOIN sequencia_passos sp ON sp.sequencia_id = se.sequencia_id AND sp.ordem = se.passo_atual + 1
+      WHERE se.status = 'ativo' AND se.proximo_envio <= NOW()
+    `);
     for (const exec of execucoes) {
       try {
-        // Se for carrinho abandonado, verifica se já comprou
         if (exec.gatilho === 'carrinho_abandonado') {
-          const { rows: check } = await pool.query(
-            "SELECT segmento FROM contatos WHERE telefone=$1", [exec.telefone]
-          );
-          if (check[0]?.segmento === 'Compradora Ativa' || check[0]?.segmento === 'VIP') {
-            await pool.query(
-              "UPDATE sequencia_execucoes SET status='cancelado' WHERE id=$1", [exec.id]
-            );
-            console.log(`Sequencia cancelada - ${exec.telefone} ja comprou`);
+          const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [exec.telefone]);
+          if (['Compradora Ativa','VIP'].includes(check[0]?.segmento)) {
+            await pool.query("UPDATE sequencia_execucoes SET status='cancelado' WHERE id=$1", [exec.id]);
             continue;
           }
         }
-      // Busca nome do contato
-        const { rows: contato } = await pool.query(
-          'SELECT nome FROM contatos WHERE telefone=$1', [exec.telefone]
-        );
+        const { rows: contato } = await pool.query('SELECT nome FROM contatos WHERE telefone=$1', [exec.telefone]);
         const nome = contato[0]?.nome || 'Cliente';
         const msg = exec.mensagem.replace(/{nome}/g, nome.split(' ')[0]);
-
-        // Envia a mensagem ou mídia
         let resultado;
         if (exec.midia_tipo && exec.midia_tipo !== 'texto' && exec.midia_url) {
           resultado = await wpp.enviarMidia(exec.telefone, exec.midia_tipo, exec.midia_url, msg);
         } else {
           resultado = await wpp.enviarMensagem(exec.telefone, msg);
         }
-        console.log(`Sequencia ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok ? 'OK' : 'ERRO'}`);
-
-        // Verifica se tem próximo passo
-        const { rows: proximo } = await pool.query(
-          'SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2',
-          [exec.sequencia_id, exec.ordem + 1]
-        );
-
+        console.log(`Seq ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok?'OK':'ERRO'}`);
+        const { rows: proximo } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2', [exec.sequencia_id, exec.ordem + 1]);
         if (proximo.length) {
-          // Agenda próximo passo
           const proximoEnvio = new Date(Date.now() + (proximo[0].delay_horas || 1) * 3600000);
-          await pool.query(
-            'UPDATE sequencia_execucoes SET passo_atual=$1, proximo_envio=$2 WHERE id=$3',
-            [exec.ordem, proximoEnvio, exec.id]
-          );
+          await pool.query('UPDATE sequencia_execucoes SET passo_atual=$1, proximo_envio=$2 WHERE id=$3', [exec.ordem, proximoEnvio, exec.id]);
         } else {
-          // Última mensagem — marca como concluído
-          await pool.query(
-            "UPDATE sequencia_execucoes SET status='concluido', passo_atual=$1 WHERE id=$2",
-            [exec.ordem, exec.id]
-          );
-          console.log(`Sequencia ${exec.seq_nome} concluida para ${exec.telefone}`);
+          await pool.query("UPDATE sequencia_execucoes SET status='concluido', passo_atual=$1 WHERE id=$2", [exec.ordem, exec.id]);
         }
-      } catch(e) { console.error('Erro processando execucao:', e.message); }
+      } catch(e) { console.error('Erro exec:', e.message); }
     }
   } catch(e) { console.error('Erro cron sequencias:', e.message); }
 });
 
-// Cron aniversariantes — roda todo dia às 9h
 cron.schedule('0 9 * * *', async () => {
   try {
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
-    const { rows } = await pool.query(
-      `SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`,
-      [`%-${mes}-${dia}`, `${dia}/${mes}%`]
-    );
-    console.log(`Aniversariantes hoje: ${rows.length}`);
+    const { rows } = await pool.query(`SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     for (const c of rows) {
-      const nome = c.nome.split(' ')[0];
+      const nome = (c.nome||'Cliente').split(' ')[0];
       await wpp.enviarMensagem(c.telefone, `🎂 Feliz aniversário, ${nome}!\n\nA Madame Ka tem um presente especial para você hoje!\n\nUse o cupom *ANIVER15* e ganhe 15% de desconto em qualquer peça! 🎁\n\nmadameka.com.br`);
       await new Promise(r => setTimeout(r, 45000));
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
-});
-app.post('/api/campanhas/:id/pausar', async (req, res) => {
-  try {
-    await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [req.params.id]);
-    res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
-});
-// ─── UPLOAD MÍDIA ─────────────────────────────────────────────────────────────
-const uploadMidia = multer({ dest: '/tmp/midia/' });
-app.post('/api/upload', uploadMidia.single('arquivo'), async (req, res) => {
-  try {
-    const resultado = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'madameka-crm',
-      resource_type: 'auto'
-    });
-    fs.unlinkSync(req.file.path);
-    res.json({ ok: true, url: resultado.secure_url, tipo: resultado.resource_type === 'video' ? 'video' : 'imagem' });
-  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
