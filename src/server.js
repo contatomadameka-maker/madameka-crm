@@ -100,11 +100,11 @@ app.post('/api/contatos/importar', upload.single('arquivo'), async (req, res) =>
     const rows = parse(content, { columns: true, skip_empty_lines: true });
     let importados = 0;
     for (const r of rows) {
-      const tel = (r['WhatsApp'] || r['telefone'] || r['telefone_com_ddd'] || '').replace(/\D/g, '');
+      const tel = (r['whatsapp'] || r['WhatsApp'] || r['telefone'] || r['telefone_com_ddd'] || r['phone'] || '').replace(/\D/g, '');
       if (!tel) continue;
       try {
         await pool.query(`INSERT INTO contatos (nome,telefone,email,segmento,valor_ultimo_pedido,data_ultimo_pedido,cidade,estado,origem,data_cadastro,nascimento) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (telefone) DO NOTHING`,
-          [r['Nome']||r['nome']||'', tel, r['Email']||r['email']||'', r['Segmento']||r['segmento']||'Lead', r['Valor Último Pedido']||r['valor_ultimo_pedido']||'', r['Data Último Pedido']||r['data_ultimo_pedido']||'', r['Cidade']||r['cidade']||'', r['Estado']||r['estado']||'', r['Origem']||r['utm_source']||'', r['Data Cadastro']||r['criado_em']||'', r['Nascimento']||r['data_nascimento']||'']);
+          [r['nome']||r['Nome']||'', tel, r['Email']||r['email']||'', r['Segmento']||r['segmento']||'Lead', r['Valor Último Pedido']||r['valor_ultimo_pedido']||'', r['Data Último Pedido']||r['data_ultimo_pedido']||'', r['Cidade']||r['cidade']||'', r['Estado']||r['estado']||'', r['Origem']||r['utm_source']||'', r['Data Cadastro']||r['criado_em']||'', r['Nascimento']||r['data_nascimento']||'']);
         importados++;
       } catch(e) {}
     }
@@ -188,22 +188,52 @@ app.get('/api/conversas/:telefone', async (req, res) => {
 app.post('/webhook/yampi', async (req, res) => {
   res.json({ ok: true });
   try {
-    const { event, data } = req.body;
-    if (!data) return;
-    const telefone = (data.customer?.phone || '').replace(/\D/g, '');
-    const nome = data.customer?.name || 'Cliente';
-    const email = data.customer?.email || '';
+    const { event, resource } = req.body;
+    const data = resource || req.body.data || req.body;
+    
+    // Extrai dados do cliente
+    const telefone = (data.customer?.phone || data.phone || '').replace(/\D/g, '');
+    const nome = data.customer?.name || data.name || 'Cliente';
+    const email = data.customer?.email || data.email || '';
+    
     if (!telefone) return;
-    await pool.query(`INSERT INTO contatos (nome,telefone,email,segmento) VALUES ($1,$2,$3,'Compradora Ativa') ON CONFLICT (telefone) DO UPDATE SET nome=EXCLUDED.nome, segmento='Compradora Ativa'`, [nome, telefone, email]);
-    if (event === 'order.created' || event === 'payment.approved') {
+
+    // Salva/atualiza contato
+    await pool.query(`INSERT INTO contatos (nome,telefone,email,segmento) VALUES ($1,$2,$3,'Compradora Ativa') ON CONFLICT (telefone) DO UPDATE SET nome=EXCLUDED.nome`, [nome, telefone, email]);
+
+    const primeiro = nome.split(' ')[0];
+    let mensagem = null;
+
+    if (event === 'order.created' || event === 'order.approved' || event === 'payment.approved') {
       const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='pos_compra' AND ativo=1");
-      if (rows[0]) await wpp.enviarMensagem(telefone, rows[0].mensagem.replace(/{nome}/g, nome.split(' ')[0]));
+      if (rows[0]) mensagem = rows[0].mensagem.replace(/{nome}/g, primeiro);
     }
-    if (event === 'checkout.abandoned') {
+
+    if (event === 'order.payment_failed' || event === 'transaction.denied') {
+      mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar a finalizar sua compra? 💜`;
+    }
+
+    if (event === 'checkout.abandoned' || event === 'cart.abandoned') {
       const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='carrinho_abandonado' AND ativo=1");
-      if (rows[0]) setTimeout(async () => await wpp.enviarMensagem(telefone, rows[0].mensagem.replace(/{nome}/g, nome.split(' ')[0])), (rows[0].delay_horas||1)*3600*1000);
+      if (rows[0]) {
+        const delay = (rows[0].delay_horas || 1) * 3600 * 1000;
+        setTimeout(async () => {
+          await wpp.enviarMensagem(telefone, rows[0].mensagem.replace(/{nome}/g, primeiro));
+        }, delay);
+        return;
+      }
     }
-  } catch (e) { console.error(e); }
+
+    if (event === 'customer.created') {
+      await pool.query(`UPDATE contatos SET segmento='Lead' WHERE telefone=$1 AND segmento='Lead'`, [telefone]);
+    }
+
+    if (mensagem) {
+      await new Promise(r => setTimeout(r, 3000));
+      await wpp.enviarMensagem(telefone, mensagem);
+    }
+
+  } catch (e) { console.error('Webhook Yampi erro:', e.message); }
 });
 
 app.post('/webhook/popup', async (req, res) => {
