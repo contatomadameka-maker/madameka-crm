@@ -77,16 +77,16 @@ async function init() {
     await ins('Carrinho Abandonado 12h','carrinho_abandonado_2','Oi {nome}!\n\nUltima chance! Leve 2+ pecas com cupom *MADAME8* = 8% off\n\nmadameka.com.br/cart',12);
     await ins('Pos-compra','pos_compra','Oi {nome}!\n\nPedido confirmado! Obrigada por comprar na Madame Ka! Seu pedido esta sendo preparado com carinho',0);
     await ins('Review 7 dias','review','Oi {nome}!\n\nJa chegou seu pedido? Conta pra gente como foi!',168);
-    await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
-    await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
-    await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
-    await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
   }
+  // Sempre roda — adiciona colunas se não existirem
+  await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
+  await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
+  await pool.query(`ALTER TABLE fluxos ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
+  await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE contatos ADD COLUMN IF NOT EXISTS total_compras INTEGER DEFAULT 0`);
 }
-
-// Função para calcular segmento dinâmico de um contato
-async function calcularSegmento(contato) {
-  const hoje = new Date();
   
   // Aniversariante hoje
   if (contato.nascimento) {
