@@ -15,17 +15,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-card input{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:11px 13px;font-size:15px;margin-bottom:12px;outline:none}
 .login-card input:focus{border-color:#1a1a1a}
 .btn{padding:11px 20px;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s;font-weight:500}
-.btn-primary{background:#1a1a1a;color:#fff;width:100%}
+.btn-primary{background:#1a1a1a;color:#fff}
 .btn-primary:hover{background:#c9a87c}
 .btn-gold{background:#c9a87c;color:#fff}
 .btn-gold:hover{background:#b8976b}
 .btn-outline{background:none;border:1.5px solid #e0dbd5;color:#666}
 .btn-outline:hover{border-color:#1a1a1a;color:#1a1a1a}
 .btn-danger{background:#fee2e2;color:#b91c1c;border:none}
+.btn-danger:hover{background:#fecaca}
 .btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 8px;font-size:11px}
+.btn-full{width:100%}
 .app{display:none;min-height:100vh}
 .app.show{display:flex}
-.sidebar{width:220px;background:#1a1a1a;min-height:100vh;position:fixed;left:0;top:0;padding:20px 0}
+.sidebar{width:220px;background:#1a1a1a;min-height:100vh;position:fixed;left:0;top:0;padding:20px 0;overflow-y:auto}
 .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sidebar-logo h2{font-size:15px;font-weight:400;color:#fff}
 .sidebar-logo span{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#c9a87c}
@@ -61,12 +64,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge-ativa{background:#dcfce7;color:#166534}
 .badge-inativa{background:#f3f4f6;color:#6b7280}
 .badge-lead{background:#eff6ff;color:#1d4ed8}
+.badge-risco{background:#fff7ed;color:#c2410c}
+.badge-recente{background:#f0fdf4;color:#15803d}
+.badge-freq{background:#fdf4ff;color:#7e22ce}
+.badge-aniv{background:#fff1f2;color:#be123c}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a}
-.form-group textarea{resize:vertical;min-height:100px}
+.form-group textarea{resize:vertical;min-height:80px}
 .fluxo-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:20px;margin-bottom:14px}
 .fluxo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .fluxo-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f5f0ea}
@@ -83,6 +90,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
 .fluxo-hint{font-size:11px;color:#aaa}
 .fluxo-hint span{background:#f5f0ea;padding:2px 6px;border-radius:4px;font-family:monospace;color:#c9a87c}
+.saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;margin-left:8px;opacity:0;transition:opacity .3s}
+.saved-badge.show{opacity:1}
+
+/* ── SEQUÊNCIAS ── */
+.seq-builder{background:#fff;border-radius:14px;border:0.5px solid #e8e2db;overflow:hidden}
+.seq-builder-header{padding:20px;border-bottom:0.5px solid #f0ece8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.seq-builder-form{padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;border-bottom:0.5px solid #f0ece8}
+@media(max-width:800px){.seq-builder-form{grid-template-columns:1fr}}
+.seq-passos{padding:20px}
+.seq-passo{border:1.5px solid #e8e2db;border-radius:12px;margin-bottom:12px;overflow:hidden;position:relative}
+.seq-passo-header{background:#f5f0ea;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.seq-passo-num{width:28px;height:28px;border-radius:50%;background:#c9a87c;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.seq-passo-title{flex:1;font-size:13px;font-weight:500}
+.seq-passo-body{padding:14px 16px}
+.seq-passo-delay{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.delay-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #e8e2db;background:#fff;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.delay-btn.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
+.delay-custom{display:flex;align-items:center;gap:6px;margin-top:8px}
+.delay-custom input{width:80px;border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none}
+.delay-custom select{border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit}
+.seq-passo textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;outline:none;font-family:inherit;resize:vertical;min-height:90px}
+.seq-passo textarea:focus{border-color:#c9a87c}
+.seq-passo-footer{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid #f5f0ea}
+.seq-connector{text-align:center;padding:6px 0;color:#c9a87c;font-size:20px;position:relative}
+.seq-connector::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:#e8e2db;z-index:0}
+.seq-connector span{position:relative;z-index:1;background:#f5f0ea;padding:0 8px}
+.seq-add-btn{border:2px dashed #e8e2db;border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:#888;transition:all .2s;margin-top:8px}
+.seq-add-btn:hover{border-color:#c9a87c;color:#c9a87c;background:#fffbf5}
+.seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
+.seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.seq-card-nome{font-size:14px;font-weight:500}
+.seq-card-meta{font-size:12px;color:#888;margin-bottom:10px}
+.seq-passos-preview{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.seq-passo-pill{background:#f5f0ea;border-radius:20px;padding:4px 10px;font-size:11px;color:#888;display:flex;align-items:center;gap:4px}
+.seq-passo-pill .dot{width:6px;height:6px;border-radius:50%;background:#c9a87c}
+.gatilho-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500}
+.gatilho-carrinho{background:#fff7ed;color:#c2410c}
+.gatilho-popup{background:#eff6ff;color:#1d4ed8}
+.gatilho-compra{background:#f0fdf4;color:#15803d}
+.gatilho-inativa{background:#fdf4ff;color:#7e22ce}
+.gatilho-manual{background:#f3f4f6;color:#6b7280}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:500}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.modal-lg{max-width:760px}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none}
 .qr-wrap{text-align:center;padding:20px}
 .qr-wrap img{max-width:220px;border-radius:12px;border:1px solid #e8e2db}
 .msg{display:flex;flex-direction:column;margin-bottom:8px}
@@ -92,27 +149,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .msg-time{font-size:10px;color:#aaa;margin-top:2px;padding:0 4px}
 .pag{display:flex;gap:8px;align-items:center;margin-top:16px;justify-content:center}
 .pag-info{font-size:12px;color:#888}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
-.modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.modal-title{font-size:16px;font-weight:500}
-.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
-.toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none}
-.saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;margin-left:8px;opacity:0;transition:opacity .3s}
-.saved-badge.show{opacity:1}
 </style>
 </head>
 <body>
 
 <div class="login" id="login">
   <div class="login-card">
-    <div class="login-logo">
-      <span>Madame Ka</span>
-      <h1>CRM WhatsApp</h1>
-    </div>
+    <div class="login-logo"><span>Madame Ka</span><h1>CRM WhatsApp</h1></div>
     <input type="password" id="inp-senha" placeholder="Senha de acesso" onkeyup="if(event.key==='Enter')entrar()">
-    <button class="btn btn-primary" onclick="entrar()">Entrar</button>
+    <button class="btn btn-primary btn-full" onclick="entrar()">Entrar</button>
     <div id="login-erro" style="color:#dc2626;font-size:12px;text-align:center;margin-top:8px;display:none">Senha incorreta</div>
   </div>
 </div>
@@ -126,6 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-item" onclick="irPara('contatos',this)">👥 Contatos</div>
       <div class="nav-item" onclick="irPara('campanhas',this)">📢 Campanhas</div>
       <div class="nav-item" onclick="irPara('fluxos',this)">🔄 Fluxos Auto</div>
+      <div class="nav-item" onclick="irPara('sequencias',this)">⚡ Sequências</div>
       <div class="nav-item" onclick="irPara('conversas',this)">💬 Conversas</div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
@@ -135,6 +181,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div class="main">
+
     <!-- DASHBOARD -->
     <div class="page ativo" id="page-dashboard">
       <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visao geral do CRM</div></div></div>
@@ -153,9 +200,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <select id="aq-seg">
               <option value="todos">Todos</option>
               <option value="VIP">VIP</option>
+              <option value="Alta Frequencia">Alta Frequência (3+ compras)</option>
+              <option value="Compradora Recente">Compradora Recente (7 dias)</option>
               <option value="Compradora Ativa">Compradora Ativa</option>
+              <option value="Em Risco">Em Risco (45-90 dias)</option>
               <option value="Compradora Inativa">Compradora Inativa</option>
               <option value="Lead">Lead</option>
+              <option value="Aniversariante">Aniversariantes hoje</option>
             </select>
           </div>
           <div class="form-group"><label>Intervalo</label>
@@ -174,7 +225,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- WHATSAPP -->
     <div class="page" id="page-whatsapp">
-      <div class="page-header"><div><div class="page-title">WhatsApp</div><div class="page-sub">Conexao via QR Code</div></div><button class="btn btn-outline btn-sm" onclick="verificarStatus()">Atualizar</button></div>
+      <div class="page-header"><div><div class="page-title">WhatsApp</div><div class="page-sub">Conexao via Z-API</div></div><button class="btn btn-outline btn-sm" onclick="verificarStatus()">Atualizar</button></div>
       <div class="card">
         <div class="card-title">Status da conexao</div>
         <div id="wpp-info">Verificando...</div>
@@ -184,19 +235,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <button class="btn btn-danger btn-sm" onclick="desconectar()">Desconectar</button>
         </div>
         <div id="qr-wrap" class="qr-wrap" style="display:none">
-          <p style="margin-bottom:12px;font-size:13px;color:#888">Escaneie com o WhatsApp > Dispositivos conectados > Conectar dispositivo</p>
+          <p style="margin-bottom:12px;font-size:13px;color:#888">Escaneie com o WhatsApp</p>
           <img id="qr-img" src="" alt="QR Code">
         </div>
       </div>
       <div class="card">
         <div class="card-title">Webhooks para configurar</div>
         <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;margin-bottom:8px">
-          <div style="color:#888;margin-bottom:4px">Yampi:</div>
-          <div id="webhook-yampi">--</div>
+          <div style="color:#888;margin-bottom:4px">Yampi:</div><div id="webhook-yampi">--</div>
         </div>
         <div style="background:#f5f0ea;border-radius:8px;padding:12px;font-size:12px;font-family:monospace">
-          <div style="color:#888;margin-bottom:4px">Popup do site:</div>
-          <div id="webhook-popup">--</div>
+          <div style="color:#888;margin-bottom:4px">Popup do site:</div><div id="webhook-popup">--</div>
         </div>
       </div>
     </div>
@@ -216,9 +265,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <select onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
             <option value="todos">Todos</option>
             <option value="VIP">VIP</option>
+            <option value="Alta Frequencia">Alta Frequência</option>
+            <option value="Compradora Recente">Compradora Recente</option>
             <option value="Compradora Ativa">Compradora Ativa</option>
+            <option value="Em Risco">Em Risco</option>
             <option value="Compradora Inativa">Compradora Inativa</option>
             <option value="Lead">Lead</option>
+            <option value="Aniversariante">Aniversariantes</option>
           </select>
         </div>
         <table class="tabela">
@@ -244,13 +297,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- FLUXOS -->
     <div class="page" id="page-fluxos">
-      <div class="page-header">
-        <div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative cada fluxo</div></div>
-      </div>
+      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Edite as mensagens e ative/desative cada fluxo</div></div></div>
       <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        💡 Use <strong>{nome}</strong> para personalizar com o primeiro nome da cliente. Clique em <strong>Salvar</strong> após editar.
+        💡 Use <strong>{nome}</strong> para personalizar. Clique em <strong>Salvar</strong> após editar.
       </div>
       <div id="lista-fluxos">Carregando...</div>
+    </div>
+
+    <!-- SEQUÊNCIAS -->
+    <div class="page" id="page-sequencias">
+      <div class="page-header">
+        <div><div class="page-title">Sequências</div><div class="page-sub">Funis de mensagens automáticas encadeadas</div></div>
+        <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequência</button>
+      </div>
+      <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
+        ⚡ Crie funis com várias mensagens encadeadas. Cada passo tem delay configurável. Use <strong>{nome}</strong> para personalizar.
+      </div>
+      <div id="lista-sequencias">Carregando...</div>
     </div>
 
     <!-- CONVERSAS -->
@@ -267,22 +330,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
 <!-- MODAL CAMPANHA -->
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
+    <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">×</button></div>
     <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Terra Nova"></div>
     <div class="form-row">
       <div class="form-group"><label>Segmento</label>
         <select id="c-seg">
           <option value="todos">Todos</option>
           <option value="VIP">VIP</option>
+          <option value="Alta Frequencia">Alta Frequência</option>
+          <option value="Compradora Recente">Compradora Recente</option>
           <option value="Compradora Ativa">Compradora Ativa</option>
+          <option value="Em Risco">Em Risco</option>
           <option value="Compradora Inativa">Compradora Inativa</option>
           <option value="Lead">Lead</option>
+          <option value="Aniversariante">Aniversariantes</option>
         </select>
       </div>
       <div class="form-group"><label>Intervalo (segundos)</label>
@@ -302,12 +370,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL SEQUÊNCIA -->
+<div class="modal-bg" id="modal-sequencia">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-seq-titulo">Nova Sequência</div>
+      <button class="modal-close" onclick="fecharModalSeq()">×</button>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Nome da sequência</label><input type="text" id="seq-nome" placeholder="Ex: Recuperação Carrinho"></div>
+      <div class="form-group"><label>Objetivo / Gatilho</label>
+        <select id="seq-gatilho">
+          <option value="carrinho_abandonado">🛒 Carrinho Abandonado</option>
+          <option value="boas_vindas">💛 Boas-vindas (Popup)</option>
+          <option value="pos_compra">📦 Pós-compra</option>
+          <option value="reativacao">😴 Reativação de Inativas</option>
+          <option value="manual">✋ Disparo Manual</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Público alvo</label>
+        <select id="seq-segmento">
+          <option value="todos">Todos</option>
+          <option value="VIP">VIP</option>
+          <option value="Alta Frequencia">Alta Frequência</option>
+          <option value="Compradora Recente">Compradora Recente</option>
+          <option value="Compradora Ativa">Compradora Ativa</option>
+          <option value="Em Risco">Em Risco</option>
+          <option value="Compradora Inativa">Compradora Inativa</option>
+          <option value="Lead">Lead</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Descrição (opcional)</label><input type="text" id="seq-desc" placeholder="Ex: Funil de 3 dias para recuperar carrinho"></div>
+    </div>
+
+    <div style="border-top:0.5px solid #f0ece8;margin:8px -24px;padding:0 24px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px">
+      <div style="font-size:13px;font-weight:500">Mensagens da sequência</div>
+      <div style="font-size:11px;color:#888">Use {nome} para personalizar</div>
+    </div>
+
+    <div id="seq-passos-container"></div>
+    <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
+
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-primary" onclick="salvarSequencia()">💾 Salvar sequência</button>
+      <button class="btn btn-outline" onclick="fecharModalSeq()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const API='';
 let paginaAtual=0,segmentoAtual='todos',buscaAtual='';
 const POR_PAGINA=50;
+let seqEditandoId=null;
+let seqPassos=[];
 
 async function entrar(){
   const senha=document.getElementById('inp-senha').value;
@@ -321,7 +442,7 @@ async function entrar(){
 }
 
 function inicializar(){
-  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarConversas();
+  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
   setInterval(verificarStatus,30000);
@@ -352,29 +473,25 @@ async function verificarStatus(){
   sb.className='wpp-status '+(ok?'status-conectado':'status-desconectado');
   document.getElementById('wpp-status-txt').textContent=ok?'Conectado':'Desconectado';
   const info=document.getElementById('wpp-info');
-  if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">WhatsApp conectado!</span>':'<span style="color:#dc2626">Desconectado. Clique em Conectar WhatsApp.</span>';
+  if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">✅ WhatsApp conectado!</span>':'<span style="color:#dc2626">❌ Desconectado. Clique em Conectar WhatsApp.</span>';
 }
 
 async function criarConexao(){toast('Criando conexao...');await fetch('/api/wpp/criar',{method:'POST'});setTimeout(carregarQR,2000);}
-
 async function carregarQR(){
   const d=await(await fetch('/api/wpp/qr')).json();
-  if(d.ok&&d.qr){
-    document.getElementById('qr-wrap').style.display='block';
-    document.getElementById('qr-img').src=d.qr.startsWith('data:')?d.qr:'data:image/png;base64,'+d.qr;
-  } else toast('Aguarde e tente novamente');
+  if(d.ok&&d.qr){document.getElementById('qr-wrap').style.display='block';document.getElementById('qr-img').src=d.qr.startsWith('data:')?d.qr:'data:image/png;base64,'+d.qr;}
+  else toast('Aguarde e tente novamente');
 }
-
 async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/api/wpp/desconectar',{method:'POST'});toast('Desconectado!');verificarStatus();}
 
 async function carregarContatos(){
   const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
   const tb=document.getElementById('tabela-contatos');
   if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
-  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${c.segmento==='VIP'?'vip':c.segmento==='Compradora Ativa'?'ativa':c.segmento==='Compradora Inativa'?'inativa':'lead'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
+  const badgeMap={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
+  tb.innerHTML=d.contatos.map(c=>`<tr><td>${c.nome}</td><td style="color:#888">${c.telefone}</td><td><span class="badge badge-${badgeMap[c.segmento]||'inativa'}">${c.segmento}</span></td><td style="color:#888;font-size:12px">${c.data_ultimo_pedido||'--'}</td><td style="color:#888;font-size:12px">${c.cidade||'--'}</td></tr>`).join('');
   document.getElementById('pag-info').textContent=`${paginaAtual*POR_PAGINA+1}-${Math.min((paginaAtual+1)*POR_PAGINA,d.total)} de ${d.total.toLocaleString('pt-BR')}`;
 }
-
 function filtrarContatos(v){buscaAtual=v;paginaAtual=0;carregarContatos();}
 function filtrarSegmento(v){segmentoAtual=v;paginaAtual=0;carregarContatos();}
 function proximaPagina(){paginaAtual++;carregarContatos();}
@@ -395,7 +512,6 @@ async function carregarCampanhas(){
   if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
   wrap.innerHTML=d.campanhas.map(c=>`<div class="card"><div class="card-title">${c.nome}<div style="display:flex;gap:8px">${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">Disparar</button>`:''}<span class="badge badge-${c.status==='concluido'?'ativa':'inativa'}">${c.status}</span></div></div><div style="font-size:13px;color:#888;margin-bottom:8px">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s</div><div style="background:#f5f0ea;border-radius:8px;padding:10px;font-size:13px">${c.mensagem.substring(0,150)}</div><div style="font-size:12px;color:#888;margin-top:8px">Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div></div>`).join('');
 }
-
 async function criarCampanha(){
   const nome=document.getElementById('c-nome').value;
   const mensagem=document.getElementById('c-msg').value;
@@ -405,14 +521,12 @@ async function criarCampanha(){
   const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo)})})).json();
   if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
 }
-
 async function dispararCampanha(id){
   if(!confirm('Disparar esta campanha?'))return;
   toast('Disparando...');
   const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST'})).json();
   if(d.ok){toast(d.mensagem);carregarCampanhas();}
 }
-
 async function disparoRapido(){
   const msg=document.getElementById('aq-msg').value;
   const seg=document.getElementById('aq-seg').value;
@@ -423,24 +537,17 @@ async function disparoRapido(){
 }
 
 // ─── FLUXOS ───────────────────────────────────────────────────────────────────
-const FLUXO_ICONS = ['💛','🛒','🛒','📦','⭐'];
-
+const FLUXO_ICONS=['💛','🛒','🛒','📦','⭐'];
 async function carregarFluxos(){
-  const d = await(await fetch('/api/fluxos')).json();
-  if(!d.fluxos?.length){
-    document.getElementById('lista-fluxos').innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhum fluxo encontrado</div>';
-    return;
-  }
-  document.getElementById('lista-fluxos').innerHTML = d.fluxos.map((f,i) => `
+  const d=await(await fetch('/api/fluxos')).json();
+  if(!d.fluxos?.length){document.getElementById('lista-fluxos').innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhum fluxo</div>';return;}
+  document.getElementById('lista-fluxos').innerHTML=d.fluxos.map((f,i)=>`
     <div class="fluxo-card" id="fluxo-card-${f.id}">
       <div class="fluxo-header">
         <div class="fluxo-icon">${FLUXO_ICONS[i]||'💬'}</div>
-        <div class="fluxo-info">
-          <div class="fluxo-nome">${f.nome}</div>
-          <div class="fluxo-tipo">${f.delay_horas > 0 ? 'Delay: '+f.delay_horas+'h após o gatilho' : 'Disparo imediato'}</div>
-        </div>
+        <div class="fluxo-info"><div class="fluxo-nome">${f.nome}</div><div class="fluxo-tipo">${f.delay_horas>0?'Delay: '+f.delay_horas+'h após o gatilho':'Disparo imediato'}</div></div>
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:11px;color:${f.ativo?'#16a34a':'#aaa'}">${f.ativo?'Ativo':'Inativo'}</span>
+          <span style="font-size:11px;color:${f.ativo?'#16a34a':'#aaa'}" id="status-txt-${f.id}">${f.ativo?'Ativo':'Inativo'}</span>
           <div class="toggle ${f.ativo?'on':''}" id="toggle-${f.id}" onclick="toggleFluxo(${f.id},this)"></div>
         </div>
       </div>
@@ -449,55 +556,237 @@ async function carregarFluxos(){
           <label style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em">Mensagem</label>
           <span class="saved-badge" id="saved-${f.id}">✓ Salvo</span>
         </div>
-        <textarea id="fluxo-msg-${f.id}" placeholder="Digite a mensagem...">${f.mensagem}</textarea>
+        <textarea id="fluxo-msg-${f.id}">${f.mensagem}</textarea>
         <div class="fluxo-footer">
-          <div class="fluxo-hint">Use <span>{nome}</span> para o primeiro nome da cliente</div>
+          <div class="fluxo-hint">Use <span>{nome}</span> para o primeiro nome</div>
           <div style="display:flex;gap:8px;align-items:center">
             <div style="display:flex;align-items:center;gap:6px">
               <label style="font-size:11px;color:#888">Delay (h):</label>
-              <input type="number" id="fluxo-delay-${f.id}" value="${f.delay_horas||0}" min="0" max="72" style="width:60px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
+              <input type="number" id="fluxo-delay-${f.id}" value="${f.delay_horas||0}" min="0" max="720" style="width:65px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">
             </div>
-            <button class="btn btn-gold btn-sm" onclick="salvarFluxo(${f.id},'${f.nome}')">💾 Salvar</button>
+            <button class="btn btn-gold btn-sm" onclick="salvarFluxo(${f.id})">💾 Salvar</button>
           </div>
         </div>
       </div>
     </div>
   `).join('');
 }
-
-async function toggleFluxo(id, el){
-  const ativo = el.classList.contains('on') ? 0 : 1;
+async function toggleFluxo(id,el){
+  const ativo=el.classList.contains('on')?0:1;
   el.classList.toggle('on');
-  const statusTxt = el.previousElementSibling;
-  if(statusTxt) { statusTxt.textContent = ativo ? 'Ativo' : 'Inativo'; statusTxt.style.color = ativo ? '#16a34a' : '#aaa'; }
-  const msg = document.getElementById('fluxo-msg-'+id)?.value || '';
-  const delay = parseInt(document.getElementById('fluxo-delay-'+id)?.value || 0);
-  const nome = document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent || '';
+  const txt=document.getElementById('status-txt-'+id);
+  if(txt){txt.textContent=ativo?'Ativo':'Inativo';txt.style.color=ativo?'#16a34a':'#aaa';}
+  const msg=document.getElementById('fluxo-msg-'+id)?.value||'';
+  const delay=parseInt(document.getElementById('fluxo-delay-'+id)?.value||0);
+  const nome=document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent||'';
   await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay})});
-  toast(ativo ? 'Fluxo ativado ✅' : 'Fluxo pausado ⏸');
+  toast(ativo?'Fluxo ativado ✅':'Fluxo pausado ⏸');
+}
+async function salvarFluxo(id){
+  const msg=document.getElementById('fluxo-msg-'+id)?.value;
+  const delay=parseInt(document.getElementById('fluxo-delay-'+id)?.value||0);
+  const ativo=document.getElementById('toggle-'+id)?.classList.contains('on')?1:0;
+  const nome=document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent||'';
+  const d=await(await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem:msg,ativo,delay_horas:delay})})).json();
+  if(d.ok){const b=document.getElementById('saved-'+id);if(b){b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2500);}toast('Salvo ✅');}
+  else toast('Erro ao salvar');
 }
 
-async function salvarFluxo(id, nome){
-  const msg = document.getElementById('fluxo-msg-'+id)?.value;
-  const delay = parseInt(document.getElementById('fluxo-delay-'+id)?.value || 0);
-  const ativo = document.getElementById('toggle-'+id)?.classList.contains('on') ? 1 : 0;
-  const fluxoNome = document.querySelector(`#fluxo-card-${id} .fluxo-nome`)?.textContent || nome;
-  const d = await(await fetch(`/api/fluxos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:fluxoNome,mensagem:msg,ativo,delay_horas:delay})})).json();
-  if(d.ok){
-    const badge = document.getElementById('saved-'+id);
-    if(badge){ badge.classList.add('show'); setTimeout(()=>badge.classList.remove('show'),2500); }
-    toast('Mensagem salva! ✅');
-  } else toast('Erro ao salvar');
-}
-// ──────────────────────────────────────────────────────────────────────────────
+// ─── SEQUÊNCIAS ───────────────────────────────────────────────────────────────
+const GATILHO_LABELS={carrinho_abandonado:'🛒 Carrinho Abandonado',boas_vindas:'💛 Boas-vindas',pos_compra:'📦 Pós-compra',reativacao:'😴 Reativação',manual:'✋ Manual'};
+const GATILHO_BADGE={carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual'};
+const DELAYS_RAPIDOS=[{label:'Imediato',horas:0},{label:'1 hora',horas:1},{label:'3 horas',horas:3},{label:'6 horas',horas:6},{label:'12 horas',horas:12},{label:'1 dia',horas:24},{label:'2 dias',horas:48},{label:'3 dias',horas:72},{label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}];
 
+async function carregarSequencias(){
+  const d=await(await fetch('/api/sequencias')).json();
+  const wrap=document.getElementById('lista-sequencias');
+  if(!d.sequencias?.length){
+    wrap.innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><div style="font-size:13px;color:#888;margin-bottom:16px">Crie funis de mensagens encadeadas com delays configuráveis</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';
+    return;
+  }
+  wrap.innerHTML=d.sequencias.map(s=>`
+    <div class="seq-card">
+      <div class="seq-card-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div class="seq-card-nome">${s.nome}</div>
+            <span class="badge ${GATILHO_BADGE[s.gatilho]||'gatilho-manual'}">${GATILHO_LABELS[s.gatilho]||s.gatilho}</span>
+          </div>
+          <div class="seq-card-meta">Público: ${s.segmento} · ${s.passos?.length||0} mensagens ${s.descricao?'· '+s.descricao:''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:${s.ativo?'#16a34a':'#aaa'}">${s.ativo?'Ativo':'Inativo'}</span>
+          <div class="toggle ${s.ativo?'on':''}" onclick="toggleSequencia(${s.id},${s.ativo},this)"></div>
+        </div>
+      </div>
+      <div class="seq-passos-preview">
+        ${(s.passos||[]).map((p,i)=>`<div class="seq-passo-pill"><div class="dot"></div>${i+1}. ${p.delay_label||formatDelay(p.delay_horas)}: ${p.mensagem.substring(0,30)}...</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="editarSequencia(${s.id})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deletarSequencia(${s.id})">Excluir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDelay(h){
+  if(!h||h===0)return'Imediato';
+  if(h<24)return h+'h';
+  const d=Math.floor(h/24);return d+' dia'+(d>1?'s':'');
+}
+
+function abrirNovaSequencia(){
+  seqEditandoId=null;
+  seqPassos=[];
+  document.getElementById('modal-seq-titulo').textContent='Nova Sequência';
+  document.getElementById('seq-nome').value='';
+  document.getElementById('seq-gatilho').value='carrinho_abandonado';
+  document.getElementById('seq-segmento').value='todos';
+  document.getElementById('seq-desc').value='';
+  document.getElementById('seq-passos-container').innerHTML='';
+  adicionarPasso();
+  document.getElementById('modal-sequencia').classList.add('open');
+}
+
+async function editarSequencia(id){
+  const d=await(await fetch('/api/sequencias')).json();
+  const seq=d.sequencias.find(s=>s.id===id);
+  if(!seq)return;
+  seqEditandoId=id;
+  seqPassos=seq.passos||[];
+  document.getElementById('modal-seq-titulo').textContent='Editar: '+seq.nome;
+  document.getElementById('seq-nome').value=seq.nome;
+  document.getElementById('seq-gatilho').value=seq.gatilho;
+  document.getElementById('seq-segmento').value=seq.segmento||'todos';
+  document.getElementById('seq-desc').value=seq.descricao||'';
+  document.getElementById('seq-passos-container').innerHTML='';
+  seq.passos.forEach(p=>adicionarPasso(p));
+  document.getElementById('modal-sequencia').classList.add('open');
+}
+
+function fecharModalSeq(){
+  document.getElementById('modal-sequencia').classList.remove('open');
+}
+
+let passoCount=0;
+function adicionarPasso(dados){
+  passoCount++;
+  const idx=passoCount;
+  const container=document.getElementById('seq-passos-container');
+  const delayH=dados?.delay_horas||0;
+  const msg=dados?.mensagem||'';
+
+  const connector=container.children.length>0?`<div class="seq-connector"><span>↓ próxima mensagem</span></div>`:''  ;
+
+  const html=`
+    ${connector}
+    <div class="seq-passo" id="passo-${idx}">
+      <div class="seq-passo-header">
+        <div class="seq-passo-num">${container.querySelectorAll('.seq-passo').length+1}</div>
+        <div class="seq-passo-title">Mensagem ${container.querySelectorAll('.seq-passo').length+1}</div>
+        <button class="btn btn-danger btn-xs" onclick="removerPasso(${idx})" style="margin-left:auto">✕</button>
+      </div>
+      <div class="seq-passo-body">
+        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Enviar após:</div>
+        <div class="seq-passo-delay" id="delay-btns-${idx}">
+          ${DELAYS_RAPIDOS.map(d=>`<button class="delay-btn ${d.horas===delayH?'ativo':''}" onclick="selecionarDelay(${idx},${d.horas},this)">${d.label}</button>`).join('')}
+        </div>
+        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Mensagem:</div>
+        <textarea id="passo-msg-${idx}" placeholder="Oi {nome}! ...">${msg}</textarea>
+        <div style="font-size:11px;color:#aaa;margin-top:6px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code> para personalizar</div>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend',html);
+  document.getElementById('passo-delay-val-'+idx)||(()=>{
+    const el=document.createElement('input');
+    el.type='hidden';el.id='passo-delay-val-'+idx;el.value=delayH;
+    document.getElementById('passo-'+idx).appendChild(el);
+  })();
+}
+
+function selecionarDelay(idx,horas,btn){
+  document.querySelectorAll(`#delay-btns-${idx} .delay-btn`).forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  let el=document.getElementById('passo-delay-val-'+idx);
+  if(!el){el=document.createElement('input');el.type='hidden';el.id='passo-delay-val-'+idx;document.getElementById('passo-'+idx).appendChild(el);}
+  el.value=horas;
+}
+
+function removerPasso(idx){
+  const el=document.getElementById('passo-'+idx);
+  if(el){
+    const prev=el.previousElementSibling;
+    if(prev&&prev.classList.contains('seq-connector'))prev.remove();
+    el.remove();
+  }
+  renumerarPassos();
+}
+
+function renumerarPassos(){
+  document.querySelectorAll('#seq-passos-container .seq-passo').forEach((el,i)=>{
+    const num=el.querySelector('.seq-passo-num');
+    const title=el.querySelector('.seq-passo-title');
+    if(num)num.textContent=i+1;
+    if(title)title.textContent='Mensagem '+(i+1);
+  });
+}
+
+async function salvarSequencia(){
+  const nome=document.getElementById('seq-nome').value.trim();
+  const gatilho=document.getElementById('seq-gatilho').value;
+  const segmento=document.getElementById('seq-segmento').value;
+  const descricao=document.getElementById('seq-desc').value.trim();
+  if(!nome){toast('Dê um nome para a sequência');return;}
+
+  const passosEls=document.querySelectorAll('#seq-passos-container .seq-passo');
+  const passos=[];
+  for(const el of passosEls){
+    const id=el.id.replace('passo-','');
+    const msg=document.getElementById('passo-msg-'+id)?.value?.trim()||'';
+    const delayEl=document.getElementById('passo-delay-val-'+id);
+    const delay=parseInt(delayEl?.value||0);
+    const delayBtn=el.querySelector('.delay-btn.ativo');
+    const delayLabel=delayBtn?.textContent||formatDelay(delay);
+    if(!msg){toast('Preencha todas as mensagens');return;}
+    passos.push({mensagem:msg,delay_horas:delay,delay_label:delayLabel});
+  }
+  if(!passos.length){toast('Adicione pelo menos uma mensagem');return;}
+
+  const body={nome,gatilho,segmento,descricao,passos};
+  let d;
+  if(seqEditandoId){
+    d=await(await fetch(`/api/sequencias/${seqEditandoId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  } else {
+    d=await(await fetch('/api/sequencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  }
+  if(d.ok){toast('Sequência salva! ✅');fecharModalSeq();carregarSequencias();}
+  else toast('Erro: '+d.erro);
+}
+
+async function toggleSequencia(id,ativo,el){
+  const novoAtivo=ativo?0:1;
+  el.classList.toggle('on');
+  const txt=el.previousElementSibling;
+  if(txt){txt.textContent=novoAtivo?'Ativo':'Inativo';txt.style.color=novoAtivo?'#16a34a':'#aaa';}
+  await fetch(`/api/sequencias/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:novoAtivo})});
+  toast(novoAtivo?'Sequência ativada ✅':'Sequência pausada ⏸');
+}
+
+async function deletarSequencia(id){
+  if(!confirm('Excluir esta sequência?'))return;
+  await fetch(`/api/sequencias/${id}`,{method:'DELETE'});
+  toast('Excluída!');carregarSequencias();
+}
+
+// ─── CONVERSAS ────────────────────────────────────────────────────────────────
 async function carregarConversas(){
   const d=await(await fetch('/api/conversas')).json();
   const lista=document.getElementById('lista-conversas');
   if(!d.conversas?.length){lista.innerHTML='<div style="padding:16px;text-align:center;color:#888;font-size:13px">Nenhuma conversa</div>';return;}
   lista.innerHTML=d.conversas.map(c=>`<div onclick="abrirConversa('${c.telefone}','${c.nome||'Cliente'}')" style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0">${(c.nome||'?')[0]}</div><div><div style="font-size:13px;font-weight:500">${c.nome||c.telefone}</div><div style="font-size:11px;color:#888">${c.total} mensagens</div></div></div>`).join('');
 }
-
 async function abrirConversa(tel,nome){
   const d=await(await fetch(`/api/conversas/${tel}`)).json();
   document.getElementById('conversa-ativa').style.display='block';
