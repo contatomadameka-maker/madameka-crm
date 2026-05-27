@@ -150,7 +150,14 @@ app.post('/api/contatos/importar', upload.single('arquivo'), async (req, res) =>
       try {
         await pool.query(
           `INSERT INTO contatos (nome,telefone,email,segmento,valor_ultimo_pedido,data_ultimo_pedido,cidade,estado,origem,data_cadastro,nascimento)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (telefone) DO NOTHING`,
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+           ON CONFLICT (telefone) DO UPDATE SET
+             nome = CASE WHEN contatos.nome = '' OR contatos.nome IS NULL THEN EXCLUDED.nome ELSE contatos.nome END,
+             segmento = CASE WHEN EXCLUDED.segmento != 'Lead' THEN EXCLUDED.segmento ELSE contatos.segmento END,
+             valor_ultimo_pedido = CASE WHEN EXCLUDED.valor_ultimo_pedido != '' THEN EXCLUDED.valor_ultimo_pedido ELSE contatos.valor_ultimo_pedido END,
+             data_ultimo_pedido = CASE WHEN EXCLUDED.data_ultimo_pedido != '' THEN EXCLUDED.data_ultimo_pedido ELSE contatos.data_ultimo_pedido END,
+             cidade = CASE WHEN EXCLUDED.cidade != '' THEN EXCLUDED.cidade ELSE contatos.cidade END,
+             nascimento = CASE WHEN EXCLUDED.nascimento != '' THEN EXCLUDED.nascimento ELSE contatos.nascimento END`,
           [r['nome']||r['Nome']||'', tel, r['Email']||r['email']||'', r['Segmento']||r['segmento']||'Lead',
            r['Valor Último Pedido']||r['valor_ultimo_pedido']||'', r['Data Último Pedido']||r['data_ultimo_pedido']||'',
            r['Cidade']||r['cidade']||'', r['Estado']||r['estado']||'', r['Origem']||r['utm_source']||'',
@@ -377,7 +384,9 @@ app.post('/webhook/popup', async (req, res) => {
     if (!whatsapp) return;
     const tel = whatsapp.replace(/\D/g, '');
     await pool.query(
-      `INSERT INTO contatos (nome,telefone,email,segmento,origem) VALUES ($1,$2,$3,'Lead','popup') ON CONFLICT (telefone) DO NOTHING`,
+      `INSERT INTO contatos (nome,telefone,email,segmento,origem) VALUES ($1,$2,$3,'Lead','popup')
+       ON CONFLICT (telefone) DO UPDATE SET
+         nome = CASE WHEN contatos.nome = '' OR contatos.nome IS NULL THEN EXCLUDED.nome ELSE contatos.nome END`,
       [nome||'', tel, email||'']
     );
     const { rows: check } = await pool.query('SELECT segmento FROM contatos WHERE telefone=$1', [tel]);
