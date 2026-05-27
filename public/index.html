@@ -74,7 +74,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .badge-pausado{background:#f3f4f6;color:#6b7280}
 .badge-concluido{background:#dcfce7;color:#166534}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
@@ -103,8 +102,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;opacity:0;transition:opacity .3s}
 .saved-badge.show{opacity:1}
 .seguranca-bar{background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px}
-.seguranca-item{display:flex;align-items:center;gap:5px}
-.seguranca-dot{width:8px;height:8px;border-radius:50%}
 .seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
 .seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .seq-card-nome{font-size:14px;font-weight:500}
@@ -131,6 +128,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .seq-connector{text-align:center;padding:4px 0;color:#c9a87c;font-size:20px}
 .seq-add-btn{border:2px dashed #e8e2db;border-radius:12px;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:#888;transition:all .2s;margin-top:8px}
 .seq-add-btn:hover{border-color:#c9a87c;color:#c9a87c;background:#fffbf5}
+.config-section{margin-bottom:24px}
+.config-section-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0ece8}
+.config-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid #f5f0ea}
+.config-item:last-child{border-bottom:none}
+.config-label{font-size:13px;font-weight:500}
+.config-desc{font-size:11px;color:#888;margin-top:2px}
+.config-input{width:120px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:14px;outline:none;text-align:center}
+.config-input:focus{border-color:#c9a87c}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px}
@@ -178,13 +183,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-item" onclick="irPara('fluxos',this)">🔄 Fluxos Auto</div>
       <div class="nav-item" onclick="irPara('sequencias',this)">⚡ Sequências</div>
       <div class="nav-item" onclick="irPara('conversas',this)">💬 Conversas</div>
+      <div class="nav-item" onclick="irPara('config',this)">⚙️ Configurações</div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
       <div class="status-dot"></div>
       <span id="wpp-status-txt">Desconectado</span>
     </div>
     <div style="margin:12px 20px 0;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:11px;color:#aaa">
-      <div>📨 Hoje: <span id="sb-envios">--</span>/200</div>
+      <div>📨 Hoje: <span id="sb-envios">--</span>/<span id="sb-limite">200</span></div>
       <div id="sb-horario" style="margin-top:4px"></div>
     </div>
   </div>
@@ -210,7 +216,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="stat" style="border-color:#fed7aa">
           <div class="stat-lbl">📨 Enviados hoje</div>
           <div class="stat-val" id="s-hoje">--</div>
-          <div class="stat-sub" style="color:#c2410c">limite: 200/dia</div>
+          <div class="stat-sub" id="s-hoje-limite" style="color:#c2410c">limite: 200/dia</div>
         </div>
       </div>
       <div class="card">
@@ -241,8 +247,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </select>
           </div>
         </div>
-        <div class="form-group"><label>Limite de contatos (0 = todos)</label>
-          <input type="number" id="aq-limite" value="0" min="0" placeholder="Ex: 50 para enviar só 50 hoje">
+        <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
+          <input type="number" id="aq-limite" value="0" min="0" placeholder="Ex: 50">
         </div>
         <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea></div>
         <div class="midia-box">
@@ -374,6 +380,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="page" id="page-config">
+      <div class="page-header"><div><div class="page-title">Configurações</div><div class="page-sub">Limites, horários e segurança</div></div></div>
+
+      <div class="card">
+        <div class="config-section-title">📊 Limites de Disparo</div>
+        <div class="config-item">
+          <div>
+            <div class="config-label">Limite diário de mensagens</div>
+            <div class="config-desc">Máximo de mensagens enviadas por dia. Recomendado: 100-200 no início.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" class="config-input" id="cfg-limite-diario" value="200" min="1" max="2000">
+            <button class="btn btn-gold btn-sm" onclick="salvarConfig('limite_diario', document.getElementById('cfg-limite-diario').value)">Salvar</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <div>
+            <div class="config-label">Horário de início dos disparos</div>
+            <div class="config-desc">Hora do dia para começar a enviar mensagens (0-23).</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" class="config-input" id="cfg-horario-inicio" value="9" min="0" max="23">
+            <button class="btn btn-gold btn-sm" onclick="salvarConfig('horario_inicio', document.getElementById('cfg-horario-inicio').value)">Salvar</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <div>
+            <div class="config-label">Horário de fim dos disparos</div>
+            <div class="config-desc">Hora do dia para parar de enviar mensagens (0-23).</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" class="config-input" id="cfg-horario-fim" value="20" min="0" max="23">
+            <button class="btn btn-gold btn-sm" onclick="salvarConfig('horario_fim', document.getElementById('cfg-horario-fim').value)">Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="config-section-title">📱 Status de Segurança</div>
+        <div id="config-status-seguranca" style="font-size:13px;color:#888">Carregando...</div>
+      </div>
+
+      <div class="card">
+        <div class="config-section-title">💡 Guia de Segurança Anti-Bloqueio</div>
+        <div style="font-size:13px;color:#666;line-height:1.8">
+          <div style="margin-bottom:8px">🟢 <strong>Semana 1-2:</strong> Máximo 50-100 mensagens/dia · Intervalo mínimo 60s</div>
+          <div style="margin-bottom:8px">🟡 <strong>Semana 3-4:</strong> Máximo 150-200 mensagens/dia · Intervalo 45-60s</div>
+          <div style="margin-bottom:8px">🔵 <strong>Mês 2+:</strong> Máximo 300-500 mensagens/dia · Intervalo 45s</div>
+          <div style="margin-bottom:8px">⚠️ <strong>Sempre use {nome}</strong> para personalizar cada mensagem</div>
+          <div style="margin-bottom:8px">⚠️ <strong>Nunca dispare fora do horário comercial</strong> (9h-20h)</div>
+          <div>✅ <strong>Responda as clientes</strong> que responderem — isso protege o número</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -396,7 +459,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="Aniversariante">Aniversariantes 🎂</option>
         </select>
       </div>
-      <div class="form-group"><label>Limite de contatos (0 = todos)</label>
+      <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
         <input type="number" id="c-limite" value="0" min="0" placeholder="0 = sem limite">
       </div>
     </div>
@@ -491,6 +554,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 let paginaAtual=0,segmentoAtual='todos',buscaAtual='';
 const POR_PAGINA=50;
 let seqEditandoId=null,passoCount=0;
+let cfgAtual={limite_diario:200,horario_inicio:9,horario_fim:20};
 
 async function entrar(){
   const senha=document.getElementById('inp-senha').value;
@@ -501,7 +565,7 @@ async function entrar(){
 }
 
 function inicializar(){
-  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();
+  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();carregarConfig();
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
   setInterval(verificarStatus,30000);
@@ -525,6 +589,59 @@ function irParaSegmento(seg){
   carregarContatos();
 }
 
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+async function carregarConfig(){
+  try {
+    const d=await(await fetch('/api/config')).json();
+    if(!d.ok)return;
+    cfgAtual={
+      limite_diario: parseInt(d.config.limite_diario||200),
+      horario_inicio: parseInt(d.config.horario_inicio||9),
+      horario_fim: parseInt(d.config.horario_fim||20),
+    };
+    document.getElementById('cfg-limite-diario').value=cfgAtual.limite_diario;
+    document.getElementById('cfg-horario-inicio').value=cfgAtual.horario_inicio;
+    document.getElementById('cfg-horario-fim').value=cfgAtual.horario_fim;
+    document.getElementById('sb-limite').textContent=cfgAtual.limite_diario;
+    document.getElementById('s-hoje-limite').textContent=`limite: ${cfgAtual.limite_diario}/dia`;
+    atualizarStatusSeguranca();
+  } catch(e){}
+}
+
+function atualizarStatusSeguranca(){
+  const hora=new Date().getHours();
+  const horarioOk=hora>=cfgAtual.horario_inicio&&hora<cfgAtual.horario_fim;
+  const envHoje=parseInt(document.getElementById('s-hoje')?.textContent)||0;
+  const pct=Math.round((envHoje/cfgAtual.limite_diario)*100);
+  const el=document.getElementById('config-status-seguranca');
+  if(el){
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:${horarioOk?'#f0fdf4':'#fef2f2'};border-radius:8px;padding:12px">
+          <div style="font-size:18px;margin-bottom:4px">${horarioOk?'🟢':'🔴'}</div>
+          <div style="font-weight:500;font-size:13px">${horarioOk?'Horário permitido':'Fora do horário'}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">${cfgAtual.horario_inicio}h às ${cfgAtual.horario_fim}h · Agora: ${hora}h</div>
+        </div>
+        <div style="background:${pct<80?'#f0fdf4':'#fef2f2'};border-radius:8px;padding:12px">
+          <div style="font-size:18px;margin-bottom:4px">${pct<80?'🟢':pct<100?'🟡':'🔴'}</div>
+          <div style="font-weight:500;font-size:13px">${envHoje}/${cfgAtual.limite_diario} enviados</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">${cfgAtual.limite_diario-envHoje} restantes hoje (${pct}%)</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function salvarConfig(chave, valor){
+  if(!valor){toast('Digite um valor válido');return;}
+  const d=await(await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chave,valor})})).json();
+  if(d.ok){
+    toast('✅ Configuração salva!');
+    carregarConfig();
+    carregarStats();
+  } else toast('Erro ao salvar');
+}
+
 // ─── UPLOAD ───────────────────────────────────────────────────────────────────
 async function fazerUpload(input,tipoId,urlId,previewId,statusId){
   const file=input.files[0];if(!file)return;
@@ -541,7 +658,7 @@ async function fazerUpload(input,tipoId,urlId,previewId,statusId){
       previewMidia(urlId,previewId);
       setTimeout(()=>status.textContent='',3000);
     } else {status.textContent='❌ '+d.erro;status.style.color='#dc2626';}
-  } catch(e){status.textContent='❌ Erro no upload';status.style.color='#dc2626';}
+  } catch(e){status.textContent='❌ Erro';status.style.color='#dc2626';}
   input.value='';
 }
 
@@ -577,17 +694,17 @@ async function carregarStats(){
   document.getElementById('s-hoje').textContent=d.enviosHoje||0;
   document.getElementById('sb-envios').textContent=d.enviosHoje||0;
   const hora=new Date().getHours();
-  const horarioOk=hora>=9&&hora<20;
+  const horarioOk=hora>=cfgAtual.horario_inicio&&hora<cfgAtual.horario_fim;
   document.getElementById('sb-horario').textContent=horarioOk?'🟢 Horário ok':'🔴 Fora do horário';
-  // Barra de segurança
+  atualizarStatusSeguranca();
+  const pct=Math.round(((d.enviosHoje||0)/cfgAtual.limite_diario)*100);
   const bar=document.getElementById('seguranca-bar');
-  const pct=Math.round(((d.enviosHoje||0)/200)*100);
   if((d.enviosHoje||0)>0){
     bar.style.display='flex';
-    bar.innerHTML=`<span style="font-weight:500">📊 Segurança:</span>
-      <div class="seguranca-item"><div class="seguranca-dot" style="background:${horarioOk?'#16a34a':'#dc2626'}"></div>${horarioOk?'Horário permitido':'Fora do horário (9h-20h)'}</div>
-      <div class="seguranca-item"><div class="seguranca-dot" style="background:${pct<80?'#16a34a':'#dc2626'}"></div>${d.enviosHoje||0}/200 enviados hoje (${pct}%)</div>
-      <div style="margin-left:auto;font-size:11px;color:#888">${200-(d.enviosHoje||0)} restantes hoje</div>`;
+    bar.innerHTML=`<span style="font-weight:500">📊 Hoje:</span>
+      <span>${horarioOk?'🟢 Horário ok':'🔴 Fora do horário'}</span>
+      <span>${d.enviosHoje||0}/${cfgAtual.limite_diario} mensagens (${pct}%)</span>
+      <span style="margin-left:auto;color:#888">${cfgAtual.limite_diario-(d.enviosHoje||0)} restantes</span>`;
   }
 }
 
@@ -637,7 +754,6 @@ async function carregarCampanhas(){
   const wrap=document.getElementById('lista-campanhas');
   if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
   wrap.innerHTML=d.campanhas.map(c=>{
-    const pct=c.total_envios>0?Math.min(100,Math.round((c.total_envios/(c.total_envios+1))*100)):0;
     const statusBadge={rascunho:'inativa',disparando:'disparando',pausado:'pausado',concluido:'concluido'}[c.status]||'inativa';
     return `<div class="camp-card">
       <div class="camp-card-header">
@@ -646,8 +762,7 @@ async function carregarCampanhas(){
       </div>
       <div class="camp-card-meta">Segmento: ${c.segmento} · Intervalo: ${c.intervalo_segundos}s · Enviados: ${c.total_envios} · Erros: ${c.total_erros}</div>
       <div class="camp-card-msg">${c.mensagem.substring(0,120)}${c.mensagem.length>120?'...':''}</div>
-      ${c.status==='disparando'?`<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`:''}
-      <div class="camp-acoes" style="margin-top:10px">
+      <div class="camp-acoes">
         ${c.status==='rascunho'?`<button class="btn btn-gold btn-sm" onclick="dispararCampanha(${c.id})">▶ Disparar</button>`:''}
         ${c.status==='disparando'?`<button class="btn btn-danger btn-sm" onclick="pausarCampanha(${c.id})">⏹ Parar</button>`:''}
         ${c.status==='pausado'?`<button class="btn btn-success btn-sm" onclick="retomarCampanha(${c.id})">▶ Retomar</button>`:''}
@@ -674,8 +789,7 @@ async function dispararCampanha(id){
   if(!confirm('Disparar esta campanha?'))return;
   toast('Disparando...');
   const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
-  if(d.ok)toast(d.mensagem);
-  else toast('❌ '+d.erro);
+  if(d.ok)toast(d.mensagem);else toast('❌ '+d.erro);
   carregarCampanhas();
 }
 
@@ -688,8 +802,7 @@ async function pausarCampanha(id){
 async function retomarCampanha(id){
   toast('Retomando...');
   const d=await(await fetch(`/api/campanhas/${id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
-  if(d.ok)toast(d.mensagem);
-  else toast('❌ '+d.erro);
+  if(d.ok)toast(d.mensagem);else toast('❌ '+d.erro);
   carregarCampanhas();
 }
 
@@ -704,8 +817,7 @@ async function disparoRapido(){
   const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl})})).json();
   if(cr.ok){
     const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
-    if(d.ok)toast(d.mensagem);
-    else toast('❌ '+d.erro);
+    if(d.ok)toast(d.mensagem);else toast('❌ '+d.erro);
     carregarCampanhas();
   }
 }
@@ -926,60 +1038,4 @@ async function salvarSequencia(){
   const nome=document.getElementById('seq-nome').value.trim();
   const gatilho=document.getElementById('seq-gatilho').value;
   const segmento=document.getElementById('seq-segmento').value;
-  const descricao=document.getElementById('seq-desc').value.trim();
-  if(!nome){toast('Dê um nome para a sequência');return;}
-  const passosEls=document.querySelectorAll('#seq-passos-container .seq-passo');
-  const passos=[];
-  for(const el of passosEls){
-    const id=el.id.replace('passo-','');
-    const msg=document.getElementById('passo-msg-'+id)?.value?.trim()||'';
-    const delay=parseFloat(document.getElementById('passo-delay-val-'+id)?.value||0);
-    const delayBtn=el.querySelector('.delay-btn.ativo');
-    const delayLabel=delayBtn?.textContent||formatDelay(delay);
-    const midTipo=document.getElementById('passo-midia-tipo-'+id)?.value||'texto';
-    const midUrl=document.getElementById('passo-midia-url-'+id)?.value||'';
-    if(!msg){toast('Preencha todas as mensagens');return;}
-    passos.push({mensagem:msg,delay_horas:delay,delay_label:delayLabel,midia_tipo:midTipo,midia_url:midUrl});
-  }
-  if(!passos.length){toast('Adicione pelo menos uma mensagem');return;}
-  const body={nome,gatilho,segmento,descricao,passos};
-  let d;
-  if(seqEditandoId){d=await(await fetch(`/api/sequencias/${seqEditandoId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
-  else{d=await(await fetch('/api/sequencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
-  if(d.ok){toast('Sequência salva! ✅');fecharModalSeq();carregarSequencias();}
-  else toast('Erro: '+d.erro);
-}
-
-async function toggleSequencia(id,ativo,el){
-  const novoAtivo=ativo?0:1;
-  el.classList.toggle('on');
-  const txt=el.previousElementSibling;
-  if(txt){txt.textContent=novoAtivo?'Ativo':'Inativo';txt.style.color=novoAtivo?'#16a34a':'#aaa';}
-  await fetch(`/api/sequencias/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:novoAtivo})});
-  toast(novoAtivo?'Sequência ativada ✅':'Sequência pausada ⏸');
-}
-
-async function deletarSequencia(id){
-  if(!confirm('Excluir esta sequência?'))return;
-  await fetch(`/api/sequencias/${id}`,{method:'DELETE'});
-  toast('Excluída!');carregarSequencias();
-}
-
-// ─── CONVERSAS ────────────────────────────────────────────────────────────────
-async function carregarConversas(){
-  const d=await(await fetch('/api/conversas')).json();
-  const lista=document.getElementById('lista-conversas');
-  if(!d.conversas?.length){lista.innerHTML='<div style="padding:16px;text-align:center;color:#888;font-size:13px">Nenhuma conversa</div>';return;}
-  lista.innerHTML=d.conversas.map(c=>`<div onclick="abrirConversa('${c.telefone}','${c.nome||'Cliente'}')" style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0">${(c.nome||'?')[0]}</div><div><div style="font-size:13px;font-weight:500">${c.nome||c.telefone}</div><div style="font-size:11px;color:#888">${c.total} mensagens</div></div></div>`).join('');
-}
-async function abrirConversa(tel,nome){
-  const d=await(await fetch(`/api/conversas/${tel}`)).json();
-  document.getElementById('conversa-ativa').style.display='block';
-  document.getElementById('conv-nome').textContent=nome||tel;
-  document.getElementById('msgs-conversa').innerHTML=d.mensagens.map(m=>`<div class="msg ${m.de==='cliente'?'cliente':'bot'}"><div class="bubble">${m.mensagem.replace(/\n/g,'<br>')}</div><div class="msg-time">${m.de==='bot'?'IA · ':''} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
-}
-
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000);}
-</script>
-</body>
-</html>
+  const descricao=docu
