@@ -152,26 +152,29 @@ async function getConfig() {
     horario_fim: parseInt(cfg.horario_fim || '20'),
   };
 }
-await pool.query(`
-  CREATE TABLE IF NOT EXISTS instancias (
-    id SERIAL PRIMARY KEY,
-    nome TEXT NOT NULL,
-    instance_id TEXT NOT NULL,
-    token TEXT NOT NULL,
-    client_token TEXT NOT NULL,
-    status TEXT DEFAULT 'desconectado',
-    ativo INTEGER DEFAULT 1,
-    criado_em TIMESTAMP DEFAULT NOW()
-  );
-`);
-// Instância principal já existente
-await pool.query(`
-  INSERT INTO instancias (nome, instance_id, token, client_token)
-  VALUES ('Principal', '3F3B33A2992E1162E39B6627BE24201D', 'C8C9AEE300AE3E2B586CF1B3', 'F8d6cdf1bbebe419abdb464fbf2c74bb2S')
-  ON CONFLICT DO NOTHING
-`);
-await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS instancia_id INTEGER DEFAULT 1`);
+
+async function initInstancias() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS instancias (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      instance_id TEXT NOT NULL,
+      token TEXT NOT NULL,
+      client_token TEXT NOT NULL,
+      status TEXT DEFAULT 'desconectado',
+      ativo INTEGER DEFAULT 1,
+      criado_em TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    INSERT INTO instancias (nome, instance_id, token, client_token)
+    VALUES ('Principal', '3F3B33A2992E1162E39B6627BE24201D', 'C8C9AEE300AE3E2B586CF1B3', 'F8d6cdf1bbebe419abdb464fbf2c74bb2S')
+    ON CONFLICT DO NOTHING
+  `);
+  await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS instancia_id INTEGER DEFAULT 1`);
+}
 
 init().catch(console.error);
+initInstancias().catch(console.error);
 
 module.exports = { pool, calcularSegmento, buscarPorSegmento, getConfig };
