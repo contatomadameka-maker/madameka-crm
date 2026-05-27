@@ -183,6 +183,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-item" onclick="irPara('fluxos',this)">🔄 Fluxos Auto</div>
       <div class="nav-item" onclick="irPara('sequencias',this)">⚡ Sequências</div>
       <div class="nav-item" onclick="irPara('conversas',this)">💬 Conversas</div>
+      <div class="nav-item" onclick="irPara('numeros',this)">📱 Números</div>
       <div class="nav-item" onclick="irPara('config',this)">⚙️ Configurações</div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
@@ -235,7 +236,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="Aniversariante">Aniversariantes 🎂</option>
             </select>
           </div>
-          <div class="form-group"><label>Intervalo entre envios</label>
+          <div class="form-group"><label>Número WhatsApp</label><select id="c-instancia" style="width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit"><option value="1">Carregando...</option></select></div>
+    <div class="form-group"><label>Intervalo entre envios</label>
             <select id="aq-intervalo">
               <option value="45">45s</option>
               <option value="60" selected>60s (recomendado)</option>
@@ -268,6 +270,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <input type="text" id="aq-midia-url" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none" oninput="previewMidia('aq-midia-url','aq-midia-preview')">
           </div>
           <div id="aq-midia-preview" class="midia-preview" style="display:none"></div>
+        </div>
+        <div class="form-group" style="margin-top:12px"><label>Número WhatsApp</label>
+          <select id="aq-instancia" style="width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit"><option value="1">Carregando...</option></select>
         </div>
         <button class="btn btn-gold" style="margin-top:14px" onclick="disparoRapido()">Disparar agora</button>
       </div>
@@ -381,6 +386,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
+    <!-- NÚMEROS -->
+    <div class="page" id="page-numeros">
+      <div class="page-header">
+        <div><div class="page-title">Números WhatsApp</div><div class="page-sub">Gerencie múltiplas instâncias Z-API</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-numero').classList.add('open')">+ Adicionar número</button>
+      </div>
+      <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
+        📱 Cada campanha pode usar um número diferente. Use múltiplos números para distribuir os disparos e ter contingência caso um seja bloqueado.
+      </div>
+      <div id="lista-numeros">Carregando...</div>
+    </div>
+
     <!-- CONFIGURAÇÕES -->
     <div class="page" id="page-config">
       <div class="page-header"><div><div class="page-title">Configurações</div><div class="page-sub">Limites, horários e segurança</div></div></div>
@@ -463,6 +480,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <input type="number" id="c-limite" value="0" min="0" placeholder="0 = sem limite">
       </div>
     </div>
+    <div class="form-group"><label>Número WhatsApp</label><select id="c-instancia" style="width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit"><option value="1">Carregando...</option></select></div>
     <div class="form-group"><label>Intervalo entre envios</label>
       <select id="c-intervalo">
         <option value="45">45s</option>
@@ -548,6 +566,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL NÚMERO -->
+<div class="modal-bg" id="modal-numero">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Adicionar número WhatsApp</div><button class="modal-close" onclick="document.getElementById('modal-numero').classList.remove('open')">×</button></div>
+    <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#92400e">Crie uma nova instância no painel Z-API (app.z-api.io) e cole os dados abaixo.</div>
+    <div class="form-group"><label>Nome do número</label><input type="text" id="n-nome" placeholder="Ex: Número 2, Backup, Lançamentos"></div>
+    <div class="form-group"><label>Instance ID</label><input type="text" id="n-instance" placeholder="Ex: 3F3B33A2992E1162..."></div>
+    <div class="form-group"><label>Token</label><input type="text" id="n-token" placeholder="Ex: C8C9AEE300AE3E2B..."></div>
+    <div class="form-group"><label>Client Token</label><input type="text" id="n-client" placeholder="Ex: F8d6cdf1bbebe419..."></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="adicionarNumero()">Adicionar</button>
+      <button class="btn btn-outline" onclick="document.getElementById('modal-numero').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -565,7 +599,7 @@ async function entrar(){
 }
 
 function inicializar(){
-  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();carregarConfig();
+  carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();carregarConfig();carregarNumeros();
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
   setInterval(verificarStatus,30000);
@@ -781,7 +815,8 @@ async function criarCampanha(){
   const midTipo=document.getElementById('c-midia-tipo').value;
   const midUrl=document.getElementById('c-midia-url').value;
   if(!nome||!mensagem){toast('Preencha todos os campos');return;}
-  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl})})).json();
+  const instCamp=document.getElementById('c-instancia')?.value||'1';
+  const d=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,mensagem,segmento,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instCamp)})})).json();
   if(d.ok){toast('Campanha criada!');document.getElementById('modal-campanha').classList.remove('open');carregarCampanhas();}
 }
 
@@ -814,7 +849,8 @@ async function disparoRapido(){
   const midTipo=document.getElementById('aq-midia-tipo').value;
   const midUrl=document.getElementById('aq-midia-url').value;
   if(!msg){toast('Escreva a mensagem');return;}
-  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl})})).json();
+  const instAq=document.getElementById('aq-instancia')?.value||'1';
+  const cr=await(await fetch('/api/campanhas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:'Disparo '+new Date().toLocaleDateString('pt-BR'),mensagem:msg,segmento:seg,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instAq)})})).json();
   if(cr.ok){
     const d=await(await fetch(`/api/campanhas/${cr.id}/disparar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})).json();
     if(d.ok)toast(d.mensagem);else toast('❌ '+d.erro);
@@ -1089,6 +1125,55 @@ async function abrirConversa(tel,nome){
   document.getElementById('conversa-ativa').style.display='block';
   document.getElementById('conv-nome').textContent=nome||tel;
   document.getElementById('msgs-conversa').innerHTML=d.mensagens.map(m=>`<div class="msg ${m.de==='cliente'?'cliente':'bot'}"><div class="bubble">${m.mensagem.replace(/\n/g,'<br>')}</div><div class="msg-time">${m.de==='bot'?'IA · ':''} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+
+
+// ─── INSTÂNCIAS ───────────────────────────────────────────────────────────────
+async function carregarNumeros(){
+  const d=await(await fetch('/api/instancias')).json();
+  const wrap=document.getElementById('lista-numeros');
+  if(!d.instancias?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma instância</div>';return;}
+  wrap.innerHTML=d.instancias.map(inst=>`
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:14px;font-weight:500">${inst.nome}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">ID: ${inst.instance_id.substring(0,24)}...</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;padding:4px 10px;border-radius:20px;background:${inst.status==='conectado'?'#dcfce7':'#fee2e2'};color:${inst.status==='conectado'?'#166534':'#991b1b'}">${inst.status==='conectado'?'✅ Conectado':'❌ Desconectado'}</span>
+          ${inst.id>1?`<button class="btn btn-danger btn-sm" onclick="excluirNumero(${inst.id})">Excluir</button>`:'<span style="font-size:11px;color:#aaa">Principal</span>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+  // Atualiza seletor nas campanhas
+  const sel=document.getElementById('c-instancia');
+  if(sel){
+    sel.innerHTML=d.instancias.map(i=>`<option value="${i.id}">${i.nome} ${i.status==='conectado'?'✅':'❌'}</option>`).join('');
+  }
+  // Atualiza seletor no disparo rápido
+  const selAq=document.getElementById('aq-instancia');
+  if(selAq){
+    selAq.innerHTML=d.instancias.map(i=>`<option value="${i.id}">${i.nome} ${i.status==='conectado'?'✅':'❌'}</option>`).join('');
+  }
+}
+
+async function adicionarNumero(){
+  const nome=document.getElementById('n-nome').value.trim();
+  const instance_id=document.getElementById('n-instance').value.trim();
+  const token=document.getElementById('n-token').value.trim();
+  const client_token=document.getElementById('n-client').value.trim();
+  if(!nome||!instance_id||!token||!client_token){toast('Preencha todos os campos');return;}
+  const d=await(await fetch('/api/instancias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,instance_id,token,client_token})})).json();
+  if(d.ok){toast('Número adicionado! ✅');document.getElementById('modal-numero').classList.remove('open');carregarNumeros();}
+  else toast('Erro: '+d.erro);
+}
+
+async function excluirNumero(id){
+  if(!confirm('Excluir este número?'))return;
+  await fetch(`/api/instancias/${id}`,{method:'DELETE'});
+  toast('Número excluído');carregarNumeros();
 }
 
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000);}
