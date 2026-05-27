@@ -273,12 +273,22 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       const nomeCliente = (c.nome||'').split(' ')[0] || 'Cliente';
       const msg = variarMensagem(campanha.mensagem, nomeCliente, i);
 
-      let resultado;
-      if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
-        resultado = await wpp.enviarMidia(c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
-      } else {
-        resultado = await wpp.enviarMensagem(c.telefone, msg);
-      }
+      // Busca instância da campanha
+const { rows: instRows } = await pool.query(
+  'SELECT * FROM instancias WHERE id=$1 AND ativo=1',
+  [campanha.instancia_id || 1]
+);
+const inst = instRows[0];
+let resultado;
+if (inst) {
+  if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
+    resultado = await wpp.enviarMidiaInstancia(inst, c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
+  } else {
+    resultado = await wpp.enviarMensagemInstancia(inst, c.telefone, msg);
+  }
+} else {
+  resultado = { ok: false, erro: 'Instância não encontrada' };
+}
 
       const statusEnvio = resultado.ok ? 'enviado' : 'erro';
       await pool.query(
@@ -553,5 +563,45 @@ app.post('/api/config', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 }); 
+// ─── INSTÂNCIAS ───────────────────────────────────────────────────────────────
+app.get('/api/instancias', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM instancias ORDER BY id');
+    // Verifica status de cada uma
+    for (const inst of rows) {
+      try {
+        const r = await fetch(
+          `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/status`,
+          { headers: { 'Client-Token': inst.client_token } }
+        );
+        const d = await r.json();
+        const status = d.connected ? 'conectado' : 'desconectado';
+        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
+        inst.status = status;
+      } catch(e) { inst.status = 'erro'; }
+    }
+    res.json({ ok: true, instancias: rows });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.post('/api/instancias', async (req, res) => {
+  try {
+    const { nome, instance_id, token, client_token } = req.body;
+    if (!nome||!instance_id||!token||!client_token) return res.json({ ok: false, erro: 'Preencha todos os campos' });
+    const { rows } = await pool.query(
+      'INSERT INTO instancias (nome,instance_id,token,client_token) VALUES ($1,$2,$3,$4) RETURNING id',
+      [nome, instance_id, token, client_token]
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.delete('/api/instancias/:id', async (req, res) => {
+  try {
+    if (req.params.id === '1') return res.json({ ok: false, erro: 'Não pode excluir a instância principal' });
+    await pool.query('DELETE FROM instancias WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));

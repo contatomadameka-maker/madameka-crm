@@ -73,5 +73,34 @@ async function desconectar() {
     return { ok: true };
   } catch (e) { return { ok: false, erro: e.message }; }
 }
+async function enviarMensagemInstancia(inst, telefone, mensagem) {
+  try {
+    let num = telefone.replace(/\D/g, '');
+    if (!num.startsWith('55')) num = '55' + num;
+    const { data } = await axios.post(
+      `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/send-text`,
+      { phone: num, message: mensagem },
+      { headers: { 'Client-Token': inst.client_token } }
+    );
+    return { ok: true, data };
+  } catch(e) { return { ok: false, erro: e.message }; }
+}
 
-module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, enviarImagem, enviarVideo, enviarMidia, desconectar };
+async function enviarMidiaInstancia(inst, telefone, tipo, url, legenda) {
+  try {
+    let num = telefone.replace(/\D/g, '');
+    if (!num.startsWith('55')) num = '55' + num;
+    const endpoint = tipo === 'video' ? 'send-video' : 'send-image';
+    const body = tipo === 'video'
+      ? { phone: num, video: url, caption: legenda||'' }
+      : { phone: num, image: url, caption: legenda||'' };
+    const { data } = await axios.post(
+      `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/${endpoint}`,
+      body,
+      { headers: { 'Client-Token': inst.client_token } }
+    );
+    return { ok: true, data };
+  } catch(e) { return { ok: false, erro: e.message }; }
+}
+
+module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, enviarImagem, enviarVideo, enviarMidia, enviarMensagemInstancia, enviarMidiaInstancia, desconectar };
