@@ -1038,4 +1038,60 @@ async function salvarSequencia(){
   const nome=document.getElementById('seq-nome').value.trim();
   const gatilho=document.getElementById('seq-gatilho').value;
   const segmento=document.getElementById('seq-segmento').value;
-  const descricao=docu
+  const descricao=document.getElementById('seq-desc').value.trim();
+  if(!nome){toast('Dê um nome para a sequência');return;}
+  const passosEls=document.querySelectorAll('#seq-passos-container .seq-passo');
+  const passos=[];
+  for(const el of passosEls){
+    const id=el.id.replace('passo-','');
+    const msg=document.getElementById('passo-msg-'+id)?.value?.trim()||'';
+    const delay=parseFloat(document.getElementById('passo-delay-val-'+id)?.value||0);
+    const delayBtn=el.querySelector('.delay-btn.ativo');
+    const delayLabel=delayBtn?.textContent||formatDelay(delay);
+    const midTipo=document.getElementById('passo-midia-tipo-'+id)?.value||'texto';
+    const midUrl=document.getElementById('passo-midia-url-'+id)?.value||'';
+    if(!msg){toast('Preencha todas as mensagens');return;}
+    passos.push({mensagem:msg,delay_horas:delay,delay_label:delayLabel,midia_tipo:midTipo,midia_url:midUrl});
+  }
+  if(!passos.length){toast('Adicione pelo menos uma mensagem');return;}
+  const body={nome,gatilho,segmento,descricao,passos};
+  let d;
+  if(seqEditandoId){d=await(await fetch(`/api/sequencias/${seqEditandoId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
+  else{d=await(await fetch('/api/sequencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();}
+  if(d.ok){toast('Sequência salva! ✅');fecharModalSeq();carregarSequencias();}
+  else toast('Erro: '+d.erro);
+}
+
+async function toggleSequencia(id,ativo,el){
+  const novoAtivo=ativo?0:1;
+  el.classList.toggle('on');
+  const txt=el.previousElementSibling;
+  if(txt){txt.textContent=novoAtivo?'Ativo':'Inativo';txt.style.color=novoAtivo?'#16a34a':'#aaa';}
+  await fetch(`/api/sequencias/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo:novoAtivo})});
+  toast(novoAtivo?'Sequência ativada ✅':'Sequência pausada ⏸');
+}
+
+async function deletarSequencia(id){
+  if(!confirm('Excluir esta sequência?'))return;
+  await fetch(`/api/sequencias/${id}`,{method:'DELETE'});
+  toast('Excluída!');carregarSequencias();
+}
+
+async function carregarConversas(){
+  const d=await(await fetch('/api/conversas')).json();
+  const lista=document.getElementById('lista-conversas');
+  if(!d.conversas?.length){lista.innerHTML='<div style="padding:16px;text-align:center;color:#888;font-size:13px">Nenhuma conversa</div>';return;}
+  lista.innerHTML=d.conversas.map(c=>`<div onclick="abrirConversa('${c.telefone}','${c.nome||'Cliente'}')" style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0">${(c.nome||'?')[0]}</div><div><div style="font-size:13px;font-weight:500">${c.nome||c.telefone}</div><div style="font-size:11px;color:#888">${c.total} mensagens</div></div></div>`).join('');
+}
+
+async function abrirConversa(tel,nome){
+  const d=await(await fetch(`/api/conversas/${tel}`)).json();
+  document.getElementById('conversa-ativa').style.display='block';
+  document.getElementById('conv-nome').textContent=nome||tel;
+  document.getElementById('msgs-conversa').innerHTML=d.mensagens.map(m=>`<div class="msg ${m.de==='cliente'?'cliente':'bot'}"><div class="bubble">${m.mensagem.replace(/\n/g,'<br>')}</div><div class="msg-time">${m.de==='bot'?'IA · ':''} ${new Date(m.criado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');
+}
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000);}
+</script>
+</body>
+</html>
