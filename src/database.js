@@ -55,6 +55,11 @@ async function init() {
       status TEXT DEFAULT 'ativo', iniciado_em TIMESTAMP DEFAULT NOW(),
       proximo_envio TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS configuracoes (
+      chave TEXT PRIMARY KEY,
+      valor TEXT NOT NULL,
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    );
   `);
 
   const { rows } = await pool.query('SELECT COUNT(*) as c FROM fluxos');
@@ -66,6 +71,11 @@ async function init() {
     await ins('Pos-compra','pos_compra','Oi {nome}!\n\nPedido confirmado! Obrigada por comprar na Madame Ka! Seu pedido esta sendo preparado com carinho',0);
     await ins('Review 7 dias','review','Oi {nome}!\n\nJa chegou seu pedido? Conta pra gente como foi!',168);
   }
+
+  // Configurações padrão
+  await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('limite_diario', '200') ON CONFLICT (chave) DO NOTHING`);
+  await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('horario_inicio', '9') ON CONFLICT (chave) DO NOTHING`);
+  await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('horario_fim', '20') ON CONFLICT (chave) DO NOTHING`);
 
   // Sempre roda — adiciona colunas se não existirem
   await pool.query(`ALTER TABLE sequencia_passos ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT 'texto'`);
@@ -132,6 +142,17 @@ async function buscarPorSegmento(segmento) {
   return rows;
 }
 
+async function getConfig() {
+  const { rows } = await pool.query('SELECT * FROM configuracoes');
+  const cfg = {};
+  rows.forEach(r => cfg[r.chave] = r.valor);
+  return {
+    limite_diario: parseInt(cfg.limite_diario || '200'),
+    horario_inicio: parseInt(cfg.horario_inicio || '9'),
+    horario_fim: parseInt(cfg.horario_fim || '20'),
+  };
+}
+
 init().catch(console.error);
 
-module.exports = { pool, calcularSegmento, buscarPorSegmento };
+module.exports = { pool, calcularSegmento, buscarPorSegmento, getConfig };

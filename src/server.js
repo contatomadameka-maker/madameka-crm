@@ -5,7 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const { parse } = require('csv-parse/sync');
 const fs = require('fs');
-const { pool, buscarPorSegmento } = require('./database');
+const { pool, buscarPorSegmento, getConfig } = require('./database');
 const wpp = require('./whatsapp');
 const { responderIA } = require('./ia');
 const cloudinary = require('cloudinary').v2;
@@ -196,16 +196,15 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const campanha = camp[0];
     const { limite } = req.body; // limite opcional de contatos
 
-    // Verifica horário
-    if (!horarioPermitido()) {
-      return res.json({ ok: false, erro: 'Fora do horário permitido (9h-20h). Aguarde para disparar.' });
+    const cfg = await getConfig();
+    const hora = new Date().getHours();
+    if (hora < cfg.horario_inicio || hora >= cfg.horario_fim) {
+      return res.json({ ok: false, erro: `Fora do horário permitido (${cfg.horario_inicio}h-${cfg.horario_fim}h).` });
     }
-
-    // Verifica limite diário
     const envHoje = await enviosHoje();
-    const restante = 200 - envHoje;
+    const restante = cfg.limite_diario - envHoje;
     if (restante <= 0) {
-      return res.json({ ok: false, erro: `Limite diário de 200 mensagens atingido. Enviadas hoje: ${envHoje}. Tente amanhã após as 9h.` });
+      return res.json({ ok: false, erro: `Limite diário de ${cfg.limite_diario} atingido. Enviadas hoje: ${envHoje}.` });
     }
 
     // Busca quem JÁ recebeu
@@ -245,15 +244,13 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       }
 
       // Verifica horário a cada envio
-      if (!horarioPermitido()) {
+      const horaAtual = new Date().getHours();
+      if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
-        console.log(`Campanha ${campanha.id} pausada — fora do horário`);
         return;
       }
-
-      // Verifica limite diário a cada envio
       const envHojeNow = await enviosHoje();
-      if (envHojeNow >= 200) {
+      if (envHojeNow >= cfg.limite_diario) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
         console.log(`Campanha ${campanha.id} pausada — limite diário atingido`);
         return;
@@ -527,5 +524,25 @@ cron.schedule('0 9 * * *', async () => {
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
 });
+// ─── CONFIGURAÇÕES ────────────────────────────────────────────────────────────
+app.get('/api/config', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM configuracoes');
+    const config = {};
+    rows.forEach(r => config[r.chave] = r.valor);
+    res.json({ ok: true, config });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.post('/api/config', async (req, res) => {
+  try {
+    const { chave, valor } = req.body;
+    await pool.query(
+      'INSERT INTO configuracoes (chave, valor) VALUES ($1,$2) ON CONFLICT (chave) DO UPDATE SET valor=$2, atualizado_em=NOW()',
+      [chave, valor]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+}); 
 
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
