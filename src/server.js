@@ -604,4 +604,37 @@ app.delete('/api/instancias/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ─── WEBHOOK META (WhatsApp Cloud API) ───────────────────────────────────────
+app.get('/webhook/meta', (req, res) => {
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (token === 'madameka2026') {
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
+app.post('/webhook/meta', async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const body = req.body;
+    if (body.object !== 'whatsapp_business_account') return;
+    for (const entry of body.entry || []) {
+      for (const change of entry.changes || []) {
+        const value = change.value;
+        for (const msg of value.messages || []) {
+          const from = msg.from;
+          const text = msg.text?.body || '';
+          if (!text) continue;
+          const { rows } = await pool.query('SELECT * FROM contatos WHERE telefone LIKE $1', ['%' + from.slice(-9)]);
+          const nome = rows[0]?.nome || 'Cliente';
+          await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de) VALUES ($1,$2,$3,$4)', [from, nome, text, 'cliente']);
+          console.log(`Meta webhook: mensagem de ${from}: ${text}`);
+        }
+      }
+    }
+  } catch(e) { console.error('Webhook Meta erro:', e.message); }
+});
+
 app.listen(PORT, () => console.log(`Madame Ka CRM porta ${PORT}`));
