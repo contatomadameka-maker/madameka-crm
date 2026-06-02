@@ -289,7 +289,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- CONVERSAS -->
     <div class="page" id="page-conversas">
-      <div class="page-header"><div><div class="page-title">Conversas</div></div></div>
+      <div class="page-header">
+        <div><div class="page-title">Conversas</div><div class="page-sub">Mensagens recebidas</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-envio-direto').classList.add('open')">&#10003; Nova mensagem</button>
+      </div>
       <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
         <div class="card" style="padding:0;overflow:hidden">
           <div style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;font-size:13px;font-weight:500">Recentes</div>
@@ -389,6 +392,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </select>
     </div>
     <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#166534">
+      ✅ <strong>API Oficial Meta:</strong> Para disparar para qualquer contato, preencha um template aprovado abaixo.
+    </div>
+    <div class="form-group"><label>Template Meta aprovado (deixe vazio para usar mensagem acima)</label>
+      <input type="text" id="c-template" placeholder="Ex: aniversario_madameka">
+      <div style="font-size:11px;color:#888;margin-top:4px">Se preenchido, usa o template e ignora a mensagem acima.</div>
+    </div>
     <div class="midia-box">
       <div class="midia-box-title">📎 Mídia opcional</div>
       <div class="midia-upload-row">
@@ -466,6 +476,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL ENVIO DIRETO -->
+<div class="modal-bg" id="modal-envio-direto">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Enviar mensagem direta</div><button class="modal-close" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">x</button></div>
+    <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#92400e">
+      Via API oficial: use template para enviar para qualquer contato. Mensagem livre so funciona se o cliente respondeu nas ultimas 24h.
+    </div>
+    <div class="form-group"><label>Numero WhatsApp (com DDI)</label>
+      <input type="text" id="envio-tel" placeholder="Ex: 5547996214217">
+    </div>
+    <div class="form-group"><label>Template Meta aprovado (recomendado)</label>
+      <input type="text" id="envio-template" placeholder="Ex: aniversario_madameka">
+    </div>
+    <div class="form-group"><label>Ou mensagem livre</label>
+      <textarea id="envio-msg" placeholder="Oi! Tudo bem?"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="enviarDireto()">Enviar</button>
+      <button class="btn btn-outline" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 var paginaAtual = 0;
@@ -750,11 +783,12 @@ async function criarCampanha() {
   var midTipo = document.getElementById('c-midia-tipo').value;
   var midUrl = document.getElementById('c-midia-url').value;
   var instancia = document.getElementById('c-instancia').value || '1';
-  if (!nome || !mensagem) { toast('Preencha todos os campos'); return; }
+  var template = document.getElementById('c-template') ? document.getElementById('c-template').value.trim() : '';
+  if (!nome || (!mensagem && !template)) { toast('Preencha nome e mensagem ou template'); return; }
   try {
     var r = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({nome:nome,mensagem:mensagem,segmento:segmento,intervalo_segundos:parseInt(intervalo),
-      limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instancia)})});
+      limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instancia),template_name:template})});
     var d = await r.json();
     if (d.ok) { toast('Campanha criada!'); document.getElementById('modal-campanha').classList.remove('open'); carregarCampanhas(); }
   } catch(e) { toast('Erro ao criar'); }

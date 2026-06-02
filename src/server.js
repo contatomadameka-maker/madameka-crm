@@ -24,25 +24,19 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 const upload = multer({ dest: '/tmp/uploads/' });
 
-// Variações de saudação para evitar bloqueio
-const SAUDACOES = ['Oi','Olá','Ei','Boa tarde','Bom dia','Oi, tudo bem?'];
 const EMOJIS_FINAL = ['💛','✨','🌟','💕','🛍️','👗'];
 function variarMensagem(msg, nome, idx) {
-  // Substitui {nome}
   let m = msg.replace(/{nome}/g, nome||'Cliente');
-  // Adiciona variação sutil no final para diferenciar mensagens
   const emoji = EMOJIS_FINAL[idx % EMOJIS_FINAL.length];
   if (!m.endsWith(emoji)) m = m + ' ' + emoji;
   return m;
 }
 
-// Verifica se está no horário permitido (9h-20h)
 function horarioPermitido() {
   const hora = new Date().getHours();
   return hora >= 9 && hora < 20;
 }
 
-// Conta envios do dia
 async function enviosHoje() {
   const { rows } = await pool.query(
     "SELECT COUNT(*) as c FROM disparos WHERE status='enviado' AND enviado_em >= NOW() - INTERVAL '24 hours'"
@@ -70,7 +64,7 @@ app.post('/api/wpp/reset', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// ─── STATS SEGURANÇA ──────────────────────────────────────────────────────────
+// ─── STATS ────────────────────────────────────────────────────────────────────
 app.get('/api/seguranca/stats', async (req, res) => {
   try {
     const hoje = await enviosHoje();
@@ -180,10 +174,11 @@ app.get('/api/campanhas', async (req, res) => {
 
 app.post('/api/campanhas', async (req, res) => {
   try {
-    const { nome, mensagem, segmento, intervalo_segundos, midia_tipo, midia_url, limite } = req.body;
+    const { nome, mensagem, segmento, intervalo_segundos, midia_tipo, midia_url, limite, template_name } = req.body;
+    await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS template_name TEXT DEFAULT ''`);
     const { rows } = await pool.query(
-      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos,midia_tipo,midia_url) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-      [nome, mensagem, segmento||'todos', intervalo_segundos||60, midia_tipo||'texto', midia_url||'']
+      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos,midia_tipo,midia_url,template_name) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+      [nome, mensagem||'', segmento||'todos', intervalo_segundos||60, midia_tipo||'texto', midia_url||'', template_name||'']
     );
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -201,7 +196,7 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const { rows: camp } = await pool.query('SELECT * FROM campanhas WHERE id=$1', [req.params.id]);
     if (!camp.length) return res.json({ ok: false, erro: 'Nao encontrada' });
     const campanha = camp[0];
-    const { limite } = req.body; // limite opcional de contatos
+    const { limite } = req.body;
 
     const cfg = await getConfig();
     const hora = new Date().getHours();
@@ -214,21 +209,16 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       return res.json({ ok: false, erro: `Limite diário de ${cfg.limite_diario} atingido. Enviadas hoje: ${envHoje}.` });
     }
 
-    // Busca quem JÁ recebeu
     const { rows: jaEnviados } = await pool.query(
       "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'", [campanha.id]
     );
     const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
 
-    // Busca contatos do segmento
     const todosContatos = await buscarPorSegmento(campanha.segmento);
     let contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
 
-    // Aplica limite de contatos se definido
     const limiteNum = parseInt(limite) || 0;
     if (limiteNum > 0) contatos = contatos.slice(0, limiteNum);
-
-    // Respeita limite diário restante
     if (contatos.length > restante) contatos = contatos.slice(0, restante);
 
     if (!contatos.length) {
@@ -243,14 +233,9 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const intervalo = (campanha.intervalo_segundos || 60) * 1000;
 
     async function enviarProximo() {
-      // Verifica pausada
       const { rows: statusRows } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
-      if (statusRows[0]?.status === 'pausado') {
-        console.log(`Campanha ${campanha.id} pausada em ${i}/${contatos.length}`);
-        return;
-      }
+      if (statusRows[0]?.status === 'pausado') return;
 
-      // Verifica horário a cada envio
       const horaAtual = new Date().getHours();
       if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
@@ -259,36 +244,37 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       const envHojeNow = await enviosHoje();
       if (envHojeNow >= cfg.limite_diario) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
-        console.log(`Campanha ${campanha.id} pausada — limite diário atingido`);
         return;
       }
 
       if (i >= contatos.length) {
         await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
-        console.log(`Campanha ${campanha.id} concluida!`);
         return;
       }
 
       const c = contatos[i++];
       const nomeCliente = (c.nome||'').split(' ')[0] || 'Cliente';
-      const msg = variarMensagem(campanha.mensagem, nomeCliente, i);
+      const msg = variarMensagem(campanha.mensagem || '', nomeCliente, i);
 
-      // Busca instância da campanha
-const { rows: instRows } = await pool.query(
-  'SELECT * FROM instancias WHERE id=$1 AND ativo=1',
-  [campanha.instancia_id || 1]
-);
-const inst = instRows[0];
-let resultado;
-if (inst) {
-  if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
-    resultado = await wpp.enviarMidiaInstancia(inst, c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
-  } else {
-    resultado = await wpp.enviarMensagemInstancia(inst, c.telefone, msg);
-  }
-} else {
-  resultado = { ok: false, erro: 'Instância não encontrada' };
-}
+      let resultado;
+      // Se tem template aprovado, usa template
+      if (campanha.template_name) {
+        resultado = await wpp.enviarTemplate(c.telefone, campanha.template_name, 'pt_BR', [
+          { type: 'body', parameters: [{ type: 'text', text: nomeCliente }] }
+        ]);
+      } else {
+        const { rows: instRows } = await pool.query('SELECT * FROM instancias WHERE id=$1 AND ativo=1', [campanha.instancia_id || 1]);
+        const inst = instRows[0];
+        if (inst) {
+          if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
+            resultado = await wpp.enviarMidiaInstancia(inst, c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
+          } else {
+            resultado = await wpp.enviarMensagemInstancia(inst, c.telefone, msg);
+          }
+        } else {
+          resultado = { ok: false, erro: 'Instância não encontrada' };
+        }
+      }
 
       const statusEnvio = resultado.ok ? 'enviado' : 'erro';
       await pool.query(
@@ -340,6 +326,27 @@ app.get('/api/conversas/:telefone', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ─── ENVIAR MENSAGEM DIRETA ────────────────────────────────────────────────────
+app.post('/api/enviar-direto', async (req, res) => {
+  try {
+    const { telefone, mensagem, template_name } = req.body;
+    if (!telefone) return res.json({ ok: false, erro: 'Telefone obrigatório' });
+    let resultado;
+    if (template_name) {
+      resultado = await wpp.enviarTemplate(telefone, template_name, 'pt_BR', [
+        { type: 'body', parameters: [{ type: 'text', text: 'Cliente' }] }
+      ]);
+    } else {
+      resultado = await wpp.enviarMensagem(telefone, mensagem);
+    }
+    if (resultado.ok) {
+      await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de) VALUES ($1,$2,$3,$4)',
+        [telefone, 'Madame Ka', mensagem || template_name, 'bot']);
+    }
+    res.json(resultado);
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
 // ─── WEBHOOK YAMPI ────────────────────────────────────────────────────────────
 app.post('/webhook/yampi', async (req, res) => {
   res.json({ ok: true });
@@ -366,7 +373,7 @@ app.post('/webhook/yampi', async (req, res) => {
       if (rows[0]) mensagem = rows[0].mensagem.replace(/{nome}/g, primeiro);
     }
     if (['order.payment_failed','transaction.denied'].includes(event)) {
-      mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar a finalizar sua compra? 💜`;
+      mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar? 💜`;
     }
     if (['checkout.abandoned','cart.abandoned'].includes(event)) {
       const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='carrinho_abandonado' AND ativo=1");
@@ -538,11 +545,14 @@ cron.schedule('0 9 * * *', async () => {
     const { rows } = await pool.query(`SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     for (const c of rows) {
       const nome = (c.nome||'Cliente').split(' ')[0];
-      await wpp.enviarMensagem(c.telefone, `🎂 Feliz aniversário, ${nome}!\n\nA Madame Ka tem um presente especial para você hoje!\n\nUse o cupom *ANIVER15* e ganhe 15% de desconto em qualquer peça! 🎁\n\nmadameka.com.br`);
+      await wpp.enviarTemplate(c.telefone, 'aniversario_madameka', 'pt_BR', [
+        { type: 'body', parameters: [{ type: 'text', text: nome }] }
+      ]);
       await new Promise(r => setTimeout(r, 45000));
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
 });
+
 // ─── CONFIGURAÇÕES ────────────────────────────────────────────────────────────
 app.get('/api/config', async (req, res) => {
   try {
@@ -562,18 +572,17 @@ app.post('/api/config', async (req, res) => {
     );
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
-}); 
+});
+
 // ─── INSTÂNCIAS ───────────────────────────────────────────────────────────────
 app.get('/api/instancias', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM instancias ORDER BY id');
-    // Verifica status de cada uma
     for (const inst of rows) {
       try {
-        // Meta Cloud API — sempre conectado
-const status = 'conectado';
-await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
-inst.status = status;
+        const status = 'conectado';
+        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
+        inst.status = status;
       } catch(e) { inst.status = 'erro'; }
     }
     res.json({ ok: true, instancias: rows });
@@ -600,15 +609,12 @@ app.delete('/api/instancias/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// ─── WEBHOOK META (WhatsApp Cloud API) ───────────────────────────────────────
+// ─── WEBHOOK META ─────────────────────────────────────────────────────────────
 app.get('/webhook/meta', (req, res) => {
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-  if (token === 'madameka2026') {
-    res.status(200).send(challenge);
-  } else {
-    res.sendStatus(403);
-  }
+  if (token === 'madameka2026') res.status(200).send(challenge);
+  else res.sendStatus(403);
 });
 
 app.post('/webhook/meta', async (req, res) => {
@@ -626,7 +632,7 @@ app.post('/webhook/meta', async (req, res) => {
           const { rows } = await pool.query('SELECT * FROM contatos WHERE telefone LIKE $1', ['%' + from.slice(-9)]);
           const nome = rows[0]?.nome || 'Cliente';
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de) VALUES ($1,$2,$3,$4)', [from, nome, text, 'cliente']);
-          console.log(`Meta webhook: mensagem de ${from}: ${text}`);
+          console.log(`Meta webhook: ${from}: ${text}`);
         }
       }
     }
