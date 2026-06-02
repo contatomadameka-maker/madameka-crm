@@ -1166,6 +1166,27 @@ async function excluirNumero(id) {
   await fetch('/api/instancias/' + id, {method: 'DELETE'});
   toast('Número excluído'); carregarNumeros();
 }
+
+async function enviarDireto() {
+  var tel = document.getElementById('envio-tel').value.trim().replace(/\D/g,'');
+  var template = document.getElementById('envio-template').value.trim();
+  var msg = document.getElementById('envio-msg').value.trim();
+  if (!tel) { toast('Informe o numero'); return; }
+  if (!template && !msg) { toast('Informe o template ou a mensagem'); return; }
+  try {
+    var r = await fetch('/api/enviar-direto', {method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({telefone:tel,mensagem:msg,template_name:template})});
+    var d = await r.json();
+    if (d.ok) {
+      toast('Mensagem enviada!');
+      document.getElementById('modal-envio-direto').classList.remove('open');
+      document.getElementById('envio-tel').value='';
+      document.getElementById('envio-template').value='';
+      document.getElementById('envio-msg').value='';
+      setTimeout(carregarConversas,1000);
+    } else { toast('Erro: '+d.erro); }
+  } catch(e) { toast('Erro ao enviar'); }
+}
 </script>
 </body>
 </html>
