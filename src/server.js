@@ -570,14 +570,10 @@ app.get('/api/instancias', async (req, res) => {
     // Verifica status de cada uma
     for (const inst of rows) {
       try {
-        const r = await fetch(
-          `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/status`,
-          { headers: { 'Client-Token': inst.client_token } }
-        );
-        const d = await r.json();
-        const status = d.connected ? 'conectado' : 'desconectado';
-        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
-        inst.status = status;
+        // Meta Cloud API — sempre conectado
+const status = 'conectado';
+await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
+inst.status = status;
       } catch(e) { inst.status = 'erro'; }
     }
     res.json({ ok: true, instancias: rows });
