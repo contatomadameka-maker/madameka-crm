@@ -1,64 +1,84 @@
 const axios = require('axios');
 
-const ZAPI_INSTANCE = '3F3B33A2992E1162E39B6627BE24201D';
-const ZAPI_TOKEN = 'C8C9AEE300AE3E2B586CF1B3';
-const ZAPI_CLIENT_TOKEN = 'F8d6cdf1bbebe419abdb464fbf2c74bb2S';
-const ZAPI_BASE = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
-const HEADERS = { 'Client-Token': ZAPI_CLIENT_TOKEN };
+const PHONE_ID = process.env.META_PHONE_ID || '1207148405807761';
+const TOKEN = process.env.META_TOKEN;
+const BASE = `https://graph.facebook.com/v19.0/${PHONE_ID}`;
+const HEADERS = () => ({ 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' });
+
+function formatarNumero(telefone) {
+  let num = telefone.replace(/\D/g, '');
+  if (!num.startsWith('55')) num = '55' + num;
+  return num;
+}
 
 async function getStatus() {
   try {
-    const { data } = await axios.get(`${ZAPI_BASE}/status`, { headers: HEADERS });
-    return { ok: true, status: data.connected ? 'open' : 'desconectado' };
-  } catch (e) { return { ok: false, status: 'desconectado' }; }
+    const { data } = await axios.get(
+      `https://graph.facebook.com/v19.0/${PHONE_ID}`,
+      { headers: HEADERS() }
+    );
+    return { ok: true, status: data.verified_name ? 'conectado' : 'desconectado' };
+  } catch(e) { return { ok: false, status: 'desconectado' }; }
 }
 
 async function getQRCode() {
-  try {
-    const { data } = await axios.get(`${ZAPI_BASE}/qr-code`, { headers: HEADERS });
-    return { ok: true, qr: data.value };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  return { ok: false, qr: null, msg: 'API Oficial não usa QR Code' };
 }
 
 async function criarInstancia() {
-  return { ok: true, msg: 'Use o painel Z-API para conectar' };
+  return { ok: true, msg: 'API Oficial Meta — sem necessidade de instância' };
+}
+
+async function desconectar() {
+  return { ok: true, msg: 'API Oficial Meta — sempre conectado' };
 }
 
 async function enviarMensagem(telefone, mensagem) {
   try {
-    let num = telefone.replace(/\D/g, '');
-    if (!num.startsWith('55')) num = '55' + num;
-    const { data } = await axios.post(`${ZAPI_BASE}/send-text`, {
-      phone: num, message: mensagem
-    }, { headers: HEADERS });
+    const num = formatarNumero(telefone);
+    const { data } = await axios.post(`${BASE}/messages`, {
+      messaging_product: 'whatsapp',
+      to: num,
+      type: 'text',
+      text: { body: mensagem }
+    }, { headers: HEADERS() });
     return { ok: true, data };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  } catch(e) {
+    console.error('Meta enviarMensagem erro:', e.response?.data || e.message);
+    return { ok: false, erro: e.response?.data?.error?.message || e.message };
+  }
 }
 
 async function enviarImagem(telefone, imageUrl, legenda) {
   try {
-    let num = telefone.replace(/\D/g, '');
-    if (!num.startsWith('55')) num = '55' + num;
-    const { data } = await axios.post(`${ZAPI_BASE}/send-image`, {
-      phone: num,
-      image: imageUrl,
-      caption: legenda || ''
-    }, { headers: HEADERS });
+    const num = formatarNumero(telefone);
+    const { data } = await axios.post(`${BASE}/messages`, {
+      messaging_product: 'whatsapp',
+      to: num,
+      type: 'image',
+      image: { link: imageUrl, caption: legenda || '' }
+    }, { headers: HEADERS() });
     return { ok: true, data };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  } catch(e) {
+    console.error('Meta enviarImagem erro:', e.response?.data || e.message);
+    return { ok: false, erro: e.response?.data?.error?.message || e.message };
+  }
 }
 
 async function enviarVideo(telefone, videoUrl, legenda) {
   try {
-    let num = telefone.replace(/\D/g, '');
-    if (!num.startsWith('55')) num = '55' + num;
-    const { data } = await axios.post(`${ZAPI_BASE}/send-video`, {
-      phone: num,
-      video: videoUrl,
-      caption: legenda || ''
-    }, { headers: HEADERS });
+    const num = formatarNumero(telefone);
+    const { data } = await axios.post(`${BASE}/messages`, {
+      messaging_product: 'whatsapp',
+      to: num,
+      type: 'video',
+      video: { link: videoUrl, caption: legenda || '' }
+    }, { headers: HEADERS() });
     return { ok: true, data };
-  } catch (e) { return { ok: false, erro: e.message }; }
+  } catch(e) {
+    console.error('Meta enviarVideo erro:', e.response?.data || e.message);
+    return { ok: false, erro: e.response?.data?.error?.message || e.message };
+  }
 }
 
 async function enviarMidia(telefone, tipo, url, legenda) {
@@ -67,40 +87,37 @@ async function enviarMidia(telefone, tipo, url, legenda) {
   return enviarMensagem(telefone, legenda || url);
 }
 
-async function desconectar() {
+async function enviarTemplate(telefone, templateName, languageCode, components) {
   try {
-    await axios.get(`${ZAPI_BASE}/disconnect`, { headers: HEADERS });
-    return { ok: true };
-  } catch (e) { return { ok: false, erro: e.message }; }
-}
-async function enviarMensagemInstancia(inst, telefone, mensagem) {
-  try {
-    let num = telefone.replace(/\D/g, '');
-    if (!num.startsWith('55')) num = '55' + num;
-    const { data } = await axios.post(
-      `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/send-text`,
-      { phone: num, message: mensagem },
-      { headers: { 'Client-Token': inst.client_token } }
-    );
+    const num = formatarNumero(telefone);
+    const { data } = await axios.post(`${BASE}/messages`, {
+      messaging_product: 'whatsapp',
+      to: num,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: languageCode || 'pt_BR' },
+        components: components || []
+      }
+    }, { headers: HEADERS() });
     return { ok: true, data };
-  } catch(e) { return { ok: false, erro: e.message }; }
+  } catch(e) {
+    console.error('Meta enviarTemplate erro:', e.response?.data || e.message);
+    return { ok: false, erro: e.response?.data?.error?.message || e.message };
+  }
+}
+
+async function enviarMensagemInstancia(inst, telefone, mensagem) {
+  // Com API oficial usa o token principal
+  return enviarMensagem(telefone, mensagem);
 }
 
 async function enviarMidiaInstancia(inst, telefone, tipo, url, legenda) {
-  try {
-    let num = telefone.replace(/\D/g, '');
-    if (!num.startsWith('55')) num = '55' + num;
-    const endpoint = tipo === 'video' ? 'send-video' : 'send-image';
-    const body = tipo === 'video'
-      ? { phone: num, video: url, caption: legenda||'' }
-      : { phone: num, image: url, caption: legenda||'' };
-    const { data } = await axios.post(
-      `https://api.z-api.io/instances/${inst.instance_id}/token/${inst.token}/${endpoint}`,
-      body,
-      { headers: { 'Client-Token': inst.client_token } }
-    );
-    return { ok: true, data };
-  } catch(e) { return { ok: false, erro: e.message }; }
+  return enviarMidia(telefone, tipo, url, legenda);
 }
 
-module.exports = { criarInstancia, getQRCode, getStatus, enviarMensagem, enviarImagem, enviarVideo, enviarMidia, enviarMensagemInstancia, enviarMidiaInstancia, desconectar };
+module.exports = {
+  criarInstancia, getQRCode, getStatus, desconectar,
+  enviarMensagem, enviarImagem, enviarVideo, enviarMidia,
+  enviarTemplate, enviarMensagemInstancia, enviarMidiaInstancia
+};
