@@ -32,8 +32,18 @@ function variarMensagem(msg, nome, idx) {
   return m;
 }
 
+// Retorna hora no fuso de Brasília (UTC-3)
+function horaBrasilia() {
+  const hora = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Sao_Paulo',
+    hour: 'numeric',
+    hour12: false
+  });
+  return parseInt(hora);
+}
+
 function horarioPermitido() {
-  const hora = new Date().getHours();
+  const hora = horaBrasilia();
   return hora >= 9 && hora < 20;
 }
 
@@ -69,7 +79,7 @@ app.get('/api/seguranca/stats', async (req, res) => {
   try {
     const hoje = await enviosHoje();
     const horario = horarioPermitido();
-    res.json({ ok: true, enviosHoje: hoje, limiteHoje: 200, horarioPermitido: horario, horaAtual: new Date().getHours() });
+    res.json({ ok: true, enviosHoje: hoje, limiteHoje: 200, horarioPermitido: horario, horaAtual: horaBrasilia() });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
@@ -199,9 +209,9 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const { limite } = req.body;
 
     const cfg = await getConfig();
-    const hora = new Date().getHours();
+    const hora = horaBrasilia();
     if (hora < cfg.horario_inicio || hora >= cfg.horario_fim) {
-      return res.json({ ok: false, erro: `Fora do horário permitido (${cfg.horario_inicio}h-${cfg.horario_fim}h).` });
+      return res.json({ ok: false, erro: `Fora do horário permitido (${cfg.horario_inicio}h-${cfg.horario_fim}h horário de Brasília). Agora são ${hora}h.` });
     }
     const envHoje = await enviosHoje();
     const restante = cfg.limite_diario - envHoje;
@@ -236,9 +246,10 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       const { rows: statusRows } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
       if (statusRows[0]?.status === 'pausado') return;
 
-      const horaAtual = new Date().getHours();
+      const horaAtual = horaBrasilia();
       if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
+        console.log(`Campanha ${campanha.id} pausada — fora do horário (Brasília: ${horaAtual}h)`);
         return;
       }
       const envHojeNow = await enviosHoje();
@@ -257,7 +268,6 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       const msg = variarMensagem(campanha.mensagem || '', nomeCliente, i);
 
       let resultado;
-      // Se tem template aprovado, usa template
       if (campanha.template_name) {
         resultado = await wpp.enviarTemplate(c.telefone, campanha.template_name, 'pt_BR', [
           { type: 'body', parameters: [{ type: 'text', text: nomeCliente }] }
@@ -537,7 +547,8 @@ cron.schedule('* * * * *', async () => {
   } catch(e) { console.error('Erro cron sequencias:', e.message); }
 });
 
-cron.schedule('0 9 * * *', async () => {
+// Cron aniversariantes — roda às 9h de Brasília (12h UTC)
+cron.schedule('0 12 * * *', async () => {
   try {
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
