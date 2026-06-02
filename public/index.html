@@ -602,9 +602,9 @@ function inicializar(){
   carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();carregarConfig();carregarNumeros();
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
-  setInterval(verificarStatus,60000);
-  setInterval(carregarStats,120000);
-  setInterval(carregarCampanhas,60000);
+  setInterval(verificarStatus,30000);
+  setInterval(carregarStats,60000);
+  setInterval(carregarCampanhas,30000);
 }
 
 function irPara(p,el){
@@ -716,30 +716,29 @@ function previewMidia(urlId,previewId){
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 async function carregarStats(){
-  const d=await(await fetch('/api/contatos/stats')).json();
-  if(!d.ok)return;
-  document.getElementById('s-total').textContent=d.total.toLocaleString('pt-BR');
-  document.getElementById('s-vip').textContent=d.vip.toLocaleString('pt-BR');
-  document.getElementById('s-ativas').textContent=d.ativas.toLocaleString('pt-BR');
-  document.getElementById('s-inativas').textContent=d.inativas.toLocaleString('pt-BR');
-  document.getElementById('s-leads').textContent=d.leads.toLocaleString('pt-BR');
-  document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
-  document.getElementById('s-aniv').textContent=d.aniversariantes||0;
-  document.getElementById('s-hoje').textContent=d.enviosHoje||0;
-  document.getElementById('sb-envios').textContent=d.enviosHoje||0;
-  const hora=new Date().getHours();
-  const horarioOk=hora>=cfgAtual.horario_inicio&&hora<cfgAtual.horario_fim;
-  document.getElementById('sb-horario').textContent=horarioOk?'🟢 Horário ok':'🔴 Fora do horário';
-  atualizarStatusSeguranca();
-  const pct=Math.round(((d.enviosHoje||0)/cfgAtual.limite_diario)*100);
-  const bar=document.getElementById('seguranca-bar');
-  if((d.enviosHoje||0)>0){
-    bar.style.display='flex';
-    bar.innerHTML=`<span style="font-weight:500">📊 Hoje:</span>
-      <span>${horarioOk?'🟢 Horário ok':'🔴 Fora do horário'}</span>
-      <span>${d.enviosHoje||0}/${cfgAtual.limite_diario} mensagens (${pct}%)</span>
-      <span style="margin-left:auto;color:#888">${cfgAtual.limite_diario-(d.enviosHoje||0)} restantes</span>`;
-  }
+  try{
+    const d=await(await fetch('/api/contatos/stats')).json();
+    if(!d.ok)return;
+    document.getElementById('s-total').textContent=d.total.toLocaleString('pt-BR');
+    document.getElementById('s-vip').textContent=d.vip.toLocaleString('pt-BR');
+    document.getElementById('s-ativas').textContent=d.ativas.toLocaleString('pt-BR');
+    document.getElementById('s-inativas').textContent=d.inativas.toLocaleString('pt-BR');
+    document.getElementById('s-leads').textContent=d.leads.toLocaleString('pt-BR');
+    document.getElementById('s-disparos').textContent=d.disparos.toLocaleString('pt-BR');
+    document.getElementById('s-aniv').textContent=d.aniversariantes||0;
+    document.getElementById('s-hoje').textContent=d.enviosHoje||0;
+    document.getElementById('sb-envios').textContent=d.enviosHoje||0;
+    const hora=new Date().getHours();
+    const horarioOk=hora>=cfgAtual.horario_inicio&&hora<cfgAtual.horario_fim;
+    document.getElementById('sb-horario').textContent=horarioOk?'🟢 Horário ok':'🔴 Fora do horário';
+    atualizarStatusSeguranca();
+    const pct=Math.round(((d.enviosHoje||0)/cfgAtual.limite_diario)*100);
+    const bar=document.getElementById('seguranca-bar');
+    if((d.enviosHoje||0)>0){
+      bar.style.display='flex';
+      bar.innerHTML='<span>📊 Hoje: '+d.enviosHoje+'/'+cfgAtual.limite_diario+'</span>';
+    }
+  }catch(e){console.log('Stats falhou:',e);}
 }
 
 async function verificarStatus(){
@@ -751,7 +750,7 @@ async function verificarStatus(){
   document.getElementById('wpp-status-txt').textContent=ok?'Conectado':'Desconectado';
   const info=document.getElementById('wpp-info');
   if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">✅ WhatsApp conectado!</span>':'<span style="color:#dc2626">❌ Desconectado.</span>';
-  }catch(e){console.log('Status check falhou, tentando novamente...');}
+  }catch(e){console.log('Status check falhou');}
 }
 
 async function criarConexao(){toast('Criando conexao...');await fetch('/api/wpp/criar',{method:'POST'});setTimeout(carregarQR,2000);}
@@ -764,9 +763,7 @@ async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/ap
 
 // ─── CONTATOS ─────────────────────────────────────────────────────────────────
 async function carregarContatos(){
-  const params = new URLSearchParams({segmento:segmentoAtual,limit:POR_PAGINA,offset:paginaAtual*POR_PAGINA});
-if(buscaAtual && buscaAtual.trim()) params.append('busca', buscaAtual.trim());
-const d=await(await fetch(`/api/contatos?${params}`)).json();
+  const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
   const tb=document.getElementById('tabela-contatos');
   if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
   const bm={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
@@ -788,6 +785,7 @@ async function importarCSV(input){
 
 // ─── CAMPANHAS ────────────────────────────────────────────────────────────────
 async function carregarCampanhas(){
+  try{
   const d=await(await fetch('/api/campanhas')).json();
   const wrap=document.getElementById('lista-campanhas');
   if(!d.campanhas?.length){wrap.innerHTML='<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma campanha ainda</div>';return;}
@@ -808,6 +806,7 @@ async function carregarCampanhas(){
       </div>
     </div>`;
   }).join('');
+  }catch(e){console.log('Campanhas falhou');}
 }
 
 async function criarCampanha(){
