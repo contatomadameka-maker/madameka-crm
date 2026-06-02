@@ -602,9 +602,9 @@ function inicializar(){
   carregarStats();verificarStatus();carregarContatos();carregarCampanhas();carregarFluxos();carregarSequencias();carregarConversas();carregarConfig();carregarNumeros();
   document.getElementById('webhook-yampi').textContent=window.location.origin+'/webhook/yampi';
   document.getElementById('webhook-popup').textContent=window.location.origin+'/webhook/popup';
-  setInterval(verificarStatus,30000);
-  setInterval(carregarStats,60000);
-  setInterval(carregarCampanhas,30000);
+  setInterval(verificarStatus,60000);
+  setInterval(carregarStats,120000);
+  setInterval(carregarCampanhas,60000);
 }
 
 function irPara(p,el){
@@ -743,6 +743,7 @@ async function carregarStats(){
 }
 
 async function verificarStatus(){
+  try{
   const d=await(await fetch('/api/wpp/status')).json();
   const ok=d.status==='open'||d.status==='conectado';
   const sb=document.getElementById('wpp-status-sidebar');
@@ -750,6 +751,7 @@ async function verificarStatus(){
   document.getElementById('wpp-status-txt').textContent=ok?'Conectado':'Desconectado';
   const info=document.getElementById('wpp-info');
   if(info)info.innerHTML=ok?'<span style="color:#16a34a;font-weight:500">✅ WhatsApp conectado!</span>':'<span style="color:#dc2626">❌ Desconectado.</span>';
+  }catch(e){console.log('Status check falhou, tentando novamente...');}
 }
 
 async function criarConexao(){toast('Criando conexao...');await fetch('/api/wpp/criar',{method:'POST'});setTimeout(carregarQR,2000);}
