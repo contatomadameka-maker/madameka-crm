@@ -762,7 +762,9 @@ async function desconectar(){if(!confirm('Desconectar?'))return;await fetch('/ap
 
 // ─── CONTATOS ─────────────────────────────────────────────────────────────────
 async function carregarContatos(){
-  const d=await(await fetch(`/api/contatos?segmento=${segmentoAtual}&busca=${buscaAtual}&limit=${POR_PAGINA}&offset=${paginaAtual*POR_PAGINA}`)).json();
+  const params = new URLSearchParams({segmento:segmentoAtual,limit:POR_PAGINA,offset:paginaAtual*POR_PAGINA});
+if(buscaAtual && buscaAtual.trim()) params.append('busca', buscaAtual.trim());
+const d=await(await fetch(`/api/contatos?${params}`)).json();
   const tb=document.getElementById('tabela-contatos');
   if(!d.contatos?.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';return;}
   const bm={VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};

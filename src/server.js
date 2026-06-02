@@ -126,7 +126,7 @@ app.get('/api/contatos', async (req, res) => {
     const params = [];
     let i = 1;
     if (segmento && segmento !== 'todos') { sql += ` AND segmento=$${i++}`; params.push(segmento); }
-    if (busca) { sql += ` AND (nome ILIKE $${i} OR telefone ILIKE $${i} OR email ILIKE $${i})`; params.push(`%${busca}%`); i++; }
+    if (busca && busca.trim() !== '') { sql += ` AND (nome ILIKE $${i} OR telefone ILIKE $${i} OR email ILIKE $${i})`; params.push(`%${busca.trim()}%`); i++; }
     sql += ` ORDER BY criado_em DESC LIMIT $${i++} OFFSET $${i++}`;
     params.push(parseInt(limit), parseInt(offset));
     const { rows } = await pool.query(sql, params);
