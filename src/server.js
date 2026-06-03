@@ -553,16 +553,27 @@ cron.schedule('0 12 * * *', async () => {
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
-    const { rows } = await pool.query(`SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
+    const { rows } = await pool.query(`
+      SELECT c.* FROM contatos c
+      WHERE (c.nascimento LIKE $1 OR c.nascimento LIKE $2)
+      AND NOT EXISTS (
+        SELECT 1 FROM disparos d 
+        WHERE d.telefone = c.telefone 
+        AND d.enviado_em >= NOW() - INTERVAL '20 hours'
+        AND d.mensagem LIKE '%aniversario%'
+      )
+    `, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     for (const c of rows) {
       const nome = (c.nome||'Cliente').split(' ')[0];
-      const resultAniv = await wpp.enviarTemplate(c.telefone, 'aniversario_madameka', 'pt_BR', [
-      { type: 'body', parameters: [{ type: 'text', text: nome }] }
+      const result = await wpp.enviarTemplate(c.telefone, 'aniversario_madameka', 'pt_BR', [
+        { type: 'body', parameters: [{ type: 'text', text: nome }] }
       ]);
-      if (resultAniv.ok) {
-  await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de) VALUES ($1,$2,$3,$4)',
-    [c.telefone, c.nome, 'Template: aniversario_madameka', 'bot']);
-}
+      if (result.ok) {
+        await pool.query('INSERT INTO disparos (telefone,mensagem,status,enviado_em) VALUES ($1,$2,$3,NOW())',
+          [c.telefone, 'aniversario_madameka', 'enviado']);
+        await pool.query('INSERT INTO conversas (telefone,nome,mensagem,de) VALUES ($1,$2,$3,$4)',
+          [c.telefone, c.nome, 'Template: aniversario_madameka', 'bot']);
+      }
       await new Promise(r => setTimeout(r, 45000));
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
