@@ -46,7 +46,7 @@ function horarioPermitido() {
 
 async function enviosHoje() {
   const { rows } = await pool.query(
-    "SELECT COUNT(*) as c FROM disparos WHERE status='enviado' AND enviado_em >= NOW() - INTERVAL '24 hours'"
+    "SELECT COUNT(*) as c FROM disparos WHERE status='enviado' AND enviado_em >= (NOW() AT TIME ZONE 'America/Sao_Paulo')::date"
   );
   return parseInt(rows[0].c);
 }

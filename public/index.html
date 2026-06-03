@@ -257,7 +257,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="page-header">
         <div><div class="page-title">Contatos</div><div class="page-sub">Base de clientes</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline btn-sm" onclick="document.getElementById('modal-etiquetas-mgr').classList.add('open')">&#127991; Etiquetas</button>
+          <button class="btn btn-outline btn-sm" id="btn-abrir-etiquetas">&#127991; Etiquetas</button>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">Importar CSV</button>
           <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importarCSV(this)">
         </div>
@@ -641,6 +641,10 @@ function inicializar() {
   carregarConfig();
   carregarNumeros();
   carregarEtiquetas();
+  document.getElementById('btn-abrir-etiquetas').addEventListener('click', function() {
+    document.getElementById('modal-etiquetas-mgr').classList.add('open');
+    renderizarEtiquetasMgr();
+  });
   setInterval(verificarStatus, 60000);
   setInterval(carregarStats, 120000);
   setInterval(carregarCampanhas, 60000);
