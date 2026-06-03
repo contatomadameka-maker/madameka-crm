@@ -51,30 +51,10 @@ async function enviosHoje() {
   return parseInt(rows[0].c);
 }
 
-// Cria tabelas extras se não existirem
 async function initExtras() {
-  // Tabela de etiquetas
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS etiquetas (
-      id SERIAL PRIMARY KEY,
-      nome TEXT NOT NULL,
-      cor TEXT NOT NULL DEFAULT '#888888',
-      criado_em TIMESTAMP DEFAULT NOW()
-    )
-  `);
-  // Tabela de etiquetas por contato
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS contato_etiquetas (
-      id SERIAL PRIMARY KEY,
-      telefone TEXT NOT NULL,
-      etiqueta_id INTEGER REFERENCES etiquetas(id) ON DELETE CASCADE,
-      criado_em TIMESTAMP DEFAULT NOW(),
-      UNIQUE(telefone, etiqueta_id)
-    )
-  `);
-  // Coluna lida nas conversas
+  await pool.query(`CREATE TABLE IF NOT EXISTS etiquetas (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, cor TEXT NOT NULL DEFAULT '#888888', criado_em TIMESTAMP DEFAULT NOW())`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS contato_etiquetas (id SERIAL PRIMARY KEY, telefone TEXT NOT NULL, etiqueta_id INTEGER REFERENCES etiquetas(id) ON DELETE CASCADE, criado_em TIMESTAMP DEFAULT NOW(), UNIQUE(telefone, etiqueta_id))`);
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS lida INTEGER DEFAULT 0`);
-  // Coluna tipo nas conversas (cliente, bot, sistema)
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS tipo TEXT DEFAULT 'mensagem'`);
 }
 initExtras().catch(console.error);
@@ -228,7 +208,6 @@ app.delete('/api/etiquetas/:id', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// Etiquetas de um contato
 app.get('/api/contatos/:telefone/etiquetas', async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -294,22 +273,20 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     const cfg = await getConfig();
     const hora = horaBrasilia();
     if (hora < cfg.horario_inicio || hora >= cfg.horario_fim) {
-      return res.json({ ok: false, erro: `Fora do horário permitido (${cfg.horario_inicio}h-${cfg.horario_fim}h horário de Brasília). Agora são ${hora}h.` });
+      return res.json({ ok: false, erro: `Fora do horário permitido (${cfg.horario_inicio}h-${cfg.horario_fim}h). Agora são ${hora}h.` });
     }
     const envHoje = await enviosHoje();
     const restante = cfg.limite_diario - envHoje;
     if (restante <= 0) {
-      return res.json({ ok: false, erro: `Limite diário de ${cfg.limite_diario} atingido. Enviadas hoje: ${envHoje}.` });
+      return res.json({ ok: false, erro: `Limite diário atingido. Enviadas hoje: ${envHoje}.` });
     }
 
     const { rows: jaEnviados } = await pool.query(
       "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'", [campanha.id]
     );
     const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
-
     const todosContatos = await buscarPorSegmento(campanha.segmento);
     let contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
-
     const limiteNum = parseInt(limite) || 0;
     if (limiteNum > 0) contatos = contatos.slice(0, limiteNum);
     if (contatos.length > restante) contatos = contatos.slice(0, restante);
@@ -328,7 +305,6 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     async function enviarProximo() {
       const { rows: statusRows } = await pool.query('SELECT status FROM campanhas WHERE id=$1', [campanha.id]);
       if (statusRows[0]?.status === 'pausado') return;
-
       const horaAtual = horaBrasilia();
       if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
@@ -339,7 +315,6 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
         return;
       }
-
       if (i >= contatos.length) {
         await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
         return;
@@ -369,13 +344,14 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       }
 
       const statusEnvio = resultado.ok ? 'enviado' : 'erro';
+      // ✅ CORRIGIDO: salva template_name na mensagem para rastreamento
+      const msgSalva = campanha.template_name ? 'template:' + campanha.template_name : msg;
       await pool.query(
         'INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())',
-        [campanha.id, c.id, c.telefone, msg, statusEnvio, resultado.erro||null]
+        [campanha.id, c.id, c.telefone, msgSalva, statusEnvio, resultado.erro||null]
       );
       await pool.query('UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3', [resultado.ok?1:0, resultado.ok?0:1, campanha.id]);
       await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
-
       console.log(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ${resultado.ok?'OK':'ERRO'}`);
       setTimeout(enviarProximo, intervalo);
     }
@@ -406,17 +382,12 @@ app.put('/api/fluxos/:id', async (req, res) => {
 // ─── CONVERSAS ────────────────────────────────────────────────────────────────
 app.get('/api/conversas', async (req, res) => {
   try {
-    const { filtro } = req.query; // 'todas', 'nao_lidas', 'clientes'
+    const { filtro } = req.query;
     let whereExtra = '';
     if (filtro === 'nao_lidas') whereExtra = "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente' AND c2.lida=0)";
     if (filtro === 'clientes') whereExtra = "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente')";
-
     const { rows } = await pool.query(`
-      SELECT 
-        c.telefone,
-        c.nome,
-        MAX(c.criado_em) as ultima,
-        COUNT(*) as total,
+      SELECT c.telefone, c.nome, MAX(c.criado_em) as ultima, COUNT(*) as total,
         COUNT(CASE WHEN c.de='cliente' AND c.lida=0 THEN 1 END) as nao_lidas,
         MAX(CASE WHEN c.de='cliente' THEN c.mensagem END) as ultima_msg_cliente
       FROM conversas c
@@ -431,15 +402,11 @@ app.get('/api/conversas', async (req, res) => {
 
 app.get('/api/conversas/:telefone', async (req, res) => {
   try {
-    const { rows } = await pool.query(
-      'SELECT * FROM conversas WHERE telefone=$1 ORDER BY criado_em ASC',
-      [req.params.telefone]
-    );
+    const { rows } = await pool.query('SELECT * FROM conversas WHERE telefone=$1 ORDER BY criado_em ASC', [req.params.telefone]);
     res.json({ ok: true, mensagens: rows });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// Marcar conversa como lida
 app.post('/api/conversas/:telefone/lida', async (req, res) => {
   try {
     await pool.query("UPDATE conversas SET lida=1 WHERE telefone=$1 AND de='cliente'", [req.params.telefone]);
@@ -524,8 +491,7 @@ app.post('/webhook/popup', async (req, res) => {
     const tel = whatsapp.replace(/\D/g, '');
     await pool.query(
       `INSERT INTO contatos (nome,telefone,email,segmento,origem) VALUES ($1,$2,$3,'Lead','popup')
-       ON CONFLICT (telefone) DO UPDATE SET
-         nome = CASE WHEN contatos.nome = '' OR contatos.nome IS NULL THEN EXCLUDED.nome ELSE contatos.nome END`,
+       ON CONFLICT (telefone) DO UPDATE SET nome = CASE WHEN contatos.nome = '' OR contatos.nome IS NULL THEN EXCLUDED.nome ELSE contatos.nome END`,
       [nome||'', tel, email||'']
     );
     const { rows: check } = await pool.query('SELECT segmento FROM contatos WHERE telefone=$1', [tel]);
@@ -714,9 +680,8 @@ app.get('/api/instancias', async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM instancias ORDER BY id');
     for (const inst of rows) {
       try {
-        const status = 'conectado';
-        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', [status, inst.id]);
-        inst.status = status;
+        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', ['conectado', inst.id]);
+        inst.status = 'conectado';
       } catch(e) { inst.status = 'erro'; }
     }
     res.json({ ok: true, instancias: rows });
@@ -774,26 +739,27 @@ app.post('/webhook/meta', async (req, res) => {
           const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
           if (!respondeuPositivo) continue;
 
-          // Verifica se tem campanha de lancamento recente (últimas 2h)
+          // ✅ CORRIGIDO: busca por template:lancamento_vip também
           const { rows: dispLanc } = await pool.query(
-            "SELECT id FROM disparos WHERE telefone=$1 AND mensagem LIKE '%lancamento%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            "SELECT id FROM disparos WHERE telefone=$1 AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento_vip%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from]
           );
 
-          // Verifica se tem carrinho abandonado ativo
           const { rows: execCarrinho } = await pool.query(
             "SELECT se.* FROM sequencia_execucoes se JOIN sequencias s ON s.id=se.sequencia_id WHERE se.telefone=$1 AND se.status='ativo' AND s.gatilho='carrinho_abandonado'",
             [from]
           );
 
           if (dispLanc.length > 0) {
-            // Resposta ao lancamento VIP
+            // ✅ CORRIGIDO: mensagem com brindes corretos
             await new Promise(r => setTimeout(r, 1500));
             await wpp.enviarMensagem(from,
-              `Oi ${primeiro}! Que alegria! 🎉\n\nHoje é dia de lançamento na Madame Ka e você ganhou:\n\n🎁 Acima de R$299 → Relógio surpresa\n💧 Acima de R$350 → Relógio + Garrafa exclusiva\n\nE ainda use o cupom *MADAME12* para ganhar *12% de desconto*!\n\n👗 madameka.com.br`
+              `Oi ${primeiro}! Que alegria! 🎉\n\nHoje é dia de lançamento na Madame Ka e você tem uma surpresa especial:\n\n🎁 Compras acima de R$299 → Ganhe um *Relógio surpresa*!\n💧 Compras acima de R$350 → Ganhe uma *Garrafa exclusiva* no lugar do relógio!\n\nE ainda use o cupom *MADAME12* para ganhar *12% de desconto* em tudo!\n\n👗 Aproveite agora: madameka.com.br\n\n⏰ Válido somente hoje!`
             );
+            // Salva na conversa
+            await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+              [from, 'Madame Ka', 'Mensagem lancamento + cupom MADAME12 enviada', 'bot']);
           } else if (execCarrinho.length > 0) {
-            // Resposta ao carrinho abandonado
             await new Promise(r => setTimeout(r, 1500));
             await wpp.enviarMensagem(from,
               `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto* em qualquer peça!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=cupom`
