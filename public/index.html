@@ -25,9 +25,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sidebar-logo h2{font-size:15px;font-weight:400;color:#fff}
 .sidebar-logo span{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#c9a87c}
 .sidebar nav{padding:16px 0}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s;border-left:3px solid transparent}
+.nav-item{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s;border-left:3px solid transparent}
 .nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
 .nav-item.ativo{color:#c9a87c;border-left-color:#c9a87c;background:rgba(201,168,124,.08)}
+.nav-badge{background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;min-width:18px;text-align:center}
 .wpp-status{margin:16px 20px 0;padding:10px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px}
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .status-conectado{background:#dcfce7;color:#166534}.status-conectado .status-dot{background:#16a34a}
@@ -58,11 +59,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-group label{display:block;font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .form-group input,.form-group select,.form-group textarea{width:100%;border:1.5px solid #e8e2db;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:inherit}
 .form-group textarea{resize:vertical;min-height:80px}
-.midia-box{background:#f9f6f2;border:1.5px solid #e8e2db;border-radius:10px;padding:14px;margin-top:10px}
-.midia-box-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.midia-upload-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.midia-url-row{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
-.midia-preview{margin-top:8px;max-width:180px}.midia-preview img{width:100%;border-radius:8px;border:1px solid #e8e2db}
 .fluxo-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:20px;margin-bottom:14px}
 .fluxo-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .fluxo-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f5f0ea}
@@ -76,7 +72,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .saved-badge{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;padding:3px 8px;border-radius:20px;opacity:0;transition:opacity .3s}
 .saved-badge.show{opacity:1}
 .fluxo-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
-.seguranca-bar{background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px}
 .seq-card{background:#fff;border:0.5px solid #e8e2db;border-radius:12px;padding:16px;margin-bottom:12px}
 .seq-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .seq-card-nome{font-size:14px;font-weight:500}.seq-card-meta{font-size:12px;color:#888;margin-bottom:10px}
@@ -118,18 +113,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .camp-acoes{display:flex;gap:8px;flex-wrap:wrap}
 .pag{display:flex;gap:8px;align-items:center;margin-top:16px;justify-content:center}
 .pag-info{font-size:12px;color:#888}
-.msg-bubble{display:flex;flex-direction:column;margin-bottom:8px}
-.msg-bubble.cliente .bbl{background:#f0ece8;border-radius:0 10px 10px 10px;align-self:flex-start}
-.msg-bubble.bot .bbl{background:#c9a87c;color:#fff;border-radius:10px 0 10px 10px;align-self:flex-end}
-.bbl{padding:8px 12px;font-size:13px;line-height:1.5;max-width:75%}
-.msg-time{font-size:10px;color:#aaa;margin-top:2px;padding:0 4px}
-.conv-item{padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px}
+/* CONVERSAS */
+.conv-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;height:calc(100vh - 140px)}
+.conv-sidebar{background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column}
+.conv-sidebar-header{padding:10px 12px;border-bottom:0.5px solid #f0ece8;display:flex;flex-direction:column;gap:6px}
+.conv-filtros{display:flex;gap:4px}
+.conv-filtro{padding:4px 10px;border-radius:20px;border:1.5px solid #e8e2db;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
+.conv-filtro.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
+.conv-busca{border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none;width:100%}
+.conv-lista{flex:1;overflow-y:auto}
+.conv-item{padding:10px 12px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
 .conv-item:hover{background:#fafaf9}
-.conv-ativo{background:#fffbf5 !important;border-left:3px solid #c9a87c}
+.conv-item.ativo{background:#fffbf5;border-left:3px solid #c9a87c}
+.conv-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;color:#fff}
+.conv-info{flex:1;min-width:0}
+.conv-nome-txt{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-preview{font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.conv-hora{font-size:10px;color:#aaa}
+.conv-unread{background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;min-width:18px;text-align:center}
+.conv-main{background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column}
+.conv-header{padding:12px 16px;border-bottom:0.5px solid #f0ece8;display:flex;align-items:center;gap:12px}
+.conv-header-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
+.conv-header-info{flex:1}
+.conv-header-nome{font-size:14px;font-weight:500}
+.conv-header-tel{font-size:11px;color:#888}
+.conv-header-etiquetas{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.etiqueta-tag{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer}
+.conv-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:#faf7f4}
+.msg-row{display:flex;flex-direction:column}
+.msg-row.cliente{align-items:flex-start}
+.msg-row.bot{align-items:flex-end}
+.msg-row.sistema{align-items:center}
+.msg-bbl{padding:8px 12px;font-size:13px;line-height:1.5;max-width:72%;word-break:break-word}
+.msg-row.cliente .msg-bbl{background:#fff;border-radius:0 12px 12px 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.msg-row.bot .msg-bbl{background:#c9a87c;color:#fff;border-radius:12px 0 12px 12px}
+.msg-row.sistema .msg-bbl{background:#f0ece8;border-radius:8px;font-size:11px;color:#888;max-width:90%;text-align:center}
+.msg-time{font-size:10px;color:#aaa;margin-top:3px;padding:0 2px}
+.conv-reply{border-top:1px solid #f0ece8;padding:12px;display:flex;gap:8px;align-items:flex-end;background:#fff}
+.conv-reply textarea{flex:1;border:1.5px solid #e8e2db;border-radius:10px;padding:8px 12px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:42px;max-height:120px;transition:border-color .2s}
+.conv-reply textarea:focus{border-color:#c9a87c}
+/* ETIQUETAS */
+.etiqueta-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer}
+.etiqueta-chip .rm{opacity:.6;margin-left:2px}
+.etiqueta-chip .rm:hover{opacity:1}
+.cor-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.cor-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border .15s}
+.cor-opt.sel{border-color:#1a1a1a}
 </style>
 </head>
 <body>
-
 
 <div class="login" id="login">
   <div class="login-card">
@@ -144,20 +177,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="sidebar">
     <div class="sidebar-logo"><span>Madame Ka</span><h2>CRM WhatsApp</h2></div>
     <nav>
-      <div class="nav-item ativo" onclick="irPara('dashboard',this)">&#128202; Dashboard</div>
-      <div class="nav-item" onclick="irPara('contatos',this)">&#128101; Contatos</div>
-      <div class="nav-item" onclick="irPara('campanhas',this)">&#128226; Campanhas</div>
-      <div class="nav-item" onclick="irPara('fluxos',this)">&#128260; Fluxos Auto</div>
-      <div class="nav-item" onclick="irPara('sequencias',this)">&#9889; Sequencias</div>
-      <div class="nav-item" onclick="irPara('conversas',this)">&#128172; Conversas</div>
-      <div class="nav-item" onclick="irPara('numeros',this)">&#128241; Numeros</div>
-      <div class="nav-item" onclick="irPara('config',this)">&#9881; Configuracoes</div>
+      <div class="nav-item ativo" onclick="irPara('dashboard',this)"><span>&#128202; Dashboard</span></div>
+      <div class="nav-item" onclick="irPara('contatos',this)"><span>&#128101; Contatos</span></div>
+      <div class="nav-item" onclick="irPara('campanhas',this)"><span>&#128226; Campanhas</span></div>
+      <div class="nav-item" onclick="irPara('fluxos',this)"><span>&#128260; Fluxos Auto</span></div>
+      <div class="nav-item" onclick="irPara('sequencias',this)"><span>&#9889; Sequencias</span></div>
+      <div class="nav-item" onclick="irPara('conversas',this)"><span>&#128172; Conversas</span><span class="nav-badge" id="badge-nao-lidas" style="display:none">0</span></div>
+      <div class="nav-item" onclick="irPara('numeros',this)"><span>&#128241; Numeros</span></div>
+      <div class="nav-item" onclick="irPara('config',this)"><span>&#9881; Config</span></div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
       <div class="status-dot"></div><span id="wpp-status-txt">Verificando...</span>
     </div>
     <div style="margin:12px 20px 0;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:11px;color:#aaa">
-      <div>&#128232; Hoje: <span id="sb-envios">--</span>/<span id="sb-limite">200</span></div>
+      <div>Hoje: <span id="sb-envios">--</span>/<span id="sb-limite">200</span></div>
       <div id="sb-horario" style="margin-top:4px"></div>
     </div>
   </div>
@@ -178,7 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div class="stat-lbl">&#127874; Aniversariantes</div><div class="stat-val" id="s-aniv">--</div><div class="stat-sub" style="color:#be123c">hoje</div>
         </div>
         <div class="stat" style="border-color:#fed7aa">
-          <div class="stat-lbl">&#128232; Enviados hoje</div><div class="stat-val" id="s-hoje">--</div>
+          <div class="stat-lbl">Enviados hoje</div><div class="stat-val" id="s-hoje">--</div>
           <div class="stat-sub" id="s-hoje-limite" style="color:#c2410c">limite: 200/dia</div>
         </div>
       </div>
@@ -198,17 +231,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <select id="aq-instancia"><option value="1">Carregando...</option></select>
           </div>
         </div>
-        <div class="form-group"><label>Intervalo entre envios</label>
-          <select id="aq-intervalo">
-            <option value="45">45s</option><option value="60" selected>60s (recomendado)</option>
-            <option value="90">90s</option><option value="120">2 min</option>
-            <option value="180">3 min</option><option value="300">5 min</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group"><label>Intervalo</label>
+            <select id="aq-intervalo">
+              <option value="60" selected>60s (recomendado)</option><option value="90">90s</option>
+              <option value="120">2 min</option><option value="180">3 min</option><option value="300">5 min</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Limite (0 = sem limite)</label>
+            <input type="number" id="aq-limite" value="0" min="0">
+          </div>
         </div>
-        <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
-          <input type="number" id="aq-limite" value="0" min="0">
+        <div class="form-group"><label>Template Meta (opcional)</label>
+          <input type="text" id="aq-template" placeholder="Ex: aniversario_madameka">
         </div>
-        <div class="form-group"><label>Mensagem (use {nome})</label>
+        <div class="form-group"><label>Mensagem (use {nome}) - deixe vazio se usar template</label>
           <textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea>
         </div>
         <button class="btn btn-gold" style="margin-top:8px" onclick="disparoRapido()">Disparar agora</button>
@@ -220,13 +257,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="page-header">
         <div><div class="page-title">Contatos</div><div class="page-sub">Base de clientes</div></div>
         <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('modal-etiquetas-mgr').classList.add('open')">&#127991; Etiquetas</button>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">Importar CSV</button>
           <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importarCSV(this)">
         </div>
       </div>
       <div class="card">
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <input type="text" placeholder="Buscar..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
+          <input type="text" placeholder="Buscar nome ou telefone..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
           <select id="seg-filtro" onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
             <option value="todos">Todos</option><option value="VIP">VIP</option>
             <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Recente">Compradora Recente</option>
@@ -236,7 +274,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </select>
         </div>
         <table class="tabela">
-          <thead><tr><th>Nome</th><th>WhatsApp</th><th>Segmento</th><th>Ultimo pedido</th><th>Cidade</th></tr></thead>
+          <thead><tr><th>Nome</th><th>WhatsApp</th><th>Segmento</th><th>Etiquetas</th><th>Ultimo pedido</th></tr></thead>
           <tbody id="tabela-contatos"><tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Carregando...</td></tr></tbody>
         </table>
         <div class="pag">
@@ -258,14 +296,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- FLUXOS -->
     <div class="page" id="page-fluxos">
-      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div></div></div>
+      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div><div class="page-sub">Mensagens automaticas por evento</div></div></div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
 
     <!-- SEQUENCIAS -->
     <div class="page" id="page-sequencias">
       <div class="page-header">
-        <div><div class="page-title">Sequencias</div></div>
+        <div><div class="page-title">Sequencias</div><div class="page-sub">Funis de mensagens</div></div>
         <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequencia</button>
       </div>
       <div id="lista-sequencias">Carregando...</div>
@@ -274,28 +312,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- CONVERSAS -->
     <div class="page" id="page-conversas">
       <div class="page-header">
-        <div><div class="page-title">Conversas</div><div class="page-sub">Responda as clientes pelo CRM</div></div>
+        <div><div class="page-title">Conversas</div><div class="page-sub">Atendimento ao cliente</div></div>
         <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-envio-direto').classList.add('open')">+ Nova mensagem</button>
       </div>
-      <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;height:calc(100vh - 140px)">
-        <div style="background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column">
-          <div style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between">
-            <span>Conversas</span>
-            <button class="btn btn-outline btn-xs" onclick="carregarConversas()">&#8635;</button>
+      <div class="conv-layout">
+        <div class="conv-sidebar">
+          <div class="conv-sidebar-header">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:13px;font-weight:500">Conversas</span>
+              <button class="btn btn-outline btn-xs" onclick="carregarConversas()">&#8635;</button>
+            </div>
+            <div class="conv-filtros">
+              <button class="conv-filtro ativo" onclick="setFiltroConv('todas',this)">Todas</button>
+              <button class="conv-filtro" onclick="setFiltroConv('nao_lidas',this)">Nao lidas</button>
+              <button class="conv-filtro" onclick="setFiltroConv('clientes',this)">Clientes</button>
+            </div>
+            <input class="conv-busca" type="text" placeholder="Buscar contato..." oninput="filtrarListaConversas(this.value)">
           </div>
-          <div id="lista-conversas" style="flex:1;overflow-y:auto"></div>
+          <div class="conv-lista" id="lista-conversas">
+            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Carregando...</div>
+          </div>
         </div>
-        <div style="background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column">
-          <div style="padding:14px 16px;border-bottom:0.5px solid #f0ece8">
-            <div style="font-size:14px;font-weight:500" id="conv-nome">Selecione uma conversa</div>
-            <div style="font-size:11px;color:#888;margin-top:2px" id="conv-tel"></div>
+        <div class="conv-main">
+          <div class="conv-header" id="conv-header">
+            <div class="conv-header-avatar" id="conv-avatar" style="background:#e0dbd5;color:#888">?</div>
+            <div class="conv-header-info">
+              <div class="conv-header-nome" id="conv-nome">Selecione uma conversa</div>
+              <div class="conv-header-tel" id="conv-tel">Clique em um contato ao lado</div>
+              <div class="conv-header-etiquetas" id="conv-etiquetas-header"></div>
+            </div>
+            <div id="conv-acoes" style="display:none;gap:6px">
+              <button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContato()">&#127991; Etiqueta</button>
+            </div>
           </div>
-          <div id="msgs-conversa" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px">
-            <div style="text-align:center;color:#aaa;font-size:13px;margin-top:40px">Selecione uma conversa ao lado</div>
+          <div class="conv-msgs" id="msgs-conversa">
+            <div style="text-align:center;color:#aaa;font-size:13px;margin-top:60px">Selecione uma conversa ao lado</div>
           </div>
-          <div style="border-top:1px solid #f0ece8;padding:12px;display:flex;gap:8px;align-items:flex-end">
-            <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter para enviar)" style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
-            <button class="btn btn-gold btn-sm" onclick="enviarResposta()" style="flex-shrink:0">Enviar</button>
+          <div class="conv-reply">
+            <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter para enviar, Shift+Enter para nova linha)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
+            <button class="btn btn-gold btn-sm" onclick="enviarResposta()" style="flex-shrink:0;height:42px">Enviar</button>
           </div>
         </div>
       </div>
@@ -304,19 +359,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- NUMEROS -->
     <div class="page" id="page-numeros">
       <div class="page-header">
-        <div><div class="page-title">Numeros WhatsApp</div></div>
-        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-numero').classList.add('open')">+ Adicionar numero</button>
+        <div><div class="page-title">Numeros WhatsApp</div><div class="page-sub">Instancias conectadas</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-numero').classList.add('open')">+ Adicionar</button>
       </div>
       <div id="lista-numeros">Carregando...</div>
     </div>
 
-    <!-- CONFIGURACOES -->
+    <!-- CONFIG -->
     <div class="page" id="page-config">
       <div class="page-header"><div><div class="page-title">Configuracoes</div></div></div>
       <div class="card">
         <div class="config-section-title">Limites de Disparo</div>
         <div class="config-item">
-          <div><div class="config-label">Limite diario de mensagens</div></div>
+          <div><div class="config-label">Limite diario de mensagens</div><div class="config-desc">Recomendado: 100-200 no inicio</div></div>
           <div style="display:flex;align-items:center;gap:8px">
             <input type="number" class="config-input" id="cfg-limite-diario" value="200" min="1" max="2000">
             <button class="btn btn-gold btn-sm" onclick="salvarConfig('limite_diario',document.getElementById('cfg-limite-diario').value)">Salvar</button>
@@ -341,6 +396,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="config-section-title">Status de Seguranca</div>
         <div id="config-status-seguranca" style="font-size:13px;color:#888">Carregando...</div>
       </div>
+      <div class="card">
+        <div class="config-section-title">Token Meta - Renovar</div>
+        <div style="font-size:13px;color:#666;margin-bottom:12px">Cole o novo token gerado no Meta Business Suite</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="novo-token" placeholder="EAAxxxxxxxx..." style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:13px;outline:none">
+          <button class="btn btn-gold btn-sm" onclick="renovarToken()">Salvar token</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#aaa">O token sera salvo nas configuracoes. Recomendado: usar token permanente via System User no Meta.</div>
+      </div>
     </div>
 
   </div>
@@ -350,35 +414,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
-    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Namorados"></div>
+    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Aniversariantes Junho"></div>
     <div class="form-row">
       <div class="form-group"><label>Segmento</label>
         <select id="c-seg">
           <option value="todos">Todos</option><option value="VIP">VIP</option>
           <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Ativa">Compradora Ativa</option>
           <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
-          <option value="Aniversariante">Aniversariantes</option>
+          <option value="Aniversariante">Aniversariantes de hoje</option>
         </select>
       </div>
-      <div class="form-group"><label>Limite (0 = sem limite)</label>
+      <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
         <input type="number" id="c-limite" value="0" min="0">
       </div>
     </div>
-    <div class="form-group"><label>Numero WhatsApp</label>
-      <select id="c-instancia"><option value="1">Carregando...</option></select>
+    <div class="form-row">
+      <div class="form-group"><label>Numero WhatsApp</label>
+        <select id="c-instancia"><option value="1">Carregando...</option></select>
+      </div>
+      <div class="form-group"><label>Intervalo entre envios</label>
+        <select id="c-intervalo">
+          <option value="60" selected>60s (recomendado)</option><option value="90">90s</option>
+          <option value="120">2 min</option><option value="180">3 min</option><option value="300">5 min</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group"><label>Intervalo entre envios</label>
-      <select id="c-intervalo">
-        <option value="60" selected>60s</option><option value="90">90s</option>
-        <option value="120">2 min</option><option value="180">3 min</option><option value="300">5 min</option>
-      </select>
-    </div>
-    <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#166534">
-      API Oficial Meta: para disparar para qualquer contato, preencha um template aprovado abaixo.
+      API Oficial Meta: use template aprovado para disparar para qualquer contato.
     </div>
-    <div class="form-group"><label>Template Meta aprovado (opcional)</label>
+    <div class="form-group"><label>Template Meta aprovado (recomendado)</label>
       <input type="text" id="c-template" placeholder="Ex: aniversario_madameka">
+      <div style="font-size:11px;color:#888;margin-top:4px">Se preenchido, usa o template e ignora a mensagem abaixo.</div>
+    </div>
+    <div class="form-group"><label>Mensagem livre (so funciona se cliente respondeu nas 24h)</label>
+      <textarea id="c-msg" placeholder="Oi {nome}!"></textarea>
     </div>
     <div style="display:flex;gap:10px;margin-top:14px">
       <button class="btn btn-primary" onclick="criarCampanha()">Criar campanha</button>
@@ -445,7 +514,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Enviar mensagem direta</div><button class="modal-close" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">x</button></div>
     <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#92400e">
-      Use template para enviar para qualquer contato. Mensagem livre funciona so se o cliente respondeu nas ultimas 24h.
+      Use template para qualquer contato. Mensagem livre so funciona se o cliente respondeu nas ultimas 24h.
     </div>
     <div class="form-group"><label>Numero WhatsApp (com DDI)</label>
       <input type="text" id="envio-tel" placeholder="Ex: 5547996214217">
@@ -463,6 +532,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL ETIQUETAS GERENCIAR -->
+<div class="modal-bg" id="modal-etiquetas-mgr">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Gerenciar Etiquetas</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-mgr').classList.remove('open')">x</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input type="text" id="nova-etiqueta-nome" placeholder="Nome da etiqueta" style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+      <button class="btn btn-gold btn-sm" onclick="criarEtiqueta()">Criar</button>
+    </div>
+    <div class="cor-picker" id="cor-picker">
+      <div class="cor-opt sel" style="background:#ef4444" data-cor="#ef4444" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#f97316" data-cor="#f97316" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#eab308" data-cor="#eab308" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#22c55e" data-cor="#22c55e" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#3b82f6" data-cor="#3b82f6" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#8b5cf6" data-cor="#8b5cf6" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#ec4899" data-cor="#ec4899" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#c9a87c" data-cor="#c9a87c" onclick="selecionarCor(this)"></div>
+      <div class="cor-opt" style="background:#6b7280" data-cor="#6b7280" onclick="selecionarCor(this)"></div>
+    </div>
+    <div id="lista-etiquetas-mgr" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- MODAL ETIQUETAS CONTATO -->
+<div class="modal-bg" id="modal-etiquetas-contato">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Etiquetas do contato</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-contato').classList.remove('open')">x</button></div>
+    <div id="etiquetas-contato-lista" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div style="font-size:12px;color:#888;margin-bottom:8px">Clique para adicionar:</div>
+    <div id="etiquetas-disponiveis" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -475,6 +577,11 @@ var passoCount = 0;
 var cfgAtual = { limite_diario: 200, horario_inicio: 9, horario_fim: 20 };
 var convAtualTel = null;
 var convAtualNome = null;
+var filtroConvAtual = 'todas';
+var corEtiquetaSel = '#ef4444';
+var todasEtiquetas = [];
+var conversasCache = [];
+var buscaConvAtual = '';
 
 var DELAYS_RAPIDOS = [
   {label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1h',horas:1},
@@ -492,6 +599,14 @@ var GATILHO_BADGE = {
   carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',
   pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual'
 };
+
+var CORES_AVATAR = ['#c9a87c','#3b82f6','#22c55e','#ef4444','#8b5cf6','#f97316','#ec4899','#6b7280'];
+
+function corAvatar(str) {
+  var h = 0;
+  for (var i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) & 0xffff; }
+  return CORES_AVATAR[h % CORES_AVATAR.length];
+}
 
 function toast(msg) {
   var el = document.getElementById('toast');
@@ -525,13 +640,14 @@ function inicializar() {
   carregarConversas();
   carregarConfig();
   carregarNumeros();
+  carregarEtiquetas();
   setInterval(verificarStatus, 60000);
   setInterval(carregarStats, 120000);
   setInterval(carregarCampanhas, 60000);
   setInterval(function() {
-    if (convAtualTel) { abrirConversa(convAtualTel, convAtualNome); }
-    else { carregarConversas(); }
-  }, 30000);
+    carregarConversas();
+    if (convAtualTel) { abrirConversa(convAtualTel, convAtualNome, true); }
+  }, 15000);
 }
 
 function irPara(p, el) {
@@ -606,40 +722,14 @@ async function salvarConfig(chave, valor) {
   } catch(e) { toast('Erro ao salvar'); }
 }
 
-async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
-  var file = input.files[0];
-  if (!file) return;
-  var status = document.getElementById(statusId);
-  status.textContent = 'Enviando...';
-  var fd = new FormData();
-  fd.append('arquivo', file);
+async function renovarToken() {
+  var token = document.getElementById('novo-token').value.trim();
+  if (!token) { toast('Cole o token'); return; }
   try {
-    var r = await fetch('/api/upload', {method:'POST',body:fd});
+    var r = await fetch('/api/config', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chave:'meta_token_temp',valor:token})});
     var d = await r.json();
-    if (d.ok) {
-      document.getElementById(urlId).value = d.url;
-      document.getElementById(tipoId).value = d.tipo;
-      status.textContent = 'Enviado!';
-      status.style.color = '#16a34a';
-      setTimeout(function() { status.textContent = ''; }, 3000);
-    } else {
-      status.textContent = 'Erro: ' + d.erro;
-      status.style.color = '#dc2626';
-    }
-  } catch(e) {
-    status.textContent = 'Erro';
-    status.style.color = '#dc2626';
-  }
-  input.value = '';
-}
-
-function limparMidia(tipoId, urlId, previewId, statusId) {
-  document.getElementById(tipoId).value = 'texto';
-  document.getElementById(urlId).value = '';
-  document.getElementById(previewId).style.display = 'none';
-  document.getElementById(previewId).innerHTML = '';
-  var s = document.getElementById(statusId);
-  if (s) s.textContent = '';
+    if (d.ok) { toast('Token salvo! Atualize no Render tambem.'); document.getElementById('novo-token').value = ''; }
+  } catch(e) { toast('Erro ao salvar token'); }
 }
 
 async function carregarStats() {
@@ -671,7 +761,7 @@ async function verificarStatus() {
     var sb = document.getElementById('wpp-status-sidebar');
     sb.className = 'wpp-status ' + (ok ? 'status-conectado' : 'status-desconectado');
     document.getElementById('wpp-status-txt').textContent = ok ? 'API Meta OK' : 'Verificando...';
-  } catch(e) { console.log('Status falhou'); }
+  } catch(e) {}
 }
 
 async function carregarContatos() {
@@ -687,16 +777,20 @@ async function carregarContatos() {
     }
     var bm = {VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
     tb.innerHTML = d.contatos.map(function(c) {
-      return '<tr><td>' + (c.nome || '--') + '</td><td style="color:#888">' + c.telefone + '</td>' +
+      var telSafe = c.telefone;
+      return '<tr>' +
+        '<td>' + (c.nome || '--') + '</td>' +
+        '<td style="color:#888">' + telSafe + '</td>' +
         '<td><span class="badge badge-' + (bm[c.segmento] || 'inativa') + '">' + c.segmento + '</span></td>' +
+        '<td><button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContatoTel(\'' + telSafe + '\')">+ Etiqueta</button></td>' +
         '<td style="color:#888;font-size:12px">' + (c.data_ultimo_pedido || '--') + '</td>' +
-        '<td style="color:#888;font-size:12px">' + (c.cidade || '--') + '</td></tr>';
+        '</tr>';
     }).join('');
     var inicio = paginaAtual * POR_PAGINA + 1;
     var fim = Math.min((paginaAtual + 1) * POR_PAGINA, d.total);
     document.getElementById('pag-info').textContent = inicio + '-' + fim + ' de ' + d.total.toLocaleString('pt-BR');
   } catch(e) {
-    document.getElementById('tabela-contatos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Erro ao carregar. <a href="#" onclick="carregarContatos();return false;">Tentar novamente</a></td></tr>';
+    document.getElementById('tabela-contatos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Erro ao carregar</td></tr>';
   }
 }
 
@@ -735,7 +829,7 @@ async function carregarCampanhas() {
       if (c.status === 'disparando') acoes = '<button class="btn btn-danger btn-sm" onclick="pausarCampanha(' + c.id + ')">Parar</button>';
       if (c.status === 'pausado') acoes = '<button class="btn btn-success btn-sm" onclick="retomarCampanha(' + c.id + ')">Retomar</button>';
       if (c.status === 'concluido') acoes = '<button class="btn btn-outline btn-sm" onclick="retomarCampanha(' + c.id + ')">Disparar novamente</button>';
-      var tmpl = c.template_name ? ' | Template: ' + c.template_name : '';
+      var tmpl = c.template_name ? 'Template: ' + c.template_name : '';
       var msg = c.mensagem ? c.mensagem.substring(0, 100) + (c.mensagem.length > 100 ? '...' : '') : tmpl;
       return '<div class="camp-card">' +
         '<div class="camp-card-header"><div class="camp-card-nome">' + c.nome + '</div><span class="badge badge-' + sb + '">' + c.status + '</span></div>' +
@@ -752,15 +846,13 @@ async function criarCampanha() {
   var segmento = document.getElementById('c-seg').value;
   var intervalo = document.getElementById('c-intervalo').value;
   var limite = document.getElementById('c-limite').value;
-  var midTipo = document.getElementById('c-midia-tipo').value;
-  var midUrl = document.getElementById('c-midia-url').value;
   var instancia = document.getElementById('c-instancia').value || '1';
-  var template = document.getElementById('c-template') ? document.getElementById('c-template').value.trim() : '';
+  var template = document.getElementById('c-template').value.trim();
   if (!nome || (!mensagem && !template)) { toast('Preencha nome e mensagem ou template'); return; }
   try {
     var r = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({nome:nome,mensagem:mensagem,segmento:segmento,intervalo_segundos:parseInt(intervalo),
-      limite:parseInt(limite)||0,midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instancia),template_name:template})});
+      limite:parseInt(limite)||0,midia_tipo:'texto',midia_url:'',instancia_id:parseInt(instancia),template_name:template})});
     var d = await r.json();
     if (d.ok) { toast('Campanha criada!'); document.getElementById('modal-campanha').classList.remove('open'); carregarCampanhas(); }
   } catch(e) { toast('Erro ao criar'); }
@@ -798,15 +890,14 @@ async function disparoRapido() {
   var seg = document.getElementById('aq-seg').value;
   var intervalo = document.getElementById('aq-intervalo').value;
   var limite = document.getElementById('aq-limite').value;
-  var midTipo = document.getElementById('aq-midia-tipo').value;
-  var midUrl = document.getElementById('aq-midia-url').value;
   var instancia = document.getElementById('aq-instancia').value || '1';
-  if (!msg) { toast('Escreva a mensagem'); return; }
+  var template = document.getElementById('aq-template').value.trim();
+  if (!msg && !template) { toast('Escreva a mensagem ou informe o template'); return; }
   try {
     var cr = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({nome:'Disparo ' + new Date().toLocaleDateString('pt-BR'),mensagem:msg,
       segmento:seg,intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,
-      midia_tipo:midTipo,midia_url:midUrl,instancia_id:parseInt(instancia)})});
+      midia_tipo:'texto',midia_url:'',instancia_id:parseInt(instancia),template_name:template})});
     var crd = await cr.json();
     if (crd.ok) {
       var r = await fetch('/api/campanhas/' + crd.id + '/disparar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
@@ -1055,48 +1146,102 @@ async function deletarSequencia(id) {
   toast('Excluida!'); carregarSequencias();
 }
 
+// ─── CONVERSAS ────────────────────────────────────────────────────────────────
+function setFiltroConv(filtro, btn) {
+  filtroConvAtual = filtro;
+  document.querySelectorAll('.conv-filtro').forEach(function(b) { b.classList.remove('ativo'); });
+  btn.classList.add('ativo');
+  carregarConversas();
+}
+
+function filtrarListaConversas(v) {
+  buscaConvAtual = v.toLowerCase();
+  renderizarListaConversas();
+}
+
+function renderizarListaConversas() {
+  var lista = document.getElementById('lista-conversas');
+  var convsFiltradas = conversasCache.filter(function(c) {
+    if (!buscaConvAtual) return true;
+    return (c.nome || '').toLowerCase().includes(buscaConvAtual) || c.telefone.includes(buscaConvAtual);
+  });
+  if (!convsFiltradas.length) {
+    lista.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Nenhuma conversa</div>';
+    return;
+  }
+  var totalNaoLidas = 0;
+  var html = '';
+  for (var i = 0; i < convsFiltradas.length; i++) {
+    var c = convsFiltradas[i];
+    var naoLidas = parseInt(c.nao_lidas) || 0;
+    totalNaoLidas += naoLidas;
+    var inicial = (c.nome && c.nome !== 'Cliente' ? c.nome : c.telefone)[0].toUpperCase();
+    var cor = corAvatar(c.telefone);
+    var ativoClass = convAtualTel === c.telefone ? ' ativo' : '';
+    var hora = '';
+    if (c.ultima) {
+      var d = new Date(c.ultima);
+      var agora = new Date();
+      var diff = agora - d;
+      if (diff < 86400000) hora = d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+      else hora = d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
+    }
+    var preview = c.ultima_msg_cliente ? c.ultima_msg_cliente.substring(0, 35) + (c.ultima_msg_cliente.length > 35 ? '...' : '') : '';
+    html += '<div class="conv-item' + ativoClass + '" data-tel="' + c.telefone + '" data-nome="' + (c.nome || 'Cliente') + '">' +
+      '<div class="conv-avatar" style="background:' + cor + '">' + inicial + '</div>' +
+      '<div class="conv-info">' +
+      '<div class="conv-nome-txt">' + (c.nome && c.nome !== 'Cliente' ? c.nome : c.telefone) + '</div>' +
+      '<div class="conv-preview">' + (preview || c.telefone) + '</div>' +
+      '</div>' +
+      '<div class="conv-meta">' +
+      '<span class="conv-hora">' + hora + '</span>' +
+      (naoLidas > 0 ? '<span class="conv-unread">' + naoLidas + '</span>' : '') +
+      '</div></div>';
+  }
+  lista.innerHTML = html;
+  var badge = document.getElementById('badge-nao-lidas');
+  if (totalNaoLidas > 0) {
+    badge.textContent = totalNaoLidas;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+  lista.querySelectorAll('.conv-item').forEach(function(el) {
+    el.addEventListener('click', function() {
+      abrirConversa(this.dataset.tel, this.dataset.nome, false);
+    });
+  });
+}
+
 async function carregarConversas() {
   try {
-    var r = await fetch('/api/conversas');
+    var url = '/api/conversas';
+    if (filtroConvAtual !== 'todas') url += '?filtro=' + filtroConvAtual;
+    var r = await fetch(url);
     var d = await r.json();
-    var lista = document.getElementById('lista-conversas');
-    if (!d.conversas || !d.conversas.length) {
-      lista.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Nenhuma conversa ainda</div>';
-      return;
-    }
-    var html = '';
-    for (var i = 0; i < d.conversas.length; i++) {
-      var c = d.conversas[i];
-      var inicial = (c.nome || c.telefone || 'C')[0].toUpperCase();
-      var bg = convAtualTel === c.telefone ? 'background:#fffbf5;border-left:3px solid #c9a87c;' : '';
-      html += '<div data-tel="' + c.telefone + '" data-nome="' + (c.nome || 'Cliente') + '" class="conv-clicavel" style="' + bg + 'padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px">';
-      html += '<div style="width:38px;height:38px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0;color:#888">' + inicial + '</div>';
-      html += '<div style="flex:1;min-width:0">';
-      html += '<div style="font-size:13px;font-weight:500">' + (c.nome || c.telefone) + '</div>';
-      html += '<div style="font-size:11px;color:#aaa;margin-top:2px">' + c.telefone + '</div>';
-      html += '</div></div>';
-    }
-    lista.innerHTML = html;
-    var items = lista.querySelectorAll('.conv-clicavel');
-    for (var j = 0; j < items.length; j++) {
-      items[j].addEventListener('click', function() {
-        abrirConversa(this.dataset.tel, this.dataset.nome);
-      });
-    }
+    conversasCache = d.conversas || [];
+    renderizarListaConversas();
   } catch(e) { console.log('Conversas falhou:', e); }
 }
 
-async function abrirConversa(tel, nome) {
+async function abrirConversa(tel, nome, silencioso) {
   try {
     convAtualTel = tel;
     convAtualNome = nome;
+    var cor = corAvatar(tel);
+    var inicial = (nome && nome !== 'Cliente' ? nome : tel)[0].toUpperCase();
+    var avatarEl = document.getElementById('conv-avatar');
+    if (avatarEl) { avatarEl.textContent = inicial; avatarEl.style.background = cor; }
     var nomeEl = document.getElementById('conv-nome');
     var telEl = document.getElementById('conv-tel');
-    if (nomeEl) nomeEl.textContent = nome || tel;
+    if (nomeEl) nomeEl.textContent = nome && nome !== 'Cliente' ? nome : tel;
     if (telEl) telEl.textContent = tel;
+    var acoesEl = document.getElementById('conv-acoes');
+    if (acoesEl) acoesEl.style.display = 'flex';
     var r = await fetch('/api/conversas/' + tel);
     var d = await r.json();
     var container = document.getElementById('msgs-conversa');
+    var scrollBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
     if (!d.mensagens || !d.mensagens.length) {
       container.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;margin-top:40px">Nenhuma mensagem ainda</div>';
     } else {
@@ -1105,18 +1250,37 @@ async function abrirConversa(tel, nome) {
         var m = d.mensagens[i];
         var tipo = m.de === 'cliente' ? 'cliente' : 'bot';
         var hora = new Date(m.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-        var label = m.de === 'bot' ? 'Madame Ka' : (m.nome || 'Cliente');
+        var label = m.de === 'bot' ? 'Madame Ka' : (m.nome && m.nome !== 'Cliente' ? m.nome : nome);
         var msgText = m.mensagem.split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('\n').join('<br>');
-        html += '<div class="msg ' + tipo + '"><div class="bubble">' + msgText + '</div>';
+        html += '<div class="msg-row ' + tipo + '"><div class="msg-bbl">' + msgText + '</div>';
         html += '<div class="msg-time">' + label + ' - ' + hora + '</div></div>';
       }
       container.innerHTML = html;
-      container.scrollTop = container.scrollHeight;
+      if (!silencioso || scrollBottom) container.scrollTop = container.scrollHeight;
     }
-    carregarConversas();
-    var replyEl = document.getElementById('reply-msg');
-    if (replyEl) replyEl.focus();
+    // Marca como lida
+    await fetch('/api/conversas/' + tel + '/lida', {method:'POST'});
+    // Carrega etiquetas do contato no header
+    carregarEtiquetasHeader(tel);
+    if (!silencioso) {
+      carregarConversas();
+      var replyEl = document.getElementById('reply-msg');
+      if (replyEl) replyEl.focus();
+    }
   } catch(e) { console.log('Conversa falhou:', e); }
+}
+
+async function carregarEtiquetasHeader(tel) {
+  try {
+    var r = await fetch('/api/contatos/' + tel + '/etiquetas');
+    var d = await r.json();
+    var el = document.getElementById('conv-etiquetas-header');
+    if (!el) return;
+    if (!d.etiquetas || !d.etiquetas.length) { el.innerHTML = ''; return; }
+    el.innerHTML = d.etiquetas.map(function(e) {
+      return '<span class="etiqueta-tag" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40">' + e.nome + '</span>';
+    }).join('');
+  } catch(e) {}
 }
 
 async function enviarResposta() {
@@ -1129,11 +1293,101 @@ async function enviarResposta() {
     var d = await r.json();
     if (d.ok) {
       document.getElementById('reply-msg').value = '';
-      abrirConversa(convAtualTel, convAtualNome);
+      abrirConversa(convAtualTel, convAtualNome, false);
     } else { toast('Erro: ' + d.erro); }
   } catch(e) { toast('Erro ao enviar'); }
 }
 
+// ─── ETIQUETAS ────────────────────────────────────────────────────────────────
+function selecionarCor(el) {
+  document.querySelectorAll('.cor-opt').forEach(function(o) { o.classList.remove('sel'); });
+  el.classList.add('sel');
+  corEtiquetaSel = el.dataset.cor;
+}
+
+async function carregarEtiquetas() {
+  try {
+    var r = await fetch('/api/etiquetas');
+    var d = await r.json();
+    todasEtiquetas = d.etiquetas || [];
+    renderizarEtiquetasMgr();
+  } catch(e) {}
+}
+
+function renderizarEtiquetasMgr() {
+  var el = document.getElementById('lista-etiquetas-mgr');
+  if (!el) return;
+  if (!todasEtiquetas.length) { el.innerHTML = '<div style="color:#aaa;font-size:13px">Nenhuma etiqueta criada ainda</div>'; return; }
+  el.innerHTML = todasEtiquetas.map(function(e) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #f0ece8">' +
+      '<span class="etiqueta-tag" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40;font-size:13px;padding:4px 12px">' + e.nome + '</span>' +
+      '<button class="btn btn-danger btn-xs" onclick="excluirEtiqueta(' + e.id + ')">Excluir</button>' +
+      '</div>';
+  }).join('');
+}
+
+async function criarEtiqueta() {
+  var nome = document.getElementById('nova-etiqueta-nome').value.trim();
+  if (!nome) { toast('Digite o nome'); return; }
+  try {
+    var r = await fetch('/api/etiquetas', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nome,cor:corEtiquetaSel})});
+    var d = await r.json();
+    if (d.ok) {
+      toast('Etiqueta criada!');
+      document.getElementById('nova-etiqueta-nome').value = '';
+      carregarEtiquetas();
+    }
+  } catch(e) { toast('Erro ao criar'); }
+}
+
+async function excluirEtiqueta(id) {
+  if (!confirm('Excluir esta etiqueta?')) return;
+  await fetch('/api/etiquetas/' + id, {method:'DELETE'});
+  toast('Excluida!'); carregarEtiquetas();
+}
+
+function abrirEtiquetasContato() {
+  if (!convAtualTel) return;
+  abrirEtiquetasContatoTel(convAtualTel);
+}
+
+async function abrirEtiquetasContatoTel(tel) {
+  try {
+    var r = await fetch('/api/contatos/' + tel + '/etiquetas');
+    var d = await r.json();
+    var etiquetasTel = d.etiquetas || [];
+    var ids = etiquetasTel.map(function(e) { return e.id; });
+    var listaCont = document.getElementById('etiquetas-contato-lista');
+    var listaDisp = document.getElementById('etiquetas-disponiveis');
+    listaCont.innerHTML = etiquetasTel.length ? etiquetasTel.map(function(e) {
+      return '<span class="etiqueta-chip" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40" onclick="removerEtiquetaContato(\'' + tel + '\',' + e.id + ')">' + e.nome + ' <span class="rm">x</span></span>';
+    }).join('') : '<span style="color:#aaa;font-size:13px">Sem etiquetas</span>';
+    listaDisp.innerHTML = todasEtiquetas.filter(function(e) { return ids.indexOf(e.id) === -1; }).map(function(e) {
+      return '<span class="etiqueta-chip" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40;opacity:.7" onclick="adicionarEtiquetaContato(\'' + tel + '\',' + e.id + ')">' + e.nome + ' <span>+</span></span>';
+    }).join('') || '<span style="color:#aaa;font-size:13px">Nenhuma disponivel</span>';
+    document.getElementById('modal-etiquetas-contato').classList.add('open');
+  } catch(e) { toast('Erro ao carregar etiquetas'); }
+}
+
+async function adicionarEtiquetaContato(tel, etiquetaId) {
+  try {
+    await fetch('/api/contatos/' + tel + '/etiquetas', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({etiqueta_id:etiquetaId})});
+    abrirEtiquetasContatoTel(tel);
+    if (tel === convAtualTel) carregarEtiquetasHeader(tel);
+    toast('Etiqueta adicionada!');
+  } catch(e) { toast('Erro'); }
+}
+
+async function removerEtiquetaContato(tel, etiquetaId) {
+  try {
+    await fetch('/api/contatos/' + tel + '/etiquetas/' + etiquetaId, {method:'DELETE'});
+    abrirEtiquetasContatoTel(tel);
+    if (tel === convAtualTel) carregarEtiquetasHeader(tel);
+    toast('Etiqueta removida!');
+  } catch(e) { toast('Erro'); }
+}
+
+// ─── NUMEROS ──────────────────────────────────────────────────────────────────
 async function carregarNumeros() {
   try {
     var r = await fetch('/api/instancias');
@@ -1185,7 +1439,7 @@ async function excluirNumero(id) {
 }
 
 async function enviarDireto() {
-  var tel = document.getElementById('envio-tel').value.trim().replace(/\D/g,'');
+  var tel = document.getElementById('envio-tel').value.trim().replace(/[^0-9]/g,'');
   var template = document.getElementById('envio-template').value.trim();
   var msg = document.getElementById('envio-msg').value.trim();
   if (!tel) { toast('Informe o numero'); return; }
