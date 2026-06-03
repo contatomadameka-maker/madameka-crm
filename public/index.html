@@ -118,25 +118,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .camp-acoes{display:flex;gap:8px;flex-wrap:wrap}
 .pag{display:flex;gap:8px;align-items:center;margin-top:16px;justify-content:center}
 .pag-info{font-size:12px;color:#888}
-.msg{display:flex;flex-direction:column;margin-bottom:8px}
-.msg.cliente .bubble{background:#f0ece8;border-radius:0 10px 10px 10px;align-self:flex-start}
-.msg.bot .bubble{background:#c9a87c;color:#fff;border-radius:10px 0 10px 10px;align-self:flex-end}
-.bubble{padding:8px 12px;font-size:13px;line-height:1.5;max-width:75%}
+.msg-bubble{display:flex;flex-direction:column;margin-bottom:8px}
+.msg-bubble.cliente .bbl{background:#f0ece8;border-radius:0 10px 10px 10px;align-self:flex-start}
+.msg-bubble.bot .bbl{background:#c9a87c;color:#fff;border-radius:10px 0 10px 10px;align-self:flex-end}
+.bbl{padding:8px 12px;font-size:13px;line-height:1.5;max-width:75%}
 .msg-time{font-size:10px;color:#aaa;margin-top:2px;padding:0 4px}
-.conv-item{padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
+.conv-item{padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px}
 .conv-item:hover{background:#fafaf9}
-.conv-item.ativo{background:#fffbf5;border-left:3px solid #c9a87c}
-.conv-avatar{width:38px;height:38px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0;color:#888}
-.conv-info{flex:1;min-width:0}
-.conv-nome{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.conv-preview{font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.conv-badge{background:#c9a87c;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;flex-shrink:0}
-.reply-box{border-top:1px solid #f0ece8;padding:12px;display:flex;gap:8px;align-items:flex-end}
-.reply-box textarea{flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:120px}
-.reply-box textarea:focus{border-color:#c9a87c}
+.conv-ativo{background:#fffbf5 !important;border-left:3px solid #c9a87c}
 </style>
 </head>
 <body>
+
 
 <div class="login" id="login">
   <div class="login-card">
@@ -151,20 +144,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="sidebar">
     <div class="sidebar-logo"><span>Madame Ka</span><h2>CRM WhatsApp</h2></div>
     <nav>
-      <div class="nav-item ativo" onclick="irPara('dashboard',this)">📊 Dashboard</div>
-      <div class="nav-item" onclick="irPara('contatos',this)">👥 Contatos</div>
-      <div class="nav-item" onclick="irPara('campanhas',this)">📢 Campanhas</div>
-      <div class="nav-item" onclick="irPara('fluxos',this)">🔄 Fluxos Auto</div>
-      <div class="nav-item" onclick="irPara('sequencias',this)">⚡ Sequências</div>
-      <div class="nav-item" onclick="irPara('conversas',this)">💬 Conversas</div>
-      <div class="nav-item" onclick="irPara('numeros',this)">📱 Números</div>
-      <div class="nav-item" onclick="irPara('config',this)">⚙️ Configurações</div>
+      <div class="nav-item ativo" onclick="irPara('dashboard',this)">&#128202; Dashboard</div>
+      <div class="nav-item" onclick="irPara('contatos',this)">&#128101; Contatos</div>
+      <div class="nav-item" onclick="irPara('campanhas',this)">&#128226; Campanhas</div>
+      <div class="nav-item" onclick="irPara('fluxos',this)">&#128260; Fluxos Auto</div>
+      <div class="nav-item" onclick="irPara('sequencias',this)">&#9889; Sequencias</div>
+      <div class="nav-item" onclick="irPara('conversas',this)">&#128172; Conversas</div>
+      <div class="nav-item" onclick="irPara('numeros',this)">&#128241; Numeros</div>
+      <div class="nav-item" onclick="irPara('config',this)">&#9881; Configuracoes</div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
       <div class="status-dot"></div><span id="wpp-status-txt">Verificando...</span>
     </div>
     <div style="margin:12px 20px 0;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:8px;font-size:11px;color:#aaa">
-      <div>📨 Hoje: <span id="sb-envios">--</span>/<span id="sb-limite">200</span></div>
+      <div>&#128232; Hoje: <span id="sb-envios">--</span>/<span id="sb-limite">200</span></div>
       <div id="sb-horario" style="margin-top:4px"></div>
     </div>
   </div>
@@ -173,8 +166,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- DASHBOARD -->
     <div class="page ativo" id="page-dashboard">
-      <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visão geral do CRM</div></div></div>
-      <div id="seguranca-bar" class="seguranca-bar" style="display:none"></div>
+      <div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-sub">Visao geral do CRM</div></div></div>
       <div class="stats">
         <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">--</div><div class="stat-sub">contatos</div></div>
         <div class="stat"><div class="stat-lbl">VIP</div><div class="stat-val" id="s-vip">--</div><div class="stat-sub">R$500+</div></div>
@@ -183,59 +175,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="stat"><div class="stat-lbl">Leads</div><div class="stat-val" id="s-leads">--</div><div class="stat-sub">nunca compraram</div></div>
         <div class="stat"><div class="stat-lbl">Disparados</div><div class="stat-val" id="s-disparos">--</div><div class="stat-sub">mensagens</div></div>
         <div class="stat" style="cursor:pointer;border-color:#fca5a5" onclick="irParaSegmento('Aniversariante')">
-          <div class="stat-lbl">🎂 Aniversariantes</div><div class="stat-val" id="s-aniv">--</div><div class="stat-sub" style="color:#be123c">hoje · ver lista</div>
+          <div class="stat-lbl">&#127874; Aniversariantes</div><div class="stat-val" id="s-aniv">--</div><div class="stat-sub" style="color:#be123c">hoje</div>
         </div>
         <div class="stat" style="border-color:#fed7aa">
-          <div class="stat-lbl">📨 Enviados hoje</div><div class="stat-val" id="s-hoje">--</div>
+          <div class="stat-lbl">&#128232; Enviados hoje</div><div class="stat-val" id="s-hoje">--</div>
           <div class="stat-sub" id="s-hoje-limite" style="color:#c2410c">limite: 200/dia</div>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Disparo Rápido</div>
+        <div class="card-title">Disparo Rapido</div>
         <div class="form-row">
           <div class="form-group"><label>Segmento</label>
             <select id="aq-seg">
               <option value="todos">Todos</option><option value="VIP">VIP</option>
-              <option value="Alta Frequencia">Alta Frequência</option><option value="Compradora Recente">Compradora Recente</option>
+              <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Recente">Compradora Recente</option>
               <option value="Compradora Ativa">Compradora Ativa</option><option value="Em Risco">Em Risco</option>
               <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
-              <option value="Aniversariante">Aniversariantes 🎂</option>
+              <option value="Aniversariante">Aniversariantes</option>
             </select>
           </div>
-          <div class="form-group"><label>Número WhatsApp</label>
+          <div class="form-group"><label>Numero WhatsApp</label>
             <select id="aq-instancia"><option value="1">Carregando...</option></select>
           </div>
         </div>
         <div class="form-group"><label>Intervalo entre envios</label>
           <select id="aq-intervalo">
             <option value="45">45s</option><option value="60" selected>60s (recomendado)</option>
-            <option value="90">90s (seguro)</option><option value="120">2 min</option>
-            <option value="180">3 min</option><option value="300">5 min (muito seguro)</option>
+            <option value="90">90s</option><option value="120">2 min</option>
+            <option value="180">3 min</option><option value="300">5 min</option>
           </select>
         </div>
         <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
-          <input type="number" id="aq-limite" value="0" min="0" placeholder="Ex: 50">
+          <input type="number" id="aq-limite" value="0" min="0">
         </div>
         <div class="form-group"><label>Mensagem (use {nome})</label>
           <textarea id="aq-msg" placeholder="Oi {nome}! Novidades na Madame Ka..."></textarea>
         </div>
-        <div class="midia-box">
-          <div class="midia-box-title">📎 Mídia opcional</div>
-          <div class="midia-upload-row">
-            <input type="file" id="uf-aq" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">
-            <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-aq').click()">📤 Enviar arquivo</button>
-            <button class="btn btn-danger btn-sm" onclick="limparMidia('aq-midia-tipo','aq-midia-url','aq-midia-preview','aq-upload-status')">✕ Remover</button>
-            <span style="font-size:11px;color:#888" id="aq-upload-status"></span>
-          </div>
-          <div class="midia-url-row">
-            <select id="aq-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
-              <option value="texto">Sem mídia</option><option value="imagem">📸 Imagem</option><option value="video">🎥 Vídeo</option>
-            </select>
-            <input type="text" id="aq-midia-url" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none">
-          </div>
-          <div id="aq-midia-preview" class="midia-preview" style="display:none"></div>
-        </div>
-        <button class="btn btn-gold" style="margin-top:14px" onclick="disparoRapido()">Disparar agora</button>
+        <button class="btn btn-gold" style="margin-top:8px" onclick="disparoRapido()">Disparar agora</button>
       </div>
     </div>
 
@@ -253,20 +229,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <input type="text" placeholder="Buscar..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
           <select id="seg-filtro" onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
             <option value="todos">Todos</option><option value="VIP">VIP</option>
-            <option value="Alta Frequencia">Alta Frequência</option><option value="Compradora Recente">Compradora Recente</option>
+            <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Recente">Compradora Recente</option>
             <option value="Compradora Ativa">Compradora Ativa</option><option value="Em Risco">Em Risco</option>
             <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
             <option value="Aniversariante">Aniversariantes</option>
           </select>
         </div>
         <table class="tabela">
-          <thead><tr><th>Nome</th><th>WhatsApp</th><th>Segmento</th><th>Último pedido</th><th>Cidade</th></tr></thead>
+          <thead><tr><th>Nome</th><th>WhatsApp</th><th>Segmento</th><th>Ultimo pedido</th><th>Cidade</th></tr></thead>
           <tbody id="tabela-contatos"><tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Carregando...</td></tr></tbody>
         </table>
         <div class="pag">
           <button class="btn btn-outline btn-sm" onclick="paginaAnterior()">Anterior</button>
           <span class="pag-info" id="pag-info">--</span>
-          <button class="btn btn-outline btn-sm" onclick="proximaPagina()">Próxima</button>
+          <button class="btn btn-outline btn-sm" onclick="proximaPagina()">Proxima</button>
         </div>
       </div>
     </div>
@@ -282,18 +258,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- FLUXOS -->
     <div class="page" id="page-fluxos">
-      <div class="page-header"><div><div class="page-title">Fluxos Automáticos</div><div class="page-sub">Edite as mensagens e ative/desative</div></div></div>
-      <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        💡 Use <strong>{nome}</strong> para personalizar. Clique em <strong>Salvar</strong> após editar.
-      </div>
+      <div class="page-header"><div><div class="page-title">Fluxos Automaticos</div></div></div>
       <div id="lista-fluxos">Carregando...</div>
     </div>
 
-    <!-- SEQUÊNCIAS -->
+    <!-- SEQUENCIAS -->
     <div class="page" id="page-sequencias">
       <div class="page-header">
-        <div><div class="page-title">Sequências</div><div class="page-sub">Funis de mensagens automáticas</div></div>
-        <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequência</button>
+        <div><div class="page-title">Sequencias</div></div>
+        <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequencia</button>
       </div>
       <div id="lista-sequencias">Carregando...</div>
     </div>
@@ -301,68 +274,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- CONVERSAS -->
     <div class="page" id="page-conversas">
       <div class="page-header">
-        <div><div class="page-title">Conversas</div><div class="page-sub">Responda as clientes direto pelo CRM</div></div>
-        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-envio-direto').classList.add('open')">✉️ Nova mensagem</button>
+        <div><div class="page-title">Conversas</div><div class="page-sub">Responda as clientes pelo CRM</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-envio-direto').classList.add('open')">+ Nova mensagem</button>
       </div>
       <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;height:calc(100vh - 140px)">
         <div style="background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column">
           <div style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between">
             <span>Conversas</span>
-            <button class="btn btn-outline btn-xs" onclick="carregarConversas()">↻</button>
+            <button class="btn btn-outline btn-xs" onclick="carregarConversas()">&#8635;</button>
           </div>
           <div id="lista-conversas" style="flex:1;overflow-y:auto"></div>
         </div>
-        <div style="background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column" id="conversa-ativa">
-          <div style="padding:14px 16px;border-bottom:0.5px solid #f0ece8;display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:14px;font-weight:500" id="conv-nome">Selecione uma conversa</div>
-              <div style="font-size:11px;color:#888;margin-top:2px" id="conv-tel"></div>
-            </div>
+        <div style="background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:14px 16px;border-bottom:0.5px solid #f0ece8">
+            <div style="font-size:14px;font-weight:500" id="conv-nome">Selecione uma conversa</div>
+            <div style="font-size:11px;color:#888;margin-top:2px" id="conv-tel"></div>
           </div>
-          <div id="msgs-conversa" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px">
-            <div style="text-align:center;color:#aaa;font-size:13px;margin-top:40px">Selecione uma conversa para ver as mensagens</div>
+          <div id="msgs-conversa" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px">
+            <div style="text-align:center;color:#aaa;font-size:13px;margin-top:40px">Selecione uma conversa ao lado</div>
           </div>
-          <div class="reply-box">
-            <textarea id="reply-msg" placeholder="Digite sua resposta..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta();}"></textarea>
+          <div style="border-top:1px solid #f0ece8;padding:12px;display:flex;gap:8px;align-items:flex-end">
+            <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter para enviar)" style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:40px;max-height:100px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
             <button class="btn btn-gold btn-sm" onclick="enviarResposta()" style="flex-shrink:0">Enviar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- NÚMEROS -->
+    <!-- NUMEROS -->
     <div class="page" id="page-numeros">
       <div class="page-header">
-        <div><div class="page-title">Números WhatsApp</div><div class="page-sub">Múltiplas instâncias</div></div>
-        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-numero').classList.add('open')">+ Adicionar número</button>
-      </div>
-      <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e">
-        📱 Cada campanha pode usar um número diferente para distribuir os disparos.
+        <div><div class="page-title">Numeros WhatsApp</div></div>
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('modal-numero').classList.add('open')">+ Adicionar numero</button>
       </div>
       <div id="lista-numeros">Carregando...</div>
     </div>
 
-    <!-- CONFIGURAÇÕES -->
+    <!-- CONFIGURACOES -->
     <div class="page" id="page-config">
-      <div class="page-header"><div><div class="page-title">Configurações</div><div class="page-sub">Limites e horários</div></div></div>
+      <div class="page-header"><div><div class="page-title">Configuracoes</div></div></div>
       <div class="card">
-        <div class="config-section-title">📊 Limites de Disparo</div>
+        <div class="config-section-title">Limites de Disparo</div>
         <div class="config-item">
-          <div><div class="config-label">Limite diário de mensagens</div><div class="config-desc">Máximo de mensagens por dia. Recomendado: 100-200 no início.</div></div>
+          <div><div class="config-label">Limite diario de mensagens</div></div>
           <div style="display:flex;align-items:center;gap:8px">
             <input type="number" class="config-input" id="cfg-limite-diario" value="200" min="1" max="2000">
             <button class="btn btn-gold btn-sm" onclick="salvarConfig('limite_diario',document.getElementById('cfg-limite-diario').value)">Salvar</button>
           </div>
         </div>
         <div class="config-item">
-          <div><div class="config-label">Horário de início</div><div class="config-desc">Hora para começar a enviar (0-23).</div></div>
+          <div><div class="config-label">Horario de inicio (Brasilia)</div></div>
           <div style="display:flex;align-items:center;gap:8px">
             <input type="number" class="config-input" id="cfg-horario-inicio" value="9" min="0" max="23">
             <button class="btn btn-gold btn-sm" onclick="salvarConfig('horario_inicio',document.getElementById('cfg-horario-inicio').value)">Salvar</button>
           </div>
         </div>
         <div class="config-item">
-          <div><div class="config-label">Horário de fim</div><div class="config-desc">Hora para parar de enviar (0-23).</div></div>
+          <div><div class="config-label">Horario de fim (Brasilia)</div></div>
           <div style="display:flex;align-items:center;gap:8px">
             <input type="number" class="config-input" id="cfg-horario-fim" value="20" min="0" max="23">
             <button class="btn btn-gold btn-sm" onclick="salvarConfig('horario_fim',document.getElementById('cfg-horario-fim').value)">Salvar</button>
@@ -370,17 +338,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
       <div class="card">
-        <div class="config-section-title">📱 Status de Segurança</div>
+        <div class="config-section-title">Status de Seguranca</div>
         <div id="config-status-seguranca" style="font-size:13px;color:#888">Carregando...</div>
-      </div>
-      <div class="card">
-        <div class="config-section-title">💡 Guia Anti-Bloqueio</div>
-        <div style="font-size:13px;color:#666;line-height:1.8">
-          <div>🟢 <strong>Semana 1-2:</strong> Máximo 50-100/dia · Intervalo mínimo 60s</div>
-          <div>🟡 <strong>Semana 3-4:</strong> Máximo 150-200/dia · Intervalo 45-60s</div>
-          <div>🔵 <strong>Mês 2+:</strong> Máximo 300-500/dia · Intervalo 45s</div>
-          <div>⚠️ <strong>Sempre use {nome}</strong> para personalizar cada mensagem</div>
-        </div>
       </div>
     </div>
 
@@ -390,55 +349,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- MODAL CAMPANHA -->
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">×</button></div>
-    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lançamento Namorados"></div>
+    <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
+    <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento Namorados"></div>
     <div class="form-row">
       <div class="form-group"><label>Segmento</label>
         <select id="c-seg">
           <option value="todos">Todos</option><option value="VIP">VIP</option>
-          <option value="Alta Frequencia">Alta Frequência</option><option value="Compradora Recente">Compradora Recente</option>
-          <option value="Compradora Ativa">Compradora Ativa</option><option value="Em Risco">Em Risco</option>
+          <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Ativa">Compradora Ativa</option>
           <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
-          <option value="Aniversariante">Aniversariantes 🎂</option>
+          <option value="Aniversariante">Aniversariantes</option>
         </select>
       </div>
-      <div class="form-group"><label>Limite de contatos (0 = sem limite)</label>
+      <div class="form-group"><label>Limite (0 = sem limite)</label>
         <input type="number" id="c-limite" value="0" min="0">
       </div>
     </div>
-    <div class="form-group"><label>Número WhatsApp</label>
+    <div class="form-group"><label>Numero WhatsApp</label>
       <select id="c-instancia"><option value="1">Carregando...</option></select>
     </div>
     <div class="form-group"><label>Intervalo entre envios</label>
       <select id="c-intervalo">
-        <option value="45">45s</option><option value="60" selected>60s (recomendado)</option>
-        <option value="90">90s (seguro)</option><option value="120">2 min</option>
-        <option value="180">3 min</option><option value="300">5 min</option>
+        <option value="60" selected>60s</option><option value="90">90s</option>
+        <option value="120">2 min</option><option value="180">3 min</option><option value="300">5 min</option>
       </select>
     </div>
     <div class="form-group"><label>Mensagem (use {nome})</label><textarea id="c-msg" placeholder="Oi {nome}!"></textarea></div>
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#166534">
-      ✅ <strong>API Oficial Meta:</strong> Para disparar para qualquer contato, preencha um template aprovado abaixo.
+      API Oficial Meta: para disparar para qualquer contato, preencha um template aprovado abaixo.
     </div>
-    <div class="form-group"><label>Template Meta aprovado (deixe vazio para usar mensagem acima)</label>
+    <div class="form-group"><label>Template Meta aprovado (opcional)</label>
       <input type="text" id="c-template" placeholder="Ex: aniversario_madameka">
-      <div style="font-size:11px;color:#888;margin-top:4px">Se preenchido, usa o template e ignora a mensagem acima.</div>
-    </div>
-    <div class="midia-box">
-      <div class="midia-box-title">📎 Mídia opcional</div>
-      <div class="midia-upload-row">
-        <input type="file" id="uf-c" accept="image/*,video/*" style="display:none" onchange="fazerUpload(this,'c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">
-        <button class="btn btn-outline btn-sm" onclick="document.getElementById('uf-c').click()">📤 Enviar arquivo</button>
-        <button class="btn btn-danger btn-sm" onclick="limparMidia('c-midia-tipo','c-midia-url','c-midia-preview','c-upload-status')">✕</button>
-        <span style="font-size:11px;color:#888" id="c-upload-status"></span>
-      </div>
-      <div class="midia-url-row">
-        <select id="c-midia-tipo" style="width:130px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:13px;outline:none">
-          <option value="texto">Sem mídia</option><option value="imagem">📸 Imagem</option><option value="video">🎥 Vídeo</option>
-        </select>
-        <input type="text" id="c-midia-url" placeholder="URL da mídia" style="border:1.5px solid #e8e2db;border-radius:8px;padding:7px 12px;font-size:13px;outline:none">
-      </div>
-      <div id="c-midia-preview" class="midia-preview" style="display:none"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:14px">
       <button class="btn btn-primary" onclick="criarCampanha()">Criar campanha</button>
@@ -447,52 +387,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL SEQUÊNCIA -->
+<!-- MODAL SEQUENCIA -->
 <div class="modal-bg" id="modal-sequencia">
   <div class="modal modal-lg">
     <div class="modal-header">
-      <div class="modal-title" id="modal-seq-titulo">Nova Sequência</div>
-      <button class="modal-close" onclick="fecharModalSeq()">×</button>
+      <div class="modal-title" id="modal-seq-titulo">Nova Sequencia</div>
+      <button class="modal-close" onclick="fecharModalSeq()">x</button>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Nome</label><input type="text" id="seq-nome" placeholder="Ex: Carrinho Abandonado"></div>
       <div class="form-group"><label>Gatilho</label>
         <select id="seq-gatilho">
-          <option value="carrinho_abandonado">🛒 Carrinho Abandonado</option>
-          <option value="boas_vindas">💛 Boas-vindas</option>
-          <option value="pos_compra">📦 Pós-compra</option>
-          <option value="reativacao">😴 Reativação</option>
-          <option value="manual">✋ Manual</option>
+          <option value="carrinho_abandonado">Carrinho Abandonado</option>
+          <option value="boas_vindas">Boas-vindas</option>
+          <option value="pos_compra">Pos-compra</option>
+          <option value="reativacao">Reativacao</option>
+          <option value="manual">Manual</option>
         </select>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Público alvo</label>
+      <div class="form-group"><label>Publico alvo</label>
         <select id="seq-segmento">
           <option value="todos">Todos</option><option value="VIP">VIP</option>
           <option value="Compradora Ativa">Compradora Ativa</option><option value="Lead">Lead</option>
         </select>
       </div>
-      <div class="form-group"><label>Descrição (opcional)</label><input type="text" id="seq-desc" placeholder="Ex: Funil 3 dias"></div>
+      <div class="form-group"><label>Descricao (opcional)</label><input type="text" id="seq-desc" placeholder="Ex: Funil 3 dias"></div>
     </div>
-    <div style="font-size:13px;font-weight:500;margin:16px 0 12px">Mensagens da sequência</div>
+    <div style="font-size:13px;font-weight:500;margin:16px 0 12px">Mensagens da sequencia</div>
     <div id="seq-passos-container"></div>
     <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
     <div style="display:flex;gap:10px;margin-top:20px">
-      <button class="btn btn-primary" onclick="salvarSequencia()">💾 Salvar sequência</button>
+      <button class="btn btn-primary" onclick="salvarSequencia()">Salvar sequencia</button>
       <button class="btn btn-outline" onclick="fecharModalSeq()">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NÚMERO -->
+<!-- MODAL NUMERO -->
 <div class="modal-bg" id="modal-numero">
   <div class="modal">
-    <div class="modal-header"><div class="modal-title">Adicionar número WhatsApp</div><button class="modal-close" onclick="document.getElementById('modal-numero').classList.remove('open')">×</button></div>
-    <div class="form-group"><label>Nome do número</label><input type="text" id="n-nome" placeholder="Ex: Número 2, Backup"></div>
-    <div class="form-group"><label>Instance ID</label><input type="text" id="n-instance" placeholder="Ex: 3F3B33A2992E1162..."></div>
-    <div class="form-group"><label>Token</label><input type="text" id="n-token" placeholder="Ex: C8C9AEE300AE3E2B..."></div>
-    <div class="form-group"><label>Client Token</label><input type="text" id="n-client" placeholder="Ex: F8d6cdf1bbebe419..."></div>
+    <div class="modal-header"><div class="modal-title">Adicionar numero WhatsApp</div><button class="modal-close" onclick="document.getElementById('modal-numero').classList.remove('open')">x</button></div>
+    <div class="form-group"><label>Nome do numero</label><input type="text" id="n-nome" placeholder="Ex: Numero 2, Backup"></div>
+    <div class="form-group"><label>Instance ID</label><input type="text" id="n-instance" placeholder="Ex: 3F3B33A2..."></div>
+    <div class="form-group"><label>Token</label><input type="text" id="n-token" placeholder="Ex: C8C9AEE3..."></div>
+    <div class="form-group"><label>Client Token</label><input type="text" id="n-client" placeholder="Ex: F8d6cdf1..."></div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-primary" onclick="adicionarNumero()">Adicionar</button>
       <button class="btn btn-outline" onclick="document.getElementById('modal-numero').classList.remove('open')">Cancelar</button>
@@ -500,14 +440,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <!-- MODAL ENVIO DIRETO -->
 <div class="modal-bg" id="modal-envio-direto">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Enviar mensagem direta</div><button class="modal-close" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">x</button></div>
     <div style="background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#92400e">
-      Via API oficial: use template para enviar para qualquer contato. Mensagem livre so funciona se o cliente respondeu nas ultimas 24h.
+      Use template para enviar para qualquer contato. Mensagem livre funciona so se o cliente respondeu nas ultimas 24h.
     </div>
     <div class="form-group"><label>Numero WhatsApp (com DDI)</label>
       <input type="text" id="envio-tel" placeholder="Ex: 5547996214217">
@@ -525,6 +463,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 var paginaAtual = 0;
 var segmentoAtual = 'todos';
@@ -533,6 +473,8 @@ var POR_PAGINA = 50;
 var seqEditandoId = null;
 var passoCount = 0;
 var cfgAtual = { limite_diario: 200, horario_inicio: 9, horario_fim: 20 };
+var convAtualTel = null;
+var convAtualNome = null;
 
 var DELAYS_RAPIDOS = [
   {label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1h',horas:1},
@@ -542,8 +484,8 @@ var DELAYS_RAPIDOS = [
 ];
 
 var GATILHO_LABELS = {
-  carrinho_abandonado:'🛒 Carrinho Abandonado',boas_vindas:'💛 Boas-vindas',
-  pos_compra:'📦 Pós-compra',reativacao:'😴 Reativação',manual:'✋ Manual'
+  carrinho_abandonado:'Carrinho Abandonado',boas_vindas:'Boas-vindas',
+  pos_compra:'Pos-compra',reativacao:'Reativacao',manual:'Manual'
 };
 
 var GATILHO_BADGE = {
@@ -560,19 +502,20 @@ function toast(msg) {
 
 async function entrar() {
   var senha = document.getElementById('inp-senha').value;
-  var r = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:senha})});
-  var d = await r.json();
-  if (d.ok) {
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('app').classList.add('show');
-    inicializar();
-  } else {
-    document.getElementById('login-erro').style.display = 'block';
-  }
+  try {
+    var r = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:senha})});
+    var d = await r.json();
+    if (d.ok) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      inicializar();
+    } else {
+      document.getElementById('login-erro').style.display = 'block';
+    }
+  } catch(e) { console.log('Login falhou:', e); }
 }
 
 function inicializar() {
-  document.getElementById('webhook-yampi') && (document.getElementById('webhook-yampi').textContent = window.location.origin + '/webhook/yampi');
   carregarStats();
   verificarStatus();
   carregarContatos();
@@ -586,8 +529,8 @@ function inicializar() {
   setInterval(carregarStats, 120000);
   setInterval(carregarCampanhas, 60000);
   setInterval(function() {
-    if (convAtualTel) abrirConversa(convAtualTel, convAtualNome);
-    else carregarConversas();
+    if (convAtualTel) { abrirConversa(convAtualTel, convAtualNome); }
+    else { carregarConversas(); }
   }, 30000);
 }
 
@@ -644,8 +587,8 @@ function atualizarStatusSeguranca() {
     el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
       '<div style="background:' + (horarioOk ? '#f0fdf4' : '#fef2f2') + ';border-radius:8px;padding:12px">' +
       '<div style="font-size:18px;margin-bottom:4px">' + (horarioOk ? '🟢' : '🔴') + '</div>' +
-      '<div style="font-weight:500;font-size:13px">' + (horarioOk ? 'Horário permitido' : 'Fora do horário') + '</div>' +
-      '<div style="font-size:11px;color:#888;margin-top:2px">' + cfgAtual.horario_inicio + 'h às ' + cfgAtual.horario_fim + 'h · Agora: ' + hora + 'h</div></div>' +
+      '<div style="font-weight:500;font-size:13px">' + (horarioOk ? 'Horario permitido' : 'Fora do horario') + '</div>' +
+      '<div style="font-size:11px;color:#888;margin-top:2px">' + cfgAtual.horario_inicio + 'h as ' + cfgAtual.horario_fim + 'h</div></div>' +
       '<div style="background:' + (pct < 80 ? '#f0fdf4' : '#fef2f2') + ';border-radius:8px;padding:12px">' +
       '<div style="font-size:18px;margin-bottom:4px">' + (pct < 80 ? '🟢' : pct < 100 ? '🟡' : '🔴') + '</div>' +
       '<div style="font-weight:500;font-size:13px">' + envHoje + '/' + cfgAtual.limite_diario + ' enviados</div>' +
@@ -654,11 +597,11 @@ function atualizarStatusSeguranca() {
 }
 
 async function salvarConfig(chave, valor) {
-  if (!valor) { toast('Digite um valor válido'); return; }
+  if (!valor) { toast('Digite um valor valido'); return; }
   try {
     var r = await fetch('/api/config', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chave:chave,valor:valor})});
     var d = await r.json();
-    if (d.ok) { toast('✅ Configuração salva!'); carregarConfig(); }
+    if (d.ok) { toast('Configuracao salva!'); carregarConfig(); }
     else toast('Erro ao salvar');
   } catch(e) { toast('Erro ao salvar'); }
 }
@@ -667,7 +610,7 @@ async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
   var file = input.files[0];
   if (!file) return;
   var status = document.getElementById(statusId);
-  status.textContent = '⏳ Enviando...';
+  status.textContent = 'Enviando...';
   var fd = new FormData();
   fd.append('arquivo', file);
   try {
@@ -676,15 +619,15 @@ async function fazerUpload(input, tipoId, urlId, previewId, statusId) {
     if (d.ok) {
       document.getElementById(urlId).value = d.url;
       document.getElementById(tipoId).value = d.tipo;
-      status.textContent = '✅ Enviado!';
+      status.textContent = 'Enviado!';
       status.style.color = '#16a34a';
       setTimeout(function() { status.textContent = ''; }, 3000);
     } else {
-      status.textContent = '❌ ' + d.erro;
+      status.textContent = 'Erro: ' + d.erro;
       status.style.color = '#dc2626';
     }
   } catch(e) {
-    status.textContent = '❌ Erro';
+    status.textContent = 'Erro';
     status.style.color = '#dc2626';
   }
   input.value = '';
@@ -715,7 +658,7 @@ async function carregarStats() {
     document.getElementById('sb-envios').textContent = d.enviosHoje || 0;
     var hora = new Date().getHours();
     var horarioOk = hora >= cfgAtual.horario_inicio && hora < cfgAtual.horario_fim;
-    document.getElementById('sb-horario').textContent = horarioOk ? '🟢 Horário ok' : '🔴 Fora do horário';
+    document.getElementById('sb-horario').textContent = horarioOk ? 'Horario ok' : 'Fora do horario';
     atualizarStatusSeguranca();
   } catch(e) { console.log('Stats falhou:', e); }
 }
@@ -727,7 +670,7 @@ async function verificarStatus() {
     var ok = d.status === 'open' || d.status === 'conectado';
     var sb = document.getElementById('wpp-status-sidebar');
     sb.className = 'wpp-status ' + (ok ? 'status-conectado' : 'status-desconectado');
-    document.getElementById('wpp-status-txt').textContent = ok ? 'API Meta ✅' : 'Verificando...';
+    document.getElementById('wpp-status-txt').textContent = ok ? 'API Meta OK' : 'Verificando...';
   } catch(e) { console.log('Status falhou'); }
 }
 
@@ -739,7 +682,7 @@ async function carregarContatos() {
     var d = await r.json();
     var tb = document.getElementById('tabela-contatos');
     if (!d.contatos || !d.contatos.length) {
-      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato encontrado</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Nenhum contato</td></tr>';
       return;
     }
     var bm = {VIP:'vip','Compradora Ativa':'ativa','Compradora Inativa':'inativa',Lead:'lead','Em Risco':'risco','Compradora Recente':'recente','Alta Frequencia':'freq',Aniversariante:'aniv'};
@@ -753,7 +696,6 @@ async function carregarContatos() {
     var fim = Math.min((paginaAtual + 1) * POR_PAGINA, d.total);
     document.getElementById('pag-info').textContent = inicio + '-' + fim + ' de ' + d.total.toLocaleString('pt-BR');
   } catch(e) {
-    console.log('Contatos falhou:', e);
     document.getElementById('tabela-contatos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Erro ao carregar. <a href="#" onclick="carregarContatos();return false;">Tentar novamente</a></td></tr>';
   }
 }
@@ -789,14 +731,15 @@ async function carregarCampanhas() {
     wrap.innerHTML = d.campanhas.map(function(c) {
       var sb = statusBadgeMap[c.status] || 'inativa';
       var acoes = '';
-      if (c.status === 'rascunho') acoes = '<button class="btn btn-gold btn-sm" onclick="dispararCampanha(' + c.id + ')">▶ Disparar</button>';
-      if (c.status === 'disparando') acoes = '<button class="btn btn-danger btn-sm" onclick="pausarCampanha(' + c.id + ')">⏹ Parar</button>';
-      if (c.status === 'pausado') acoes = '<button class="btn btn-success btn-sm" onclick="retomarCampanha(' + c.id + ')">▶ Retomar</button>';
-      if (c.status === 'concluido') acoes = '<button class="btn btn-outline btn-sm" onclick="retomarCampanha(' + c.id + ')">🔄 Disparar novamente</button>';
-      var msg = c.mensagem ? c.mensagem.substring(0, 120) + (c.mensagem.length > 120 ? '...' : '') : '';
+      if (c.status === 'rascunho') acoes = '<button class="btn btn-gold btn-sm" onclick="dispararCampanha(' + c.id + ')">Disparar</button>';
+      if (c.status === 'disparando') acoes = '<button class="btn btn-danger btn-sm" onclick="pausarCampanha(' + c.id + ')">Parar</button>';
+      if (c.status === 'pausado') acoes = '<button class="btn btn-success btn-sm" onclick="retomarCampanha(' + c.id + ')">Retomar</button>';
+      if (c.status === 'concluido') acoes = '<button class="btn btn-outline btn-sm" onclick="retomarCampanha(' + c.id + ')">Disparar novamente</button>';
+      var tmpl = c.template_name ? ' | Template: ' + c.template_name : '';
+      var msg = c.mensagem ? c.mensagem.substring(0, 100) + (c.mensagem.length > 100 ? '...' : '') : tmpl;
       return '<div class="camp-card">' +
         '<div class="camp-card-header"><div class="camp-card-nome">' + c.nome + '</div><span class="badge badge-' + sb + '">' + c.status + '</span></div>' +
-        '<div class="camp-card-meta">Segmento: ' + c.segmento + ' · Intervalo: ' + c.intervalo_segundos + 's · Enviados: ' + c.total_envios + ' · Erros: ' + c.total_erros + '</div>' +
+        '<div class="camp-card-meta">Segmento: ' + c.segmento + ' | Intervalo: ' + c.intervalo_segundos + 's | Enviados: ' + c.total_envios + ' | Erros: ' + c.total_erros + '</div>' +
         '<div class="camp-card-msg">' + msg + '</div>' +
         '<div class="camp-acoes">' + acoes + '</div></div>';
     }).join('');
@@ -829,7 +772,7 @@ async function dispararCampanha(id) {
   try {
     var r = await fetch('/api/campanhas/' + id + '/disparar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
     var d = await r.json();
-    if (d.ok) toast(d.mensagem); else toast('❌ ' + d.erro);
+    if (d.ok) toast(d.mensagem); else toast('Erro: ' + d.erro);
     carregarCampanhas();
   } catch(e) { toast('Erro ao disparar'); }
 }
@@ -845,7 +788,7 @@ async function retomarCampanha(id) {
   try {
     var r = await fetch('/api/campanhas/' + id + '/disparar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
     var d = await r.json();
-    if (d.ok) toast(d.mensagem); else toast('❌ ' + d.erro);
+    if (d.ok) toast(d.mensagem); else toast('Erro: ' + d.erro);
     carregarCampanhas();
   } catch(e) { toast('Erro'); }
 }
@@ -868,7 +811,7 @@ async function disparoRapido() {
     if (crd.ok) {
       var r = await fetch('/api/campanhas/' + crd.id + '/disparar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
       var d = await r.json();
-      if (d.ok) toast(d.mensagem); else toast('❌ ' + d.erro);
+      if (d.ok) toast(d.mensagem); else toast('Erro: ' + d.erro);
       carregarCampanhas();
     }
   } catch(e) { toast('Erro ao disparar'); }
@@ -890,9 +833,6 @@ async function carregarFluxos() {
       var statusCor = f.ativo ? '#16a34a' : '#aaa';
       var statusTxt = f.ativo ? 'Ativo' : 'Inativo';
       var toggleOn = f.ativo ? 'on' : '';
-      var midTipoSel = function(v) { return (f.midia_tipo === v) ? 'selected' : ''; };
-      var midPreview = f.midia_url ? 'block' : 'none';
-      var midImg = f.midia_url ? '<img src="' + f.midia_url + '" onerror="this.parentElement.style.display=\'none\'">' : '';
       return '<div class="fluxo-card" id="fluxo-card-' + f.id + '">' +
         '<div class="fluxo-header">' +
         '<div class="fluxo-icon">' + icon + '</div>' +
@@ -904,14 +844,14 @@ async function carregarFluxos() {
         '<div class="fluxo-editor">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
         '<label style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em">Mensagem</label>' +
-        '<span class="saved-badge" id="saved-' + f.id + '">✓ Salvo</span></div>' +
+        '<span class="saved-badge" id="saved-' + f.id + '">Salvo</span></div>' +
         '<textarea id="fluxo-msg-' + f.id + '">' + f.mensagem + '</textarea>' +
         '<div class="fluxo-footer">' +
-        '<div style="font-size:11px;color:#aaa">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code></div>' +
+        '<div style="font-size:11px;color:#aaa">Use {nome} para personalizar</div>' +
         '<div style="display:flex;gap:8px;align-items:center">' +
         '<label style="font-size:11px;color:#888">Delay (h):</label>' +
         '<input type="number" id="fluxo-delay-' + f.id + '" value="' + (f.delay_horas || 0) + '" min="0" max="720" style="width:65px;border:1.5px solid #e8e2db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none">' +
-        '<button class="btn btn-gold btn-sm" onclick="salvarFluxo(' + f.id + ')">💾 Salvar</button>' +
+        '<button class="btn btn-gold btn-sm" onclick="salvarFluxo(' + f.id + ')">Salvar</button>' +
         '</div></div></div></div>';
     }).join('');
   } catch(e) { console.log('Fluxos falhou:', e); }
@@ -925,9 +865,11 @@ async function toggleFluxo(id, el) {
   var msg = document.getElementById('fluxo-msg-' + id) ? document.getElementById('fluxo-msg-' + id).value : '';
   var delay = parseInt(document.getElementById('fluxo-delay-' + id) ? document.getElementById('fluxo-delay-' + id).value : 0);
   var nome = document.querySelector('#fluxo-card-' + id + ' .fluxo-nome') ? document.querySelector('#fluxo-card-' + id + ' .fluxo-nome').textContent : '';
-  await fetch('/api/fluxos/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({nome:nome,mensagem:msg,ativo:ativo,delay_horas:delay,midia_tipo:'texto',midia_url:''})});
-  toast(ativo ? 'Fluxo ativado ✅' : 'Fluxo pausado ⏸');
+  try {
+    await fetch('/api/fluxos/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nome:nome,mensagem:msg,ativo:ativo,delay_horas:delay,midia_tipo:'texto',midia_url:''})});
+    toast(ativo ? 'Fluxo ativado' : 'Fluxo pausado');
+  } catch(e) { toast('Erro'); }
 }
 
 async function salvarFluxo(id) {
@@ -942,7 +884,7 @@ async function salvarFluxo(id) {
     if (d.ok) {
       var b = document.getElementById('saved-' + id);
       if (b) { b.classList.add('show'); setTimeout(function() { b.classList.remove('show'); }, 2500); }
-      toast('Salvo ✅');
+      toast('Salvo');
     }
   } catch(e) { toast('Erro ao salvar'); }
 }
@@ -953,7 +895,7 @@ async function carregarSequencias() {
     var d = await r.json();
     var wrap = document.getElementById('lista-sequencias');
     if (!d.sequencias || !d.sequencias.length) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequência ainda</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequência</button></div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="font-size:15px;font-weight:500;margin-bottom:6px">Nenhuma sequencia ainda</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequencia</button></div>';
       return;
     }
     wrap.innerHTML = d.sequencias.map(function(s) {
@@ -967,13 +909,13 @@ async function carregarSequencias() {
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
         '<div class="seq-card-nome">' + s.nome + '</div>' +
         '<span class="badge ' + badge + ' gatilho-badge">' + label + '</span></div>' +
-        '<div class="seq-card-meta">Público: ' + s.segmento + ' · ' + (s.passos ? s.passos.length : 0) + ' mensagens</div></div>' +
+        '<div class="seq-card-meta">Publico: ' + s.segmento + ' | ' + (s.passos ? s.passos.length : 0) + ' mensagens</div></div>' +
         '<div style="display:flex;align-items:center;gap:8px">' +
         '<span style="font-size:11px;color:' + (s.ativo ? '#16a34a' : '#aaa') + '">' + (s.ativo ? 'Ativo' : 'Inativo') + '</span>' +
         '<div class="toggle ' + (s.ativo ? 'on' : '') + '" onclick="toggleSequencia(' + s.id + ',' + s.ativo + ',this)"></div></div></div>' +
         '<div class="seq-passos-preview">' + passos + '</div>' +
         '<div style="display:flex;gap:8px">' +
-        '<button class="btn btn-outline btn-sm" onclick="editarSequencia(' + s.id + ')">✏️ Editar</button>' +
+        '<button class="btn btn-outline btn-sm" onclick="editarSequencia(' + s.id + ')">Editar</button>' +
         '<button class="btn btn-danger btn-sm" onclick="deletarSequencia(' + s.id + ')">Excluir</button></div></div>';
     }).join('');
   } catch(e) { console.log('Sequencias falhou:', e); }
@@ -981,7 +923,7 @@ async function carregarSequencias() {
 
 function abrirNovaSequencia() {
   seqEditandoId = null; passoCount = 0;
-  document.getElementById('modal-seq-titulo').textContent = 'Nova Sequência';
+  document.getElementById('modal-seq-titulo').textContent = 'Nova Sequencia';
   document.getElementById('seq-nome').value = '';
   document.getElementById('seq-gatilho').value = 'carrinho_abandonado';
   document.getElementById('seq-segmento').value = 'todos';
@@ -1006,7 +948,7 @@ async function editarSequencia(id) {
     document.getElementById('seq-passos-container').innerHTML = '';
     seq.passos.forEach(function(p) { adicionarPasso(p); });
     document.getElementById('modal-sequencia').classList.add('open');
-  } catch(e) { toast('Erro ao carregar sequência'); }
+  } catch(e) { toast('Erro ao carregar sequencia'); }
 }
 
 function fecharModalSeq() { document.getElementById('modal-sequencia').classList.remove('open'); }
@@ -1028,14 +970,13 @@ function adicionarPasso(dados) {
     '<div class="seq-passo-header">' +
     '<div class="seq-passo-num">' + numPasso + '</div>' +
     '<div class="seq-passo-title">Mensagem ' + numPasso + '</div>' +
-    '<button class="btn btn-danger btn-xs" onclick="removerPasso(' + idx + ')" style="margin-left:auto">✕</button></div>' +
+    '<button class="btn btn-danger btn-xs" onclick="removerPasso(' + idx + ')" style="margin-left:auto">X</button></div>' +
     '<div class="seq-passo-body">' +
-    '<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Enviar após:</div>' +
+    '<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Enviar apos:</div>' +
     '<div class="seq-passo-delay" id="delay-btns-' + idx + '">' + delayBtns + '</div>' +
     '<input type="hidden" id="passo-delay-val-' + idx + '" value="' + delayH + '">' +
     '<div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px">Mensagem:</div>' +
     '<textarea id="passo-msg-' + idx + '" placeholder="Oi {nome}! ...">' + msg + '</textarea>' +
-    '<div style="font-size:11px;color:#aaa;margin-top:8px">Use <code style="background:#f5f0ea;padding:2px 5px;border-radius:4px;color:#c9a87c">{nome}</code></div>' +
     '</div></div>'
   );
 }
@@ -1070,7 +1011,7 @@ async function salvarSequencia() {
   var gatilho = document.getElementById('seq-gatilho').value;
   var segmento = document.getElementById('seq-segmento').value;
   var descricao = document.getElementById('seq-desc').value.trim();
-  if (!nome) { toast('Dê um nome para a sequência'); return; }
+  if (!nome) { toast('De um nome para a sequencia'); return; }
   var passosEls = document.querySelectorAll('#seq-passos-container .seq-passo');
   var passos = [];
   var ok = true;
@@ -1092,7 +1033,7 @@ async function salvarSequencia() {
     var method = seqEditandoId ? 'PUT' : 'POST';
     var r = await fetch(url, {method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
     var d = await r.json();
-    if (d.ok) { toast('Sequência salva! ✅'); fecharModalSeq(); carregarSequencias(); }
+    if (d.ok) { toast('Sequencia salva!'); fecharModalSeq(); carregarSequencias(); }
     else toast('Erro: ' + d.erro);
   } catch(e) { toast('Erro ao salvar'); }
 }
@@ -1102,22 +1043,86 @@ async function toggleSequencia(id, ativo, el) {
   el.classList.toggle('on');
   var txt = el.previousElementSibling;
   if (txt) { txt.textContent = novoAtivo ? 'Ativo' : 'Inativo'; txt.style.color = novoAtivo ? '#16a34a' : '#aaa'; }
-  await fetch('/api/sequencias/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo: novoAtivo})});
-  toast(novoAtivo ? 'Sequência ativada ✅' : 'Sequência pausada ⏸');
+  try {
+    await fetch('/api/sequencias/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo: novoAtivo})});
+    toast(novoAtivo ? 'Sequencia ativada' : 'Sequencia pausada');
+  } catch(e) { toast('Erro'); }
 }
 
 async function deletarSequencia(id) {
-  if (!confirm('Excluir esta sequência?')) return;
+  if (!confirm('Excluir esta sequencia?')) return;
   await fetch('/api/sequencias/' + id, {method: 'DELETE'});
-  toast('Excluída!'); carregarSequencias();
+  toast('Excluida!'); carregarSequencias();
 }
 
-var convAtualTel = null;
-var convAtualNome = null;
+async function carregarConversas() {
+  try {
+    var r = await fetch('/api/conversas');
+    var d = await r.json();
+    var lista = document.getElementById('lista-conversas');
+    if (!d.conversas || !d.conversas.length) {
+      lista.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Nenhuma conversa ainda</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < d.conversas.length; i++) {
+      var c = d.conversas[i];
+      var inicial = (c.nome || c.telefone || 'C')[0].toUpperCase();
+      var bg = convAtualTel === c.telefone ? 'background:#fffbf5;border-left:3px solid #c9a87c;' : '';
+      html += '<div data-tel="' + c.telefone + '" data-nome="' + (c.nome || 'Cliente') + '" class="conv-clicavel" style="' + bg + 'padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px">';
+      html += '<div style="width:38px;height:38px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0;color:#888">' + inicial + '</div>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:13px;font-weight:500">' + (c.nome || c.telefone) + '</div>';
+      html += '<div style="font-size:11px;color:#aaa;margin-top:2px">' + c.telefone + '</div>';
+      html += '</div></div>';
+    }
+    lista.innerHTML = html;
+    var items = lista.querySelectorAll('.conv-clicavel');
+    for (var j = 0; j < items.length; j++) {
+      items[j].addEventListener('click', function() {
+        abrirConversa(this.dataset.tel, this.dataset.nome);
+      });
+    }
+  } catch(e) { console.log('Conversas falhou:', e); }
+}
+
+async function abrirConversa(tel, nome) {
+  try {
+    convAtualTel = tel;
+    convAtualNome = nome;
+    var nomeEl = document.getElementById('conv-nome');
+    var telEl = document.getElementById('conv-tel');
+    if (nomeEl) nomeEl.textContent = nome || tel;
+    if (telEl) telEl.textContent = tel;
+    var r = await fetch('/api/conversas/' + tel);
+    var d = await r.json();
+    var container = document.getElementById('msgs-conversa');
+    if (!d.mensagens || !d.mensagens.length) {
+      container.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;margin-top:40px">Nenhuma mensagem ainda</div>';
+    } else {
+      var html = '';
+      for (var i = 0; i < d.mensagens.length; i++) {
+        var m = d.mensagens[i];
+        var tipo = m.de === 'cliente' ? 'cliente' : 'bot';
+        var hora = new Date(m.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+        var label = m.de === 'bot' ? 'Madame Ka' : (m.nome || 'Cliente');
+        var msgText = m.mensagem.split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('\n').join('<br>');
+        html += '<div class="msg ' + tipo + '"><div class="bubble">' + msgText + '</div>';
+        html += '<div class="msg-time">' + label + ' - ' + hora + '</div></div>';
+      }
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+    }
+    carregarConversas();
+    var replyEl = document.getElementById('reply-msg');
+    if (replyEl) replyEl.focus();
+  } catch(e) { console.log('Conversa falhou:', e); }
+}
 
 async function enviarResposta() {
   var msg = document.getElementById('reply-msg').value.trim();
-  if (!msg || !convAtualTel) { if (!convAtualTel) toast('Selecione uma conversa'); return; }
+  if (!msg) return;
+  if (!convAtualTel) { toast('Selecione uma conversa'); return; }
   try {
     var r = await fetch('/api/enviar-direto', {method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({telefone:convAtualTel,mensagem:msg})});
@@ -1129,53 +1134,19 @@ async function enviarResposta() {
   } catch(e) { toast('Erro ao enviar'); }
 }
 
-async function carregarConversas() {
-  try {
-    var r = await fetch('/api/conversas');
-    var d = await r.json();
-    var lista = document.getElementById('lista-conversas');
-    if (!d.conversas || !d.conversas.length) {
-      lista.innerHTML = '<div style="padding:16px;text-align:center;color:#888;font-size:13px">Nenhuma conversa</div>';
-      return;
-    }
-    lista.innerHTML = d.conversas.map(function(c) {
-      var inicial = (c.nome || '?')[0];
-      return '<div onclick="abrirConversa(\'' + c.telefone + '\',\'' + (c.nome || 'Cliente') + '\')" style="padding:12px 16px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px">' +
-        '<div style="width:36px;height:36px;border-radius:50%;background:#f0ece8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0">' + inicial + '</div>' +
-        '<div><div style="font-size:13px;font-weight:500">' + (c.nome || c.telefone) + '</div>' +
-        '<div style="font-size:11px;color:#888">' + c.total + ' mensagens</div></div></div>';
-    }).join('');
-  } catch(e) { console.log('Conversas falhou:', e); }
-}
-
-async function abrirConversa(tel, nome) {
-  try {
-    var r = await fetch('/api/conversas/' + tel);
-    var d = await r.json();
-    document.getElementById('conversa-ativa').style.display = 'block';
-    document.getElementById('conv-nome').textContent = nome || tel;
-    document.getElementById('msgs-conversa').innerHTML = d.mensagens.map(function(m) {
-      var tipo = m.de === 'cliente' ? 'cliente' : 'bot';
-      var hora = new Date(m.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-      return '<div class="msg ' + tipo + '"><div class="bubble">' + m.mensagem.replace(/\n/g,'<br>') + '</div>' +
-        '<div class="msg-time">' + (m.de === 'bot' ? 'IA · ' : '') + hora + '</div></div>';
-    }).join('');
-  } catch(e) { console.log('Conversa falhou:', e); }
-}
-
 async function carregarNumeros() {
   try {
     var r = await fetch('/api/instancias');
     var d = await r.json();
     var wrap = document.getElementById('lista-numeros');
     if (!d.instancias || !d.instancias.length) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma instância</div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;color:#888;padding:30px">Nenhuma instancia</div>';
       return;
     }
     wrap.innerHTML = d.instancias.map(function(inst) {
       var statusBg = inst.status === 'conectado' ? '#dcfce7' : '#fee2e2';
       var statusCor = inst.status === 'conectado' ? '#166534' : '#991b1b';
-      var statusTxt = inst.status === 'conectado' ? '✅ Conectado' : '❌ Desconectado';
+      var statusTxt = inst.status === 'conectado' ? 'Conectado' : 'Desconectado';
       var acoes = inst.id > 1 ? '<button class="btn btn-danger btn-sm" onclick="excluirNumero(' + inst.id + ')">Excluir</button>' : '<span style="font-size:11px;color:#aaa">Principal</span>';
       return '<div class="card">' +
         '<div style="display:flex;align-items:center;justify-content:space-between">' +
@@ -1186,9 +1157,9 @@ async function carregarNumeros() {
         acoes + '</div></div></div>';
     }).join('');
     var sel = document.getElementById('c-instancia');
-    if (sel) sel.innerHTML = d.instancias.map(function(i) { return '<option value="' + i.id + '">' + i.nome + ' ' + (i.status === 'conectado' ? '✅' : '❌') + '</option>'; }).join('');
+    if (sel) sel.innerHTML = d.instancias.map(function(i) { return '<option value="' + i.id + '">' + i.nome + (i.status === 'conectado' ? ' OK' : '') + '</option>'; }).join('');
     var selAq = document.getElementById('aq-instancia');
-    if (selAq) selAq.innerHTML = d.instancias.map(function(i) { return '<option value="' + i.id + '">' + i.nome + ' ' + (i.status === 'conectado' ? '✅' : '❌') + '</option>'; }).join('');
+    if (selAq) selAq.innerHTML = d.instancias.map(function(i) { return '<option value="' + i.id + '">' + i.nome + (i.status === 'conectado' ? ' OK' : '') + '</option>'; }).join('');
   } catch(e) { console.log('Numeros falhou:', e); }
 }
 
@@ -1202,15 +1173,15 @@ async function adicionarNumero() {
     var r = await fetch('/api/instancias', {method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({nome:nome,instance_id:instance_id,token:token,client_token:client_token})});
     var d = await r.json();
-    if (d.ok) { toast('Número adicionado! ✅'); document.getElementById('modal-numero').classList.remove('open'); carregarNumeros(); }
+    if (d.ok) { toast('Numero adicionado!'); document.getElementById('modal-numero').classList.remove('open'); carregarNumeros(); }
     else toast('Erro: ' + d.erro);
   } catch(e) { toast('Erro ao adicionar'); }
 }
 
 async function excluirNumero(id) {
-  if (!confirm('Excluir este número?')) return;
+  if (!confirm('Excluir este numero?')) return;
   await fetch('/api/instancias/' + id, {method: 'DELETE'});
-  toast('Número excluído'); carregarNumeros();
+  toast('Numero excluido'); carregarNumeros();
 }
 
 async function enviarDireto() {
