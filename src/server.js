@@ -771,24 +771,42 @@ app.post('/webhook/meta', async (req, res) => {
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
           console.log(`Meta webhook: ${from} disse: ${text}`);
 
-          const querDesconto = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
+          const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
+          if (!respondeuPositivo) continue;
 
-          if (querDesconto) {
+          // Verifica se tem campanha de lancamento recente (últimas 2h)
+          const { rows: dispLanc } = await pool.query(
+            "SELECT id FROM disparos WHERE telefone=$1 AND mensagem LIKE '%lancamento%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            [from]
+          );
+
+          // Verifica se tem carrinho abandonado ativo
+          const { rows: execCarrinho } = await pool.query(
+            "SELECT se.* FROM sequencia_execucoes se JOIN sequencias s ON s.id=se.sequencia_id WHERE se.telefone=$1 AND se.status='ativo' AND s.gatilho='carrinho_abandonado'",
+            [from]
+          );
+
+          if (dispLanc.length > 0) {
+            // Resposta ao lancamento VIP
+            await new Promise(r => setTimeout(r, 1500));
+            await wpp.enviarMensagem(from,
+              `Oi ${primeiro}! Que alegria! 🎉\n\nHoje é dia de lançamento na Madame Ka e você ganhou:\n\n🎁 Acima de R$299 → Relógio surpresa\n💧 Acima de R$350 → Relógio + Garrafa exclusiva\n\nE ainda use o cupom *MADAME12* para ganhar *12% de desconto*!\n\n👗 madameka.com.br`
+            );
+          } else if (execCarrinho.length > 0) {
+            // Resposta ao carrinho abandonado
             await new Promise(r => setTimeout(r, 1500));
             await wpp.enviarMensagem(from,
               `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto* em qualquer peça!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=cupom`
             );
-
             setTimeout(async () => {
               try {
                 const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
                 if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
                 await wpp.enviarMensagem(from,
-                  `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n10% de desconto esperando por você 🛍️\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=urgencia`
+                  `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=urgencia`
                 );
-              } catch(e) { console.error('Erro msg2 carrinho:', e.message); }
+              } catch(e) {}
             }, 3 * 3600 * 1000);
-
             setTimeout(async () => {
               try {
                 const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
@@ -796,7 +814,7 @@ app.post('/webhook/meta', async (req, res) => {
                 await wpp.enviarMensagem(from,
                   `${primeiro}, última chance! 🎀\n\nUse o cupom *BRINDE10* e ganhe *10% de desconto + brinde surpresa*! 🎁\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=brinde`
                 );
-              } catch(e) { console.error('Erro msg3 carrinho:', e.message); }
+              } catch(e) {}
             }, 20 * 3600 * 1000);
           }
         }

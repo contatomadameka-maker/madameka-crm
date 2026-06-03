@@ -641,7 +641,9 @@ function inicializar() {
   carregarConfig();
   carregarNumeros();
   carregarEtiquetas();
-  document.getElementById('btn-abrir-etiquetas').addEventListener('click', function() {
+  document.getElementById('btn-abrir-etiquetas').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('modal-etiquetas-contato').classList.remove('open');
     document.getElementById('modal-etiquetas-mgr').classList.add('open');
     renderizarEtiquetasMgr();
   });
