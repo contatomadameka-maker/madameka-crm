@@ -1112,6 +1112,23 @@ async function deletarSequencia(id) {
   toast('Excluída!'); carregarSequencias();
 }
 
+var convAtualTel = null;
+var convAtualNome = null;
+
+async function enviarResposta() {
+  var msg = document.getElementById('reply-msg').value.trim();
+  if (!msg || !convAtualTel) { if (!convAtualTel) toast('Selecione uma conversa'); return; }
+  try {
+    var r = await fetch('/api/enviar-direto', {method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({telefone:convAtualTel,mensagem:msg})});
+    var d = await r.json();
+    if (d.ok) {
+      document.getElementById('reply-msg').value = '';
+      abrirConversa(convAtualTel, convAtualNome);
+    } else { toast('Erro: ' + d.erro); }
+  } catch(e) { toast('Erro ao enviar'); }
+}
+
 async function carregarConversas() {
   try {
     var r = await fetch('/api/conversas');
