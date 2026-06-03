@@ -322,7 +322,13 @@ app.put('/api/fluxos/:id', async (req, res) => {
 // ─── CONVERSAS ────────────────────────────────────────────────────────────────
 app.get('/api/conversas', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT DISTINCT ON (telefone) telefone, nome, criado_em as ultima, COUNT(*) OVER (PARTITION BY telefone) as total FROM conversas ORDER BY telefone, criado_em DESC LIMIT 50');
+    const { rows } = await pool.query(`
+  SELECT telefone, nome, MAX(criado_em) as ultima, COUNT(*) as total
+  FROM conversas
+  GROUP BY telefone, nome
+  ORDER BY MAX(criado_em) DESC
+  LIMIT 50
+`);
     res.json({ ok: true, conversas: rows });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
