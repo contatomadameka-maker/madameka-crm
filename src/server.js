@@ -556,9 +556,13 @@ cron.schedule('0 12 * * *', async () => {
     const { rows } = await pool.query(`SELECT * FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     for (const c of rows) {
       const nome = (c.nome||'Cliente').split(' ')[0];
-      await wpp.enviarTemplate(c.telefone, 'aniversario_madameka', 'pt_BR', [
-        { type: 'body', parameters: [{ type: 'text', text: nome }] }
+      const resultAniv = await wpp.enviarTemplate(c.telefone, 'aniversario_madameka', 'pt_BR', [
+      { type: 'body', parameters: [{ type: 'text', text: nome }] }
       ]);
+      if (resultAniv.ok) {
+  await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de) VALUES ($1,$2,$3,$4)',
+    [c.telefone, c.nome, 'Template: aniversario_madameka', 'bot']);
+}
       await new Promise(r => setTimeout(r, 45000));
     }
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }

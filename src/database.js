@@ -158,7 +158,7 @@ async function initInstancias() {
     CREATE TABLE IF NOT EXISTS instancias (
       id SERIAL PRIMARY KEY,
       nome TEXT NOT NULL,
-      instance_id TEXT NOT NULL,
+      instance_id TEXT NOT NULL UNIQUE,
       token TEXT NOT NULL,
       client_token TEXT NOT NULL,
       status TEXT DEFAULT 'desconectado',
@@ -166,10 +166,16 @@ async function initInstancias() {
       criado_em TIMESTAMP DEFAULT NOW()
     );
   `);
-  const { rows: instExiste } = await pool.query('SELECT id FROM instancias WHERE id=1');
-  if (!instExiste.length) {
-    await pool.query(`INSERT INTO instancias (id, nome, instance_id, token, client_token) VALUES (1,'Principal','3F3B33A2992E1162E39B6627BE24201D','C8C9AEE300AE3E2B586CF1B3','F8d6cdf1bbebe419abdb464fbf2c74bb2S')`);
-  }
+  await pool.query(`
+    DELETE FROM instancias WHERE id NOT IN (
+      SELECT MIN(id) FROM instancias GROUP BY instance_id
+    )
+  `);
+  await pool.query(`
+    INSERT INTO instancias (nome, instance_id, token, client_token)
+    VALUES ('Principal','3F3B33A2992E1162E39B6627BE24201D','C8C9AEE300AE3E2B586CF1B3','F8d6cdf1bbebe419abdb464fbf2c74bb2S')
+    ON CONFLICT (instance_id) DO NOTHING
+  `);
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS instancia_id INTEGER DEFAULT 1`);
 }
 
