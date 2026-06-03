@@ -32,7 +32,6 @@ function variarMensagem(msg, nome, idx) {
   return m;
 }
 
-// Retorna hora no fuso de Brasília (UTC-3)
 function horaBrasilia() {
   const hora = new Date().toLocaleString('en-US', {
     timeZone: 'America/Sao_Paulo',
@@ -249,7 +248,6 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       const horaAtual = horaBrasilia();
       if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
         await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
-        console.log(`Campanha ${campanha.id} pausada — fora do horário (Brasília: ${horaAtual}h)`);
         return;
       }
       const envHojeNow = await enviosHoje();
@@ -336,7 +334,7 @@ app.get('/api/conversas/:telefone', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
-// ─── ENVIAR MENSAGEM DIRETA ────────────────────────────────────────────────────
+// ─── ENVIAR MENSAGEM DIRETA ───────────────────────────────────────────────────
 app.post('/api/enviar-direto', async (req, res) => {
   try {
     const { telefone, mensagem, template_name } = req.body;
@@ -386,17 +384,19 @@ app.post('/webhook/yampi', async (req, res) => {
       mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar? 💜`;
     }
     if (['checkout.abandoned','cart.abandoned'].includes(event)) {
-      const { rows } = await pool.query("SELECT * FROM fluxos WHERE tipo='carrinho_abandonado' AND ativo=1");
-      if (rows[0]) {
-        const delayMs = Math.max(30, (rows[0].delay_horas || 1) * 60) * 60 * 1000;
-        setTimeout(async () => {
+      const delayMs = 1 * 60 * 60 * 1000; // 1 hora
+      setTimeout(async () => {
+        try {
           const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [telefone]);
-          if (check[0]?.segmento === 'Compradora Ativa') return;
-          await wpp.enviarMensagem(telefone, rows[0].mensagem.replace(/{nome}/g, primeiro));
-          await iniciarSequencia('carrinho_abandonado', telefone, nome);
-        }, delayMs);
-        return;
-      }
+          if (['Compradora Ativa','VIP','Compradora Recente'].includes(check[0]?.segmento)) return;
+          // Envia template carrinho_surpresa aprovado pela Meta
+          await wpp.enviarTemplate(telefone, 'carrinho_surpresa', 'pt_BR', [
+            { type: 'body', parameters: [{ type: 'text', text: primeiro }] }
+          ]);
+          console.log(`Carrinho abandonado → template enviado para ${telefone}`);
+        } catch(e) { console.error('Erro carrinho abandonado:', e.message); }
+      }, delayMs);
+      return;
     }
     if (mensagem) { await new Promise(r => setTimeout(r, 3000)); await wpp.enviarMensagem(telefone, mensagem); }
     if (['order.created','order.approved','payment.approved'].includes(event)) await iniciarSequencia('pos_compra', telefone, nome);
@@ -547,7 +547,7 @@ cron.schedule('* * * * *', async () => {
   } catch(e) { console.error('Erro cron sequencias:', e.message); }
 });
 
-// Cron aniversariantes — roda às 9h de Brasília (12h UTC)
+// Cron aniversariantes — 9h Brasília = 12h UTC
 cron.schedule('0 12 * * *', async () => {
   try {
     const hoje = new Date();
@@ -652,40 +652,33 @@ app.post('/webhook/meta', async (req, res) => {
           const querDesconto = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
 
           if (querDesconto) {
-            const { rows: exec } = await pool.query(
-              "SELECT se.* FROM sequencia_execucoes se JOIN sequencias s ON s.id=se.sequencia_id WHERE se.telefone=$1 AND se.status='ativo' AND s.gatilho='carrinho_abandonado'",
-              [from]
+            // Mensagem 1 — cupom imediato
+            await new Promise(r => setTimeout(r, 1500));
+            await wpp.enviarMensagem(from,
+              `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto* em qualquer peça!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=cupom`
             );
 
-            if (exec.length || querDesconto) {
-              // Mensagem 1 — cupom imediato
-              await new Promise(r => setTimeout(r, 1500));
-              await wpp.enviarMensagem(from,
-                `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto* em qualquer peça!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=cupom`
-              );
+            // Mensagem 2 — urgência em 3h
+            setTimeout(async () => {
+              try {
+                const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
+                if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
+                await wpp.enviarMensagem(from,
+                  `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n10% de desconto esperando por você 🛍️\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=urgencia`
+                );
+              } catch(e) { console.error('Erro msg2 carrinho:', e.message); }
+            }, 3 * 3600 * 1000);
 
-              // Mensagem 2 — urgência em 3h
-              setTimeout(async () => {
-                try {
-                  const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
-                  if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
-                  await wpp.enviarMensagem(from,
-                    `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n10% de desconto esperando por você 🛍️\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=urgencia`
-                  );
-                } catch(e) { console.error('Erro msg2 carrinho:', e.message); }
-              }, 3 * 3600 * 1000);
-
-              // Mensagem 3 — brinde em 20h
-              setTimeout(async () => {
-                try {
-                  const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
-                  if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
-                  await wpp.enviarMensagem(from,
-                    `${primeiro}, última chance! 🎀\n\nUse o cupom *BRINDE10* e ganhe *10% de desconto + um relógio*! 🎁\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=brinde`
-                  );
-                } catch(e) { console.error('Erro msg3 carrinho:', e.message); }
-              }, 20 * 3600 * 1000);
-            }
+            // Mensagem 3 — brinde em 20h
+            setTimeout(async () => {
+              try {
+                const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
+                if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
+                await wpp.enviarMensagem(from,
+                  `${primeiro}, última chance! 🎀\n\nUse o cupom *BRINDE10* e ganhe *10% de desconto + brinde surpresa*! 🎁\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=brinde`
+                );
+              } catch(e) { console.error('Erro msg3 carrinho:', e.message); }
+            }, 20 * 3600 * 1000);
           }
         }
       }
