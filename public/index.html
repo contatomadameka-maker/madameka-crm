@@ -257,7 +257,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="page-header">
         <div><div class="page-title">Contatos</div><div class="page-sub">Base de clientes</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-outline btn-sm" id="btn-abrir-etiquetas">&#127991; Etiquetas</button>
+          <button class="btn btn-outline btn-sm" id="btn-abrir-etiquetas">&#9881; Gerenciar Etiquetas</button>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">Importar CSV</button>
           <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importarCSV(this)">
         </div>
@@ -641,12 +641,17 @@ function inicializar() {
   carregarConfig();
   carregarNumeros();
   carregarEtiquetas();
-  document.getElementById('btn-abrir-etiquetas').addEventListener('click', function(e) {
-    e.stopPropagation();
-    document.getElementById('modal-etiquetas-contato').classList.remove('open');
-    document.getElementById('modal-etiquetas-mgr').classList.add('open');
-    renderizarEtiquetasMgr();
-  });
+  var btnEtq = document.getElementById('btn-abrir-etiquetas');
+  if (btnEtq) {
+    btnEtq.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('modal-etiquetas-contato').classList.remove('open');
+      document.getElementById('modal-etiquetas-mgr').classList.add('open');
+      renderizarEtiquetasMgr();
+      return false;
+    };
+  }
   setInterval(verificarStatus, 60000);
   setInterval(carregarStats, 120000);
   setInterval(carregarCampanhas, 60000);
@@ -788,7 +793,7 @@ async function carregarContatos() {
         '<td>' + (c.nome || '--') + '</td>' +
         '<td style="color:#888">' + telSafe + '</td>' +
         '<td><span class="badge badge-' + (bm[c.segmento] || 'inativa') + '">' + c.segmento + '</span></td>' +
-        '<td><button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContatoTel(\'' + telSafe + '\')">+ Etiqueta</button></td>' +
+        '<td><button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContatoTel(\'' + telSafe + '\')">&#127991; Etiquetar</button></td>' +
         '<td style="color:#888;font-size:12px">' + (c.data_ultimo_pedido || '--') + '</td>' +
         '</tr>';
     }).join('');
