@@ -306,7 +306,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequencia</button>
       </div>
       <div class="info-box">
-        <strong>Dica:</strong> Use o gatilho <strong>"Resposta Lancamento"</strong> para criar uma sequencia que dispara automaticamente quando a cliente responder ao template de lancamento. Ou <strong>"Resposta Carrinho"</strong> para carrinho abandonado.
+        <strong>Dica:</strong> Use o gatilho <strong>"Resposta Lancamento"</strong> para lancamentos, <strong>"Resposta Carrinho"</strong> para carrinho abandonado, <strong>"Resposta Leads"</strong> para leads surpresa ou <strong>"Resposta Reativacao"</strong> para clientes inativas.
       </div>
       <div id="lista-sequencias">Carregando...</div>
     </div>
@@ -470,6 +470,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <select id="seq-gatilho">
           <option value="resposta_lancamento">&#127873; Resposta Lancamento (automatico)</option>
           <option value="resposta_carrinho">&#128722; Resposta Carrinho (automatico)</option>
+          <option value="resposta_leads">&#127775; Resposta Leads (automatico)</option>
+          <option value="resposta_reativacao">&#128147; Resposta Reativacao (automatico)</option>
           <option value="carrinho_abandonado">Carrinho Abandonado</option>
           <option value="boas_vindas">Boas-vindas</option>
           <option value="pos_compra">Pos-compra</option>
@@ -604,12 +606,12 @@ var DELAYS_RAPIDOS = [
 var GATILHO_LABELS = {
   carrinho_abandonado:'Carrinho Abandonado',boas_vindas:'Boas-vindas',
   pos_compra:'Pos-compra',reativacao:'Reativacao',manual:'Manual',
-  resposta_lancamento:'Resposta Lancamento',resposta_carrinho:'Resposta Carrinho'
+  resposta_lancamento:'Resposta Lancamento',resposta_carrinho:'Resposta Carrinho',resposta_leads:'Resposta Leads',resposta_reativacao:'Resposta Reativacao'
 };
 var GATILHO_BADGE = {
   carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',
   pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual',
-  resposta_lancamento:'gatilho-resposta',resposta_carrinho:'gatilho-resposta'
+  resposta_lancamento:'gatilho-resposta',resposta_carrinho:'gatilho-resposta',resposta_leads:'gatilho-resposta',resposta_reativacao:'gatilho-resposta'
 };
 var CORES_AVATAR = ['#c9a87c','#3b82f6','#22c55e','#ef4444','#8b5cf6','#f97316','#ec4899','#6b7280'];
 
