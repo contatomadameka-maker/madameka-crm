@@ -81,7 +81,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gatilho-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500}
 .gatilho-carrinho{background:#fff7ed;color:#c2410c}.gatilho-popup{background:#eff6ff;color:#1d4ed8}
 .gatilho-compra{background:#f0fdf4;color:#15803d}.gatilho-inativa{background:#fdf4ff;color:#7e22ce}
-.gatilho-manual{background:#f3f4f6;color:#6b7280}
+.gatilho-manual{background:#f3f4f6;color:#6b7280}.gatilho-resposta{background:#fef9c3;color:#854d0e}
 .seq-passo{border:1.5px solid #e8e2db;border-radius:12px;margin-bottom:12px;overflow:hidden}
 .seq-passo-header{background:#f5f0ea;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .seq-passo-num{width:28px;height:28px;border-radius:50%;background:#c9a87c;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -97,7 +97,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .config-section-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f0ece8}
 .config-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid #f5f0ea}
 .config-item:last-child{border-bottom:none}
-.config-label{font-size:13px;font-weight:500}.config-desc{font-size:11px;color:#888;margin-top:2px}
+.config-label{font-size:13px;font-weight:500}
 .config-input{width:120px;border:1.5px solid #e8e2db;border-radius:8px;padding:7px 10px;font-size:14px;outline:none;text-align:center}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
@@ -116,10 +116,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .conv-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;height:calc(100vh - 140px)}
 .conv-sidebar{background:#fff;border-radius:12px;border:0.5px solid #e8e2db;overflow:hidden;display:flex;flex-direction:column}
 .conv-sidebar-header{padding:10px 12px;border-bottom:0.5px solid #f0ece8;display:flex;flex-direction:column;gap:6px}
-.conv-filtros{display:flex;gap:4px}
+.conv-filtros{display:flex;gap:4px;flex-wrap:wrap}
 .conv-filtro{padding:4px 10px;border-radius:20px;border:1.5px solid #e8e2db;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
 .conv-filtro.ativo{background:#c9a87c;border-color:#c9a87c;color:#fff}
 .conv-busca{border:1.5px solid #e8e2db;border-radius:8px;padding:6px 10px;font-size:13px;outline:none;width:100%}
+.conv-etq-select{border:1.5px solid #e8e2db;border-radius:8px;padding:5px 8px;font-size:12px;outline:none;width:100%}
 .conv-lista{flex:1;overflow-y:auto}
 .conv-item{padding:10px 12px;border-bottom:0.5px solid #f0ece8;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
 .conv-item:hover{background:#fafaf9}
@@ -154,6 +155,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cor-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .cor-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border .15s}
 .cor-opt.sel{border-color:#1a1a1a}
+.info-box{background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#92400e}
 </style>
 </head>
 <body>
@@ -258,13 +260,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div class="card">
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <input type="text" placeholder="Buscar..." style="flex:1;min-width:200px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
+          <input type="text" placeholder="Buscar..." style="flex:1;min-width:160px;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none" oninput="filtrarContatos(this.value)">
           <select id="seg-filtro" onchange="filtrarSegmento(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
-            <option value="todos">Todos</option><option value="VIP">VIP</option>
+            <option value="todos">Todos segmentos</option><option value="VIP">VIP</option>
             <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Recente">Compradora Recente</option>
             <option value="Compradora Ativa">Compradora Ativa</option><option value="Em Risco">Em Risco</option>
             <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
             <option value="Aniversariante">Aniversariantes</option>
+          </select>
+          <select id="etq-filtro" onchange="filtrarEtiqueta(this.value)" style="border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+            <option value="">Todas etiquetas</option>
           </select>
         </div>
         <table class="tabela">
@@ -297,8 +302,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- SEQUENCIAS -->
     <div class="page" id="page-sequencias">
       <div class="page-header">
-        <div><div class="page-title">Sequencias</div></div>
+        <div><div class="page-title">Sequencias</div><div class="page-sub">Funis de mensagens automaticas</div></div>
         <button class="btn btn-gold btn-sm" onclick="abrirNovaSequencia()">+ Nova sequencia</button>
+      </div>
+      <div class="info-box">
+        <strong>Dica:</strong> Use o gatilho <strong>"Resposta Lancamento"</strong> para criar uma sequencia que dispara automaticamente quando a cliente responder ao template de lancamento. Ou <strong>"Resposta Carrinho"</strong> para carrinho abandonado.
       </div>
       <div id="lista-sequencias">Carregando...</div>
     </div>
@@ -322,6 +330,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <button class="conv-filtro" onclick="setFiltroConv('clientes',this)">Clientes</button>
             </div>
             <input class="conv-busca" type="text" placeholder="Buscar contato..." oninput="filtrarListaConversas(this.value)">
+            <select class="conv-etq-select" id="conv-etq-filtro" onchange="setEtiquetaConv(this.value)">
+              <option value="">Todas etiquetas</option>
+            </select>
           </div>
           <div class="conv-lista" id="lista-conversas">
             <div style="padding:20px;text-align:center;color:#aaa;font-size:13px">Carregando...</div>
@@ -343,7 +354,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="text-align:center;color:#aaa;font-size:13px;margin-top:60px">Selecione uma conversa ao lado</div>
           </div>
           <div class="conv-reply">
-            <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter envia)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
+            <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter envia, Shift+Enter nova linha)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
             <button class="btn btn-gold btn-sm" onclick="enviarResposta()" style="flex-shrink:0;height:42px">Enviar</button>
           </div>
         </div>
@@ -402,21 +413,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAIS -->
+<!-- MODAL CAMPANHA -->
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
     <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Lancamento VIP"></div>
     <div class="form-row">
       <div class="form-group"><label>Segmento</label>
-        <select id="c-seg">
+        <select id="c-seg" onchange="toggleEtiquetaCampanha(this.value)">
           <option value="todos">Todos</option><option value="VIP">VIP</option>
           <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Ativa">Compradora Ativa</option>
           <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
           <option value="Aniversariante">Aniversariantes de hoje</option>
+          <option value="etiqueta">Por Etiqueta &#127991;</option>
         </select>
       </div>
       <div class="form-group"><label>Limite (0 = sem limite)</label><input type="number" id="c-limite" value="0" min="0"></div>
+    </div>
+    <div class="form-group" id="etiqueta-campanha-wrap" style="display:none">
+      <label>Etiqueta para filtrar</label>
+      <select id="c-etiqueta"><option value="">Selecione a etiqueta...</option></select>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Numero WhatsApp</label><select id="c-instancia"><option value="1">Carregando...</option></select></div>
@@ -440,13 +456,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL SEQUENCIA -->
 <div class="modal-bg" id="modal-sequencia">
   <div class="modal modal-lg">
     <div class="modal-header"><div class="modal-title" id="modal-seq-titulo">Nova Sequencia</div><button class="modal-close" onclick="fecharModalSeq()">x</button></div>
     <div class="form-row">
-      <div class="form-group"><label>Nome</label><input type="text" id="seq-nome" placeholder="Ex: Carrinho Abandonado"></div>
+      <div class="form-group"><label>Nome</label><input type="text" id="seq-nome" placeholder="Ex: Funil Lancamento"></div>
       <div class="form-group"><label>Gatilho</label>
         <select id="seq-gatilho">
+          <option value="resposta_lancamento">&#127873; Resposta Lancamento (automatico)</option>
+          <option value="resposta_carrinho">&#128722; Resposta Carrinho (automatico)</option>
           <option value="carrinho_abandonado">Carrinho Abandonado</option>
           <option value="boas_vindas">Boas-vindas</option>
           <option value="pos_compra">Pos-compra</option>
@@ -459,9 +478,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="form-group"><label>Publico</label>
         <select id="seq-segmento"><option value="todos">Todos</option><option value="VIP">VIP</option><option value="Compradora Ativa">Compradora Ativa</option><option value="Lead">Lead</option></select>
       </div>
-      <div class="form-group"><label>Descricao</label><input type="text" id="seq-desc" placeholder="Ex: Funil 3 dias"></div>
+      <div class="form-group"><label>Descricao</label><input type="text" id="seq-desc" placeholder="Ex: Funil pos lancamento 24h"></div>
     </div>
-    <div style="font-size:13px;font-weight:500;margin:16px 0 12px">Mensagens</div>
+    <div style="font-size:13px;font-weight:500;margin:16px 0 8px">Mensagens da sequencia</div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px">A primeira mensagem sera enviada imediatamente apos a cliente responder. Use delays para as proximas.</div>
     <div id="seq-passos-container"></div>
     <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
     <div style="display:flex;gap:10px;margin-top:20px">
@@ -471,6 +491,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL NUMERO -->
 <div class="modal-bg" id="modal-numero">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Adicionar numero</div><button class="modal-close" onclick="document.getElementById('modal-numero').classList.remove('open')">x</button></div>
@@ -485,6 +506,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL ENVIO DIRETO -->
 <div class="modal-bg" id="modal-envio-direto">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Enviar mensagem direta</div><button class="modal-close" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">x</button></div>
@@ -498,6 +520,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- MODAL ETIQUETAS GERENCIAR -->
 <div class="modal-bg" id="modal-etiquetas-mgr">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Gerenciar Etiquetas</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-mgr').classList.remove('open')">x</button></div>
@@ -514,13 +537,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="cor-opt" style="background:#6b7280" data-cor="#6b7280" onclick="selecionarCor(this)"></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;margin-bottom:14px">
-      <input type="text" id="nova-etiqueta-nome" placeholder="Nome da etiqueta (Ex: VIP, Interessada, Aguardando)" style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+      <input type="text" id="nova-etiqueta-nome" placeholder="Nome (Ex: VIP, Interessada, Aguardando)" style="flex:1;border:1.5px solid #e8e2db;border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
       <button class="btn btn-gold btn-sm" onclick="criarEtiqueta()">Criar</button>
     </div>
     <div id="lista-etiquetas-mgr"></div>
   </div>
 </div>
 
+<!-- MODAL ETIQUETAS CONTATO -->
 <div class="modal-bg" id="modal-etiquetas-contato">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Etiquetas do contato</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-contato').classList.remove('open')">x</button></div>
@@ -536,6 +560,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 var paginaAtual = 0;
 var segmentoAtual = 'todos';
+var etiquetaAtual = '';
 var buscaAtual = '';
 var POR_PAGINA = 50;
 var seqEditandoId = null;
@@ -544,6 +569,7 @@ var cfgAtual = { limite_diario: 200, horario_inicio: 9, horario_fim: 20 };
 var convAtualTel = null;
 var convAtualNome = null;
 var filtroConvAtual = 'todas';
+var etiquetaConvAtual = '';
 var corEtiquetaSel = '#ef4444';
 var todasEtiquetas = [];
 var conversasCache = [];
@@ -556,8 +582,16 @@ var DELAYS_RAPIDOS = [
   {label:'7 dias',horas:168},{label:'15 dias',horas:360},{label:'30 dias',horas:720}
 ];
 
-var GATILHO_LABELS = {carrinho_abandonado:'Carrinho Abandonado',boas_vindas:'Boas-vindas',pos_compra:'Pos-compra',reativacao:'Reativacao',manual:'Manual'};
-var GATILHO_BADGE = {carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual'};
+var GATILHO_LABELS = {
+  carrinho_abandonado:'Carrinho Abandonado',boas_vindas:'Boas-vindas',
+  pos_compra:'Pos-compra',reativacao:'Reativacao',manual:'Manual',
+  resposta_lancamento:'Resposta Lancamento',resposta_carrinho:'Resposta Carrinho'
+};
+var GATILHO_BADGE = {
+  carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',
+  pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual',
+  resposta_lancamento:'gatilho-resposta',resposta_carrinho:'gatilho-resposta'
+};
 var CORES_AVATAR = ['#c9a87c','#3b82f6','#22c55e','#ef4444','#8b5cf6','#f97316','#ec4899','#6b7280'];
 
 function corAvatar(str) {
@@ -577,6 +611,11 @@ function abrirModalEtiquetas() {
   document.getElementById('modal-etiquetas-contato').classList.remove('open');
   document.getElementById('modal-etiquetas-mgr').classList.add('open');
   renderizarEtiquetasMgr();
+}
+
+function toggleEtiquetaCampanha(val) {
+  var wrap = document.getElementById('etiqueta-campanha-wrap');
+  wrap.style.display = val === 'etiqueta' ? 'block' : 'none';
 }
 
 async function entrar() {
@@ -667,7 +706,7 @@ function atualizarStatusSeguranca() {
       '<div style="background:' + (ok ? '#f0fdf4' : '#fef2f2') + ';border-radius:8px;padding:12px">' +
       '<div style="font-size:18px">' + (ok ? '🟢' : '🔴') + '</div>' +
       '<div style="font-weight:500;font-size:13px">' + (ok ? 'Horario ok' : 'Fora do horario') + '</div>' +
-      '<div style="font-size:11px;color:#888">' + cfgAtual.horario_inicio + 'h-' + cfgAtual.horario_fim + 'h Brasilia</div></div>' +
+      '<div style="font-size:11px;color:#888">' + cfgAtual.horario_inicio + 'h-' + cfgAtual.horario_fim + 'h</div></div>' +
       '<div style="background:' + (pct < 80 ? '#f0fdf4' : '#fef2f2') + ';border-radius:8px;padding:12px">' +
       '<div style="font-size:18px">' + (pct < 80 ? '🟢' : pct < 100 ? '🟡' : '🔴') + '</div>' +
       '<div style="font-weight:500;font-size:13px">' + envHoje + '/' + cfgAtual.limite_diario + '</div>' +
@@ -729,6 +768,7 @@ async function carregarContatos() {
   try {
     var params = new URLSearchParams({segmento: segmentoAtual, limit: POR_PAGINA, offset: paginaAtual * POR_PAGINA});
     if (buscaAtual && buscaAtual.trim()) params.append('busca', buscaAtual.trim());
+    if (etiquetaAtual) params.append('etiqueta', etiquetaAtual);
     var r = await fetch('/api/contatos?' + params.toString());
     var d = await r.json();
     var tb = document.getElementById('tabela-contatos');
@@ -756,6 +796,7 @@ async function carregarContatos() {
 
 function filtrarContatos(v) { buscaAtual = v; paginaAtual = 0; carregarContatos(); }
 function filtrarSegmento(v) { segmentoAtual = v; paginaAtual = 0; carregarContatos(); }
+function filtrarEtiqueta(v) { etiquetaAtual = v; paginaAtual = 0; carregarContatos(); }
 function proximaPagina() { paginaAtual++; carregarContatos(); }
 function paginaAnterior() { if (paginaAtual > 0) { paginaAtual--; carregarContatos(); } }
 
@@ -791,9 +832,10 @@ async function carregarCampanhas() {
       if (c.status === 'concluido') acoes = '<button class="btn btn-outline btn-sm" onclick="retomarCampanha(' + c.id + ')">Disparar novamente</button>';
       var tmpl = c.template_name ? 'Template: ' + c.template_name : '';
       var msg = c.mensagem ? c.mensagem.substring(0, 100) + (c.mensagem.length > 100 ? '...' : '') : tmpl;
+      var segLabel = c.etiqueta_id ? 'Etiqueta #' + c.etiqueta_id : c.segmento;
       return '<div class="camp-card">' +
         '<div class="camp-card-header"><div class="camp-card-nome">' + c.nome + '</div><span class="badge badge-' + sb + '">' + c.status + '</span></div>' +
-        '<div class="camp-card-meta">Segmento: ' + c.segmento + ' | ' + c.intervalo_segundos + 's | Enviados: ' + c.total_envios + ' | Erros: ' + c.total_erros + '</div>' +
+        '<div class="camp-card-meta">Publico: ' + segLabel + ' | ' + c.intervalo_segundos + 's | Enviados: ' + c.total_envios + ' | Erros: ' + c.total_erros + '</div>' +
         '<div class="camp-card-msg">' + msg + '</div>' +
         '<div class="camp-acoes">' + acoes + '</div></div>';
     }).join('');
@@ -808,11 +850,15 @@ async function criarCampanha() {
   var limite = document.getElementById('c-limite').value;
   var instancia = document.getElementById('c-instancia').value || '1';
   var template = document.getElementById('c-template').value.trim();
+  var etiquetaId = segmento === 'etiqueta' ? document.getElementById('c-etiqueta').value : null;
   if (!nome || (!mensagem && !template)) { toast('Preencha nome e mensagem ou template'); return; }
+  if (segmento === 'etiqueta' && !etiquetaId) { toast('Selecione uma etiqueta'); return; }
   try {
-    var r = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({nome:nome,mensagem:mensagem,segmento:segmento,intervalo_segundos:parseInt(intervalo),
-      limite:parseInt(limite)||0,midia_tipo:'texto',midia_url:'',instancia_id:parseInt(instancia),template_name:template})});
+    var body = {nome:nome,mensagem:mensagem,segmento:segmento === 'etiqueta' ? 'todos' : segmento,
+      intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,
+      midia_tipo:'texto',midia_url:'',instancia_id:parseInt(instancia),template_name:template};
+    if (etiquetaId) body.etiqueta_id = parseInt(etiquetaId);
+    var r = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d = await r.json();
     if (d.ok) { toast('Campanha criada!'); document.getElementById('modal-campanha').classList.remove('open'); carregarCampanhas(); }
   } catch(e) { toast('Erro'); }
@@ -945,7 +991,7 @@ async function carregarSequencias() {
     var d = await r.json();
     var wrap = document.getElementById('lista-sequencias');
     if (!d.sequencias || !d.sequencias.length) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequencia</button></div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="margin-bottom:12px;color:#888">Crie sequencias automaticas para lancamentos e carrinhos abandonados</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequencia</button></div>';
       return;
     }
     wrap.innerHTML = d.sequencias.map(function(s) {
@@ -975,7 +1021,7 @@ function abrirNovaSequencia() {
   seqEditandoId = null; passoCount = 0;
   document.getElementById('modal-seq-titulo').textContent = 'Nova Sequencia';
   document.getElementById('seq-nome').value = '';
-  document.getElementById('seq-gatilho').value = 'carrinho_abandonado';
+  document.getElementById('seq-gatilho').value = 'resposta_lancamento';
   document.getElementById('seq-segmento').value = 'todos';
   document.getElementById('seq-desc').value = '';
   document.getElementById('seq-passos-container').innerHTML = '';
@@ -1096,10 +1142,16 @@ async function deletarSequencia(id) {
   toast('Excluida!'); carregarSequencias();
 }
 
+// ─── CONVERSAS ────────────────────────────────────────────────────────────────
 function setFiltroConv(filtro, btn) {
   filtroConvAtual = filtro;
   document.querySelectorAll('.conv-filtro').forEach(function(b) { b.classList.remove('ativo'); });
   btn.classList.add('ativo');
+  carregarConversas();
+}
+
+function setEtiquetaConv(val) {
+  etiquetaConvAtual = val;
   carregarConversas();
 }
 
@@ -1156,8 +1208,10 @@ function renderizarListaConversas() {
 
 async function carregarConversas() {
   try {
-    var url = '/api/conversas';
-    if (filtroConvAtual !== 'todas') url += '?filtro=' + filtroConvAtual;
+    var params = [];
+    if (filtroConvAtual !== 'todas') params.push('filtro=' + filtroConvAtual);
+    if (etiquetaConvAtual) params.push('etiqueta=' + etiquetaConvAtual);
+    var url = '/api/conversas' + (params.length ? '?' + params.join('&') : '');
     var r = await fetch(url);
     var d = await r.json();
     conversasCache = d.conversas || [];
@@ -1234,6 +1288,7 @@ async function enviarResposta() {
   } catch(e) { toast('Erro'); }
 }
 
+// ─── ETIQUETAS ────────────────────────────────────────────────────────────────
 function selecionarCor(el) {
   document.querySelectorAll('.cor-opt').forEach(function(o) { o.classList.remove('sel'); });
   el.classList.add('sel');
@@ -1246,6 +1301,18 @@ async function carregarEtiquetas() {
     var d = await r.json();
     todasEtiquetas = d.etiquetas || [];
     renderizarEtiquetasMgr();
+    // Atualiza selects de etiqueta em toda a página
+    var opts = '<option value="">Todas etiquetas</option>' + todasEtiquetas.map(function(e) {
+      return '<option value="' + e.id + '">' + e.nome + '</option>';
+    }).join('');
+    var etqFiltro = document.getElementById('etq-filtro');
+    var convEtqFiltro = document.getElementById('conv-etq-filtro');
+    var cEtiqueta = document.getElementById('c-etiqueta');
+    if (etqFiltro) etqFiltro.innerHTML = opts;
+    if (convEtqFiltro) convEtqFiltro.innerHTML = opts;
+    if (cEtiqueta) cEtiqueta.innerHTML = '<option value="">Selecione a etiqueta...</option>' + todasEtiquetas.map(function(e) {
+      return '<option value="' + e.id + '">' + e.nome + '</option>';
+    }).join('');
   } catch(e) {}
 }
 
@@ -1295,7 +1362,7 @@ async function abrirEtiquetasContatoTel(tel) {
     }).join('') : '<span style="color:#aaa;font-size:13px">Sem etiquetas</span>';
     document.getElementById('etiquetas-disponiveis').innerHTML = todasEtiquetas.filter(function(e) { return ids.indexOf(e.id) === -1; }).map(function(e) {
       return '<span class="etiqueta-chip" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40" onclick="adicionarEtiquetaContato(\'' + tel + '\',' + e.id + ')">' + e.nome + ' +</span>';
-    }).join('') || '<span style="color:#aaa;font-size:13px">Crie etiquetas primeiro em Contatos > Gerenciar Etiquetas</span>';
+    }).join('') || '<span style="color:#aaa;font-size:13px">Crie etiquetas em Contatos > Gerenciar Etiquetas</span>';
     document.getElementById('modal-etiquetas-contato').classList.add('open');
   } catch(e) { toast('Erro'); }
 }
@@ -1318,6 +1385,7 @@ async function removerEtiquetaContato(tel, etiquetaId) {
   } catch(e) { toast('Erro'); }
 }
 
+// ─── NUMEROS ──────────────────────────────────────────────────────────────────
 async function carregarNumeros() {
   try {
     var r = await fetch('/api/instancias');
