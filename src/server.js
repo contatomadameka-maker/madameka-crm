@@ -51,11 +51,9 @@ async function enviosHoje() {
 }
 
 // ─── NORMALIZAR TELEFONE ──────────────────────────────────────────────────────
-// Garante sempre 55 + DDD + número (11 ou 12 dígitos com 55)
 function normalizarTelefone(tel) {
   if (!tel) return tel;
   let t = tel.replace(/\D/g, '');
-  // Se não começa com 55, adiciona
   if (!t.startsWith('55')) t = '55' + t;
   return t;
 }
@@ -63,7 +61,7 @@ function normalizarTelefone(tel) {
 // Busca contato tanto com 55 quanto sem
 async function buscarContatoPorTelefone(tel) {
   const norm = normalizarTelefone(tel);
-  const semDDI = norm.slice(2); // remove o 55
+  const semDDI = norm.slice(2);
   const { rows } = await pool.query(
     'SELECT * FROM contatos WHERE telefone=$1 OR telefone=$2 OR telefone LIKE $3',
     [norm, semDDI, '%' + semDDI.slice(-9)]
@@ -76,7 +74,35 @@ async function initExtras() {
   await pool.query(`CREATE TABLE IF NOT EXISTS contato_etiquetas (id SERIAL PRIMARY KEY, telefone TEXT NOT NULL, etiqueta_id INTEGER REFERENCES etiquetas(id) ON DELETE CASCADE, criado_em TIMESTAMP DEFAULT NOW(), UNIQUE(telefone, etiqueta_id))`);
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS lida INTEGER DEFAULT 0`);
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS tipo TEXT DEFAULT 'mensagem'`);
-  // Adiciona gatilhos de resposta nas sequências
+
+  // ── MIGRAÇÃO: normaliza todos os telefones sem DDI 55 no banco ──────────────
+  // Isso elimina as duplicatas causadas por números salvos com e sem o prefixo 55
+  await pool.query(`
+    UPDATE conversas
+    SET telefone = '55' || telefone
+    WHERE telefone NOT LIKE '55%'
+      AND LENGTH(REGEXP_REPLACE(telefone, '\\D', '', 'g')) >= 10
+  `);
+  await pool.query(`
+    UPDATE contatos
+    SET telefone = '55' || telefone
+    WHERE telefone NOT LIKE '55%'
+      AND LENGTH(REGEXP_REPLACE(telefone, '\\D', '', 'g')) >= 10
+  `);
+  await pool.query(`
+    UPDATE contato_etiquetas
+    SET telefone = '55' || telefone
+    WHERE telefone NOT LIKE '55%'
+      AND LENGTH(REGEXP_REPLACE(telefone, '\\D', '', 'g')) >= 10
+  `);
+  await pool.query(`
+    UPDATE disparos
+    SET telefone = '55' || telefone
+    WHERE telefone NOT LIKE '55%'
+      AND LENGTH(REGEXP_REPLACE(telefone, '\\D', '', 'g')) >= 10
+  `);
+  console.log('✅ Telefones normalizados com DDI 55');
+
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS template_name TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS etiqueta_id INTEGER DEFAULT NULL`);
   console.log('DB extras inicializados');
@@ -184,7 +210,7 @@ app.post('/api/contatos/importar', upload.single('arquivo'), async (req, res) =>
     const rows = parse(content, { columns: true, skip_empty_lines: true });
     let importados = 0;
     for (const r of rows) {
-      const tel = (r['whatsapp'] || r['WhatsApp'] || r['telefone'] || r['telefone_com_ddd'] || r['phone'] || '').replace(/\D/g, '');
+      const tel = normalizarTelefone((r['whatsapp'] || r['WhatsApp'] || r['telefone'] || r['telefone_com_ddd'] || r['phone'] || '').replace(/\D/g, ''));
       if (!tel) continue;
       try {
         await pool.query(
@@ -235,13 +261,12 @@ app.delete('/api/etiquetas/:id', async (req, res) => {
 
 app.get('/api/contatos/:telefone/etiquetas', async (req, res) => {
   try {
-    const tel = req.params.telefone;
-    const norm = normalizarTelefone(tel);
-    const semDDI = norm.slice(2);
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
     const { rows } = await pool.query(
       `SELECT e.* FROM etiquetas e JOIN contato_etiquetas ce ON ce.etiqueta_id=e.id 
        WHERE ce.telefone=$1 OR ce.telefone=$2`,
-      [norm, semDDI]
+      [tel, semDDI]
     );
     res.json({ ok: true, etiquetas: rows });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -315,7 +340,6 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
 
     let contatos = [];
     if (campanha.etiqueta_id) {
-      // Filtrar por etiqueta
       const { rows: porEtiqueta } = await pool.query(
         'SELECT c.* FROM contatos c JOIN contato_etiquetas ce ON ce.telefone=c.telefone WHERE ce.etiqueta_id=$1',
         [campanha.etiqueta_id]
@@ -415,18 +439,45 @@ app.put('/api/fluxos/:id', async (req, res) => {
 app.get('/api/conversas', async (req, res) => {
   try {
     const { filtro, etiqueta } = req.query;
-    let whereExtra = '';
-    if (filtro === 'nao_lidas') whereExtra += "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente' AND c2.lida=0)";
-    if (filtro === 'clientes') whereExtra += "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente')";
-    if (etiqueta) whereExtra += ` AND EXISTS (SELECT 1 FROM contato_etiquetas ce WHERE ce.telefone=c.telefone AND ce.etiqueta_id=${parseInt(etiqueta)})`;
 
+    // Todos os filtros comparam pelo telefone JÁ normalizado (com 55)
+    let whereExtra = '';
+    if (filtro === 'nao_lidas') whereExtra += `
+      AND EXISTS (
+        SELECT 1 FROM conversas c2
+        WHERE c2.telefone = c.telefone
+          AND c2.de = 'cliente'
+          AND c2.lida = 0
+      )`;
+    if (filtro === 'clientes') whereExtra += `
+      AND EXISTS (
+        SELECT 1 FROM conversas c2
+        WHERE c2.telefone = c.telefone
+          AND c2.de = 'cliente'
+      )`;
+    if (etiqueta) whereExtra += `
+      AND EXISTS (
+        SELECT 1 FROM contato_etiquetas ce
+        WHERE ce.telefone = c.telefone
+          AND ce.etiqueta_id = ${parseInt(etiqueta)}
+      )`;
+
+    // GROUP BY só pelo telefone (já normalizado pela migração do initExtras)
+    // MAX(nome) prioriza nomes reais sobre null/vazio/'Cliente'
     const { rows } = await pool.query(`
-      SELECT c.telefone, c.nome, MAX(c.criado_em) as ultima, COUNT(*) as total,
-        COUNT(CASE WHEN c.de='cliente' AND c.lida=0 THEN 1 END) as nao_lidas,
-        MAX(CASE WHEN c.de='cliente' THEN c.mensagem END) as ultima_msg_cliente
+      SELECT
+        c.telefone,
+        MAX(
+          CASE WHEN c.nome IS NOT NULL AND c.nome <> '' AND c.nome <> 'Cliente'
+               THEN c.nome ELSE NULL END
+        ) AS nome,
+        MAX(c.criado_em) AS ultima,
+        COUNT(*) AS total,
+        COUNT(CASE WHEN c.de = 'cliente' AND c.lida = 0 THEN 1 END) AS nao_lidas,
+        MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente
       FROM conversas c
       WHERE 1=1 ${whereExtra}
-      GROUP BY c.telefone, c.nome
+      GROUP BY c.telefone
       ORDER BY MAX(c.criado_em) DESC
       LIMIT 100
     `);
@@ -436,13 +487,12 @@ app.get('/api/conversas', async (req, res) => {
 
 app.get('/api/conversas/:telefone', async (req, res) => {
   try {
-    const tel = req.params.telefone;
-    const norm = normalizarTelefone(tel);
-    const semDDI = norm.slice(2);
-    // Busca mensagens tanto com 55 quanto sem, unifica
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
+    // Busca mensagens tanto com 55 quanto sem (segurança para msgs antigas)
     const { rows } = await pool.query(
       'SELECT * FROM conversas WHERE telefone=$1 OR telefone=$2 ORDER BY criado_em ASC',
-      [norm, semDDI]
+      [tel, semDDI]
     );
     res.json({ ok: true, mensagens: rows });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -516,7 +566,6 @@ app.post('/webhook/yampi', async (req, res) => {
           await wpp.enviarTemplate(telefone, 'carrinho_surpresa', 'pt_BR', [
             { type: 'body', parameters: [{ type: 'text', text: primeiro }] }
           ]);
-          // Salva disparo para rastreamento
           await pool.query('INSERT INTO disparos (telefone,mensagem,status,enviado_em) VALUES ($1,$2,$3,NOW())',
             [telefone, 'template:carrinho_surpresa', 'enviado']);
           console.log(`Carrinho abandonado -> template enviado para ${telefone}`);
@@ -775,29 +824,25 @@ app.post('/webhook/meta', async (req, res) => {
           const nome = contato?.nome || 'Cliente';
           const primeiro = nome.split(' ')[0];
 
-          // Salva conversa com número normalizado
+          // Salva conversa sempre com telefone normalizado
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
           console.log(`Meta webhook: ${from} disse: ${text}`);
 
           const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
           if (!respondeuPositivo) continue;
 
-          // Verifica lançamento nas últimas 48h
           const { rows: dispLanc } = await pool.query(
             "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from, from.slice(2)]
           );
 
-          // Verifica carrinho
           const { rows: dispCarrinho } = await pool.query(
             "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND mensagem LIKE '%carrinho_surpresa%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from, from.slice(2)]
           );
 
           if (dispLanc.length > 0) {
-            // Tenta iniciar sequência de resposta ao lançamento
-            const seqIniciada = await iniciarSequencia('resposta_lancamento', from, nome);
-            // Se não tem sequência configurada, manda mensagem padrão
+            await iniciarSequencia('resposta_lancamento', from, nome);
             const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_lancamento' AND ativo=1");
             if (!seqExiste.length) {
               await new Promise(r => setTimeout(r, 1500));
@@ -808,12 +853,10 @@ app.post('/webhook/meta', async (req, res) => {
                 [from, 'Madame Ka', 'Mensagem lancamento enviada', 'bot']);
             }
           } else if (dispCarrinho.length > 0) {
-            // Tenta iniciar sequência de resposta ao carrinho
             const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_carrinho' AND ativo=1");
             if (seqExiste.length) {
               await iniciarSequencia('resposta_carrinho', from, nome);
             } else {
-              // Fallback: mensagem padrão
               await new Promise(r => setTimeout(r, 1500));
               await wpp.enviarMensagem(from,
                 `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto*!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br`
