@@ -694,7 +694,7 @@ cron.schedule('* * * * *', async () => {
     `);
     for (const exec of execucoes) {
       try {
-        if (['carrinho_abandonado','resposta_carrinho'].includes(exec.gatilho)) {
+        if (['carrinho_abandonado','resposta_carrinho','resposta_leads','resposta_reativacao'].includes(exec.gatilho)) {
           const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [exec.telefone]);
           if (['Compradora Ativa','VIP','Compradora Recente'].includes(check[0]?.segmento)) {
             await pool.query("UPDATE sequencia_execucoes SET status='cancelado' WHERE id=$1", [exec.id]);
@@ -828,20 +828,52 @@ app.post('/webhook/meta', async (req, res) => {
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
           console.log(`Meta webhook: ${from} disse: ${text}`);
 
-          const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
+          const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa','quero ver','pode abrir'].some(p => text.includes(p));
           if (!respondeuPositivo) continue;
 
+          // Verifica qual template originou a conversa (últimas 48h)
           const { rows: dispLanc } = await pool.query(
             "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from, from.slice(2)]
           );
-
           const { rows: dispCarrinho } = await pool.query(
             "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND mensagem LIKE '%carrinho_surpresa%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from, from.slice(2)]
           );
+          const { rows: dispLeads } = await pool.query(
+            "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND mensagem LIKE '%leads_surpresa%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            [from, from.slice(2)]
+          );
+          const { rows: dispReativacao } = await pool.query(
+            "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND mensagem LIKE '%reativacao_surpresa%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            [from, from.slice(2)]
+          );
 
-          if (dispLanc.length > 0) {
+          if (dispLeads.length > 0) {
+            // Cliente que nunca comprou respondeu ao template leads_surpresa
+            await iniciarSequencia('resposta_leads', from, nome);
+            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_leads' AND ativo=1");
+            if (!seqExiste.length) {
+              await new Promise(r => setTimeout(r, 1500));
+              await wpp.enviarMensagem(from,
+                `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *FERIADO10* e ganhe *10% de desconto* em tudo!\n\n🎀 E nas compras acima de R$299 você ainda ganha um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
+              );
+              await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+                [from, 'Madame Ka', 'Mensagem leads_surpresa enviada', 'bot']);
+            }
+          } else if (dispReativacao.length > 0) {
+            // Cliente inativa respondeu ao template reativacao_surpresa
+            await iniciarSequencia('resposta_reativacao', from, nome);
+            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_reativacao' AND ativo=1");
+            if (!seqExiste.length) {
+              await new Promise(r => setTimeout(r, 1500));
+              await wpp.enviarMensagem(from,
+                `Oi ${primeiro}! Que saudade! 💛\n\nComo você já é nossa cliente, separamos um desconto especial: use o cupom *VIP15* e ganhe *15% de desconto*!\n\n🎀 Compras acima de R$299 também ganham um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
+              );
+              await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+                [from, 'Madame Ka', 'Mensagem reativacao_surpresa enviada', 'bot']);
+            }
+          } else if (dispLanc.length > 0) {
             await iniciarSequencia('resposta_lancamento', from, nome);
             const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_lancamento' AND ativo=1");
             if (!seqExiste.length) {
