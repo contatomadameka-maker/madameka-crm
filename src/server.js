@@ -906,9 +906,12 @@ app.post('/webhook/meta', async (req, res) => {
 
           if (dispLeads.length > 0) {
             // Cliente que nunca comprou respondeu ao template leads_surpresa
-            await iniciarSequencia('resposta_leads', from, nome);
-            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_leads' AND ativo=1");
-            if (!seqExiste.length) {
+            const { rows: seqLeads } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_leads' AND ativo=1");
+            if (seqLeads.length) {
+              // Tem sequência configurada — só inicia, ela envia o passo 1
+              await iniciarSequencia('resposta_leads', from, nome);
+            } else {
+              // Sem sequência — envia mensagem direta de fallback
               await new Promise(r => setTimeout(r, 1500));
               await wpp.enviarMensagem(from,
                 `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *FERIADO10* e ganhe *10% de desconto* em tudo!\n\n🎀 E nas compras acima de R$299 você ainda ganha um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
@@ -918,9 +921,12 @@ app.post('/webhook/meta', async (req, res) => {
             }
           } else if (dispReativacao.length > 0) {
             // Cliente inativa respondeu ao template reativacao_surpresa
-            await iniciarSequencia('resposta_reativacao', from, nome);
-            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_reativacao' AND ativo=1");
-            if (!seqExiste.length) {
+            const { rows: seqReativ } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_reativacao' AND ativo=1");
+            if (seqReativ.length) {
+              // Tem sequência configurada — só inicia, ela envia o passo 1
+              await iniciarSequencia('resposta_reativacao', from, nome);
+            } else {
+              // Sem sequência — envia mensagem direta de fallback
               await new Promise(r => setTimeout(r, 1500));
               await wpp.enviarMensagem(from,
                 `Oi ${primeiro}! Que saudade! 💛\n\nComo você já é nossa cliente, separamos um desconto especial: use o cupom *VIP15* e ganhe *15% de desconto*!\n\n🎀 Compras acima de R$299 também ganham um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
