@@ -1162,7 +1162,23 @@ async function toggleSequencia(id, ativo, el) {
   var txt = el.previousElementSibling;
   if (txt) { txt.textContent = novoAtivo ? 'Ativo' : 'Inativo'; txt.style.color = novoAtivo ? '#16a34a' : '#aaa'; }
   try {
-    await fetch('/api/sequencias/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ativo: novoAtivo})});
+    // Busca dados atuais antes de atualizar para não sobrescrever nome/gatilho/passos
+    var rGet = await fetch('/api/sequencias');
+    var dGet = await rGet.json();
+    var seq = (dGet.sequencias || []).find(function(s){ return s.id === id; });
+    if (!seq) { toast('Erro ao buscar sequencia'); return; }
+    await fetch('/api/sequencias/' + id, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        nome: seq.nome,
+        gatilho: seq.gatilho,
+        segmento: seq.segmento || 'todos',
+        descricao: seq.descricao || '',
+        ativo: novoAtivo,
+        passos: seq.passos || []
+      })
+    });
     toast(novoAtivo ? 'Ativada' : 'Pausada');
   } catch(e) { toast('Erro'); }
 }
