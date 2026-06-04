@@ -422,8 +422,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="form-group"><label>Segmento</label>
         <select id="c-seg" onchange="toggleEtiquetaCampanha(this.value)">
           <option value="todos">Todos</option><option value="VIP">VIP</option>
-          <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Ativa">Compradora Ativa</option>
-          <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
+          <option value="Alta Frequencia">Alta Frequencia</option>
+          <option value="Compradora Recente">Compradora Recente</option>
+          <option value="Compradora Ativa">Compradora Ativa</option>
+          <option value="Em Risco">Em Risco</option>
+          <option value="Compradora Inativa">Compradora Inativa</option>
+          <option value="Lead">Lead</option>
           <option value="Aniversariante">Aniversariantes de hoje</option>
           <option value="etiqueta">Por Etiqueta &#127991;</option>
         </select>
@@ -476,9 +480,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="form-row">
       <div class="form-group"><label>Publico</label>
-        <select id="seq-segmento"><option value="todos">Todos</option><option value="VIP">VIP</option><option value="Compradora Ativa">Compradora Ativa</option><option value="Lead">Lead</option></select>
+        <select id="seq-segmento" onchange="toggleEtiquetaSeq(this.value)">
+          <option value="todos">Todos</option>
+          <option value="VIP">VIP</option>
+          <option value="Alta Frequencia">Alta Frequencia</option>
+          <option value="Compradora Recente">Compradora Recente</option>
+          <option value="Compradora Ativa">Compradora Ativa</option>
+          <option value="Em Risco">Em Risco</option>
+          <option value="Compradora Inativa">Compradora Inativa</option>
+          <option value="Lead">Lead</option>
+          <option value="Aniversariante">Aniversariantes</option>
+          <option value="etiqueta">Por Etiqueta &#127991;</option>
+        </select>
       </div>
       <div class="form-group"><label>Descricao</label><input type="text" id="seq-desc" placeholder="Ex: Funil pos lancamento 24h"></div>
+    </div>
+    <div class="form-group" id="etiqueta-seq-wrap" style="display:none">
+      <label>Etiqueta para filtrar</label>
+      <select id="seq-etiqueta"><option value="">Selecione a etiqueta...</option></select>
     </div>
     <div style="font-size:13px;font-weight:500;margin:16px 0 8px">Mensagens da sequencia</div>
     <div style="font-size:12px;color:#888;margin-bottom:12px">A primeira mensagem sera enviada imediatamente apos a cliente responder. Use delays para as proximas.</div>
@@ -616,6 +635,11 @@ function abrirModalEtiquetas() {
 function toggleEtiquetaCampanha(val) {
   var wrap = document.getElementById('etiqueta-campanha-wrap');
   wrap.style.display = val === 'etiqueta' ? 'block' : 'none';
+}
+
+function toggleEtiquetaSeq(val) {
+  var wrap = document.getElementById('etiqueta-seq-wrap');
+  if (wrap) wrap.style.display = val === 'etiqueta' ? 'block' : 'none';
 }
 
 async function entrar() {
@@ -1023,6 +1047,7 @@ function abrirNovaSequencia() {
   document.getElementById('seq-nome').value = '';
   document.getElementById('seq-gatilho').value = 'resposta_lancamento';
   document.getElementById('seq-segmento').value = 'todos';
+  toggleEtiquetaSeq('todos');
   document.getElementById('seq-desc').value = '';
   document.getElementById('seq-passos-container').innerHTML = '';
   adicionarPasso();
@@ -1118,7 +1143,11 @@ async function salvarSequencia() {
   try {
     var url = seqEditandoId ? '/api/sequencias/' + seqEditandoId : '/api/sequencias';
     var method = seqEditandoId ? 'PUT' : 'POST';
-    var r = await fetch(url, {method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nome:nome,gatilho:gatilho,segmento:segmento,descricao:descricao,passos:passos})});
+    var seqEtqId = segmento === 'etiqueta' ? document.getElementById('seq-etiqueta').value : null;
+    var seqSegFinal = segmento === 'etiqueta' ? 'todos' : segmento;
+    var bodySeq = {nome:nome,gatilho:gatilho,segmento:seqSegFinal,descricao:descricao,passos:passos};
+    if (seqEtqId) bodySeq.etiqueta_id = parseInt(seqEtqId);
+    var r = await fetch(url, {method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(bodySeq)});
     var d = await r.json();
     if (d.ok) { toast('Sequencia salva!'); fecharModalSeq(); carregarSequencias(); }
     else toast('Erro: ' + d.erro);
@@ -1311,6 +1340,10 @@ async function carregarEtiquetas() {
     if (etqFiltro) etqFiltro.innerHTML = opts;
     if (convEtqFiltro) convEtqFiltro.innerHTML = opts;
     if (cEtiqueta) cEtiqueta.innerHTML = '<option value="">Selecione a etiqueta...</option>' + todasEtiquetas.map(function(e) {
+      return '<option value="' + e.id + '">' + e.nome + '</option>';
+    }).join('');
+    var seqEtiqueta = document.getElementById('seq-etiqueta');
+    if (seqEtiqueta) seqEtiqueta.innerHTML = '<option value="">Selecione a etiqueta...</option>' + todasEtiquetas.map(function(e) {
       return '<option value="' + e.id + '">' + e.nome + '</option>';
     }).join('');
   } catch(e) {}
