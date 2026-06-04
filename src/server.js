@@ -40,8 +40,7 @@ function horaBrasilia() {
 }
 
 function horarioPermitido() {
-  const hora = horaBrasilia();
-  return hora >= 9 && hora < 20;
+  return horaBrasilia() >= 9 && horaBrasilia() < 20;
 }
 
 async function enviosHoje() {
@@ -51,11 +50,36 @@ async function enviosHoje() {
   return parseInt(rows[0].c);
 }
 
+// ─── NORMALIZAR TELEFONE ──────────────────────────────────────────────────────
+// Garante sempre 55 + DDD + número (11 ou 12 dígitos com 55)
+function normalizarTelefone(tel) {
+  if (!tel) return tel;
+  let t = tel.replace(/\D/g, '');
+  // Se não começa com 55, adiciona
+  if (!t.startsWith('55')) t = '55' + t;
+  return t;
+}
+
+// Busca contato tanto com 55 quanto sem
+async function buscarContatoPorTelefone(tel) {
+  const norm = normalizarTelefone(tel);
+  const semDDI = norm.slice(2); // remove o 55
+  const { rows } = await pool.query(
+    'SELECT * FROM contatos WHERE telefone=$1 OR telefone=$2 OR telefone LIKE $3',
+    [norm, semDDI, '%' + semDDI.slice(-9)]
+  );
+  return rows[0] || null;
+}
+
 async function initExtras() {
   await pool.query(`CREATE TABLE IF NOT EXISTS etiquetas (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, cor TEXT NOT NULL DEFAULT '#888888', criado_em TIMESTAMP DEFAULT NOW())`);
   await pool.query(`CREATE TABLE IF NOT EXISTS contato_etiquetas (id SERIAL PRIMARY KEY, telefone TEXT NOT NULL, etiqueta_id INTEGER REFERENCES etiquetas(id) ON DELETE CASCADE, criado_em TIMESTAMP DEFAULT NOW(), UNIQUE(telefone, etiqueta_id))`);
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS lida INTEGER DEFAULT 0`);
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS tipo TEXT DEFAULT 'mensagem'`);
+  // Adiciona gatilhos de resposta nas sequências
+  await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS template_name TEXT DEFAULT ''`);
+  await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS etiqueta_id INTEGER DEFAULT NULL`);
+  console.log('DB extras inicializados');
 }
 initExtras().catch(console.error);
 
@@ -83,8 +107,7 @@ app.post('/api/wpp/reset', async (req, res) => {
 app.get('/api/seguranca/stats', async (req, res) => {
   try {
     const hoje = await enviosHoje();
-    const horario = horarioPermitido();
-    res.json({ ok: true, enviosHoje: hoje, limiteHoje: 200, horarioPermitido: horario, horaAtual: horaBrasilia() });
+    res.json({ ok: true, enviosHoje: hoje, limiteHoje: 200, horarioPermitido: horarioPermitido(), horaAtual: horaBrasilia() });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
@@ -94,11 +117,12 @@ app.post('/webhook/wpp', async (req, res) => {
   try {
     const body = req.body;
     if (!body?.data?.message) return;
-    const from = body.data.key?.remoteJid?.replace('@s.whatsapp.net', '');
+    const fromRaw = body.data.key?.remoteJid?.replace('@s.whatsapp.net', '');
+    const from = normalizarTelefone(fromRaw);
     const text = body.data.message.conversation || body.data.message.extendedTextMessage?.text || '';
     if (!text || !from) return;
-    const { rows } = await pool.query('SELECT * FROM contatos WHERE telefone LIKE $1', ['%' + from.slice(-9)]);
-    const nome = rows[0]?.nome || 'Cliente';
+    const contato = await buscarContatoPorTelefone(from);
+    const nome = contato?.nome || 'Cliente';
     await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
     const hist = await pool.query('SELECT * FROM conversas WHERE telefone=$1 ORDER BY criado_em DESC LIMIT 10', [from]);
     const resposta = await responderIA(hist.rows.reverse(), text);
@@ -148,6 +172,7 @@ app.get('/api/contatos', async (req, res) => {
     const countParams = [];
     let j = 1;
     if (segmento && segmento !== 'todos') { countSql += ` AND c.segmento=$${j++}`; countParams.push(segmento); }
+    if (etiqueta) { countSql += ` AND EXISTS (SELECT 1 FROM contato_etiquetas ce2 WHERE ce2.telefone=c.telefone AND ce2.etiqueta_id=$${j++})`; countParams.push(parseInt(etiqueta)); }
     const count = await pool.query(countSql, countParams);
     res.json({ ok: true, contatos: rows, total: parseInt(count.rows[0].c) });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -210,9 +235,13 @@ app.delete('/api/etiquetas/:id', async (req, res) => {
 
 app.get('/api/contatos/:telefone/etiquetas', async (req, res) => {
   try {
+    const tel = req.params.telefone;
+    const norm = normalizarTelefone(tel);
+    const semDDI = norm.slice(2);
     const { rows } = await pool.query(
-      'SELECT e.* FROM etiquetas e JOIN contato_etiquetas ce ON ce.etiqueta_id=e.id WHERE ce.telefone=$1',
-      [req.params.telefone]
+      `SELECT e.* FROM etiquetas e JOIN contato_etiquetas ce ON ce.etiqueta_id=e.id 
+       WHERE ce.telefone=$1 OR ce.telefone=$2`,
+      [norm, semDDI]
     );
     res.json({ ok: true, etiquetas: rows });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -221,9 +250,10 @@ app.get('/api/contatos/:telefone/etiquetas', async (req, res) => {
 app.post('/api/contatos/:telefone/etiquetas', async (req, res) => {
   try {
     const { etiqueta_id } = req.body;
+    const tel = normalizarTelefone(req.params.telefone);
     await pool.query(
       'INSERT INTO contato_etiquetas (telefone, etiqueta_id) VALUES ($1,$2) ON CONFLICT DO NOTHING',
-      [req.params.telefone, etiqueta_id]
+      [tel, etiqueta_id]
     );
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -231,7 +261,9 @@ app.post('/api/contatos/:telefone/etiquetas', async (req, res) => {
 
 app.delete('/api/contatos/:telefone/etiquetas/:etiqueta_id', async (req, res) => {
   try {
-    await pool.query('DELETE FROM contato_etiquetas WHERE telefone=$1 AND etiqueta_id=$2', [req.params.telefone, req.params.etiqueta_id]);
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
+    await pool.query('DELETE FROM contato_etiquetas WHERE (telefone=$1 OR telefone=$2) AND etiqueta_id=$3', [tel, semDDI, req.params.etiqueta_id]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
@@ -246,11 +278,10 @@ app.get('/api/campanhas', async (req, res) => {
 
 app.post('/api/campanhas', async (req, res) => {
   try {
-    const { nome, mensagem, segmento, intervalo_segundos, midia_tipo, midia_url, limite, template_name } = req.body;
-    await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS template_name TEXT DEFAULT ''`);
+    const { nome, mensagem, segmento, intervalo_segundos, midia_tipo, midia_url, limite, template_name, etiqueta_id } = req.body;
     const { rows } = await pool.query(
-      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos,midia_tipo,midia_url,template_name) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-      [nome, mensagem||'', segmento||'todos', intervalo_segundos||60, midia_tipo||'texto', midia_url||'', template_name||'']
+      'INSERT INTO campanhas (nome,mensagem,segmento,intervalo_segundos,midia_tipo,midia_url,template_name,etiqueta_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
+      [nome, mensagem||'', segmento||'todos', intervalo_segundos||60, midia_tipo||'texto', midia_url||'', template_name||'', etiqueta_id||null]
     );
     res.json({ ok: true, id: rows[0].id });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -277,27 +308,35 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
     }
     const envHoje = await enviosHoje();
     const restante = cfg.limite_diario - envHoje;
-    if (restante <= 0) {
-      return res.json({ ok: false, erro: `Limite diário atingido. Enviadas hoje: ${envHoje}.` });
+    if (restante <= 0) return res.json({ ok: false, erro: `Limite diário atingido.` });
+
+    const { rows: jaEnviados } = await pool.query("SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'", [campanha.id]);
+    const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
+
+    let contatos = [];
+    if (campanha.etiqueta_id) {
+      // Filtrar por etiqueta
+      const { rows: porEtiqueta } = await pool.query(
+        'SELECT c.* FROM contatos c JOIN contato_etiquetas ce ON ce.telefone=c.telefone WHERE ce.etiqueta_id=$1',
+        [campanha.etiqueta_id]
+      );
+      contatos = porEtiqueta.filter(c => !jaEnviadosSet.has(c.telefone));
+    } else {
+      const todosContatos = await buscarPorSegmento(campanha.segmento);
+      contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
     }
 
-    const { rows: jaEnviados } = await pool.query(
-      "SELECT telefone FROM disparos WHERE campanha_id=$1 AND status='enviado'", [campanha.id]
-    );
-    const jaEnviadosSet = new Set(jaEnviados.map(r => r.telefone));
-    const todosContatos = await buscarPorSegmento(campanha.segmento);
-    let contatos = todosContatos.filter(c => !jaEnviadosSet.has(c.telefone));
     const limiteNum = parseInt(limite) || 0;
     if (limiteNum > 0) contatos = contatos.slice(0, limiteNum);
     if (contatos.length > restante) contatos = contatos.slice(0, restante);
 
     if (!contatos.length) {
       await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
-      return res.json({ ok: true, total: 0, mensagem: 'Todos já receberam ou limite diário atingido!' });
+      return res.json({ ok: true, total: 0, mensagem: 'Todos já receberam ou limite atingido!' });
     }
 
     await pool.query('UPDATE campanhas SET status=$1, disparado_em=NOW() WHERE id=$2', ['disparando', campanha.id]);
-    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos · ${restante} restantes hoje · ${jaEnviadosSet.size} já receberam` });
+    res.json({ ok: true, total: contatos.length, mensagem: `Disparando para ${contatos.length} contatos · ${restante} restantes hoje` });
 
     let i = 0;
     const intervalo = (campanha.intervalo_segundos || 60) * 1000;
@@ -307,17 +346,13 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       if (statusRows[0]?.status === 'pausado') return;
       const horaAtual = horaBrasilia();
       if (horaAtual < cfg.horario_inicio || horaAtual >= cfg.horario_fim) {
-        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
-        return;
+        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]); return;
       }
-      const envHojeNow = await enviosHoje();
-      if (envHojeNow >= cfg.limite_diario) {
-        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]);
-        return;
+      if (await enviosHoje() >= cfg.limite_diario) {
+        await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [campanha.id]); return;
       }
       if (i >= contatos.length) {
-        await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]);
-        return;
+        await pool.query('UPDATE campanhas SET status=$1 WHERE id=$2', ['concluido', campanha.id]); return;
       }
 
       const c = contatos[i++];
@@ -333,18 +368,15 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
         const { rows: instRows } = await pool.query('SELECT * FROM instancias WHERE id=$1 AND ativo=1', [campanha.instancia_id || 1]);
         const inst = instRows[0];
         if (inst) {
-          if (campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url) {
-            resultado = await wpp.enviarMidiaInstancia(inst, c.telefone, campanha.midia_tipo, campanha.midia_url, msg);
-          } else {
-            resultado = await wpp.enviarMensagemInstancia(inst, c.telefone, msg);
-          }
+          resultado = campanha.midia_tipo && campanha.midia_tipo !== 'texto' && campanha.midia_url
+            ? await wpp.enviarMidiaInstancia(inst, c.telefone, campanha.midia_tipo, campanha.midia_url, msg)
+            : await wpp.enviarMensagemInstancia(inst, c.telefone, msg);
         } else {
           resultado = { ok: false, erro: 'Instância não encontrada' };
         }
       }
 
       const statusEnvio = resultado.ok ? 'enviado' : 'erro';
-      // ✅ CORRIGIDO: salva template_name na mensagem para rastreamento
       const msgSalva = campanha.template_name ? 'template:' + campanha.template_name : msg;
       await pool.query(
         'INSERT INTO disparos (campanha_id,contato_id,telefone,mensagem,status,erro,enviado_em) VALUES ($1,$2,$3,$4,$5,$6,NOW())',
@@ -382,10 +414,12 @@ app.put('/api/fluxos/:id', async (req, res) => {
 // ─── CONVERSAS ────────────────────────────────────────────────────────────────
 app.get('/api/conversas', async (req, res) => {
   try {
-    const { filtro } = req.query;
+    const { filtro, etiqueta } = req.query;
     let whereExtra = '';
-    if (filtro === 'nao_lidas') whereExtra = "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente' AND c2.lida=0)";
-    if (filtro === 'clientes') whereExtra = "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente')";
+    if (filtro === 'nao_lidas') whereExtra += "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente' AND c2.lida=0)";
+    if (filtro === 'clientes') whereExtra += "AND EXISTS (SELECT 1 FROM conversas c2 WHERE c2.telefone=c.telefone AND c2.de='cliente')";
+    if (etiqueta) whereExtra += ` AND EXISTS (SELECT 1 FROM contato_etiquetas ce WHERE ce.telefone=c.telefone AND ce.etiqueta_id=${parseInt(etiqueta)})`;
+
     const { rows } = await pool.query(`
       SELECT c.telefone, c.nome, MAX(c.criado_em) as ultima, COUNT(*) as total,
         COUNT(CASE WHEN c.de='cliente' AND c.lida=0 THEN 1 END) as nao_lidas,
@@ -402,14 +436,23 @@ app.get('/api/conversas', async (req, res) => {
 
 app.get('/api/conversas/:telefone', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM conversas WHERE telefone=$1 ORDER BY criado_em ASC', [req.params.telefone]);
+    const tel = req.params.telefone;
+    const norm = normalizarTelefone(tel);
+    const semDDI = norm.slice(2);
+    // Busca mensagens tanto com 55 quanto sem, unifica
+    const { rows } = await pool.query(
+      'SELECT * FROM conversas WHERE telefone=$1 OR telefone=$2 ORDER BY criado_em ASC',
+      [norm, semDDI]
+    );
     res.json({ ok: true, mensagens: rows });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.post('/api/conversas/:telefone/lida', async (req, res) => {
   try {
-    await pool.query("UPDATE conversas SET lida=1 WHERE telefone=$1 AND de='cliente'", [req.params.telefone]);
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
+    await pool.query("UPDATE conversas SET lida=1 WHERE (telefone=$1 OR telefone=$2) AND de='cliente'", [tel, semDDI]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
@@ -419,17 +462,18 @@ app.post('/api/enviar-direto', async (req, res) => {
   try {
     const { telefone, mensagem, template_name } = req.body;
     if (!telefone) return res.json({ ok: false, erro: 'Telefone obrigatório' });
+    const tel = normalizarTelefone(telefone);
     let resultado;
     if (template_name) {
-      resultado = await wpp.enviarTemplate(telefone, template_name, 'pt_BR', [
+      resultado = await wpp.enviarTemplate(tel, template_name, 'pt_BR', [
         { type: 'body', parameters: [{ type: 'text', text: 'Cliente' }] }
       ]);
     } else {
-      resultado = await wpp.enviarMensagem(telefone, mensagem);
+      resultado = await wpp.enviarMensagem(tel, mensagem);
     }
     if (resultado.ok) {
       await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-        [telefone, 'Madame Ka', mensagem || template_name, 'bot']);
+        [tel, 'Madame Ka', mensagem || template_name, 'bot']);
     }
     res.json(resultado);
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -441,7 +485,8 @@ app.post('/webhook/yampi', async (req, res) => {
   try {
     const { event, resource } = req.body;
     const data = resource || req.body.data || req.body;
-    const telefone = (data.customer?.phone || data.phone || '').replace(/\D/g, '');
+    const telefoneRaw = (data.customer?.phone || data.phone || '').replace(/\D/g, '');
+    const telefone = normalizarTelefone(telefoneRaw);
     const nome = data.customer?.name || data.name || 'Cliente';
     const email = data.customer?.email || data.email || '';
     const nascimento = data.customer?.birthdate || data.birthdate || '';
@@ -461,10 +506,9 @@ app.post('/webhook/yampi', async (req, res) => {
       if (rows[0]) mensagem = rows[0].mensagem.replace(/{nome}/g, primeiro);
     }
     if (['order.payment_failed','transaction.denied'].includes(event)) {
-      mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento do seu pedido na Madame Ka. Posso te ajudar? 💜`;
+      mensagem = `Oi ${primeiro}! Vi que houve um problema com o pagamento. Posso te ajudar? 💜`;
     }
     if (['checkout.abandoned','cart.abandoned'].includes(event)) {
-      const delayMs = 1 * 60 * 60 * 1000;
       setTimeout(async () => {
         try {
           const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [telefone]);
@@ -472,9 +516,12 @@ app.post('/webhook/yampi', async (req, res) => {
           await wpp.enviarTemplate(telefone, 'carrinho_surpresa', 'pt_BR', [
             { type: 'body', parameters: [{ type: 'text', text: primeiro }] }
           ]);
+          // Salva disparo para rastreamento
+          await pool.query('INSERT INTO disparos (telefone,mensagem,status,enviado_em) VALUES ($1,$2,$3,NOW())',
+            [telefone, 'template:carrinho_surpresa', 'enviado']);
           console.log(`Carrinho abandonado -> template enviado para ${telefone}`);
         } catch(e) { console.error('Erro carrinho abandonado:', e.message); }
-      }, delayMs);
+      }, 1 * 60 * 60 * 1000);
       return;
     }
     if (mensagem) { await new Promise(r => setTimeout(r, 3000)); await wpp.enviarMensagem(telefone, mensagem); }
@@ -488,7 +535,7 @@ app.post('/webhook/popup', async (req, res) => {
   try {
     const { nome, whatsapp, email } = req.body;
     if (!whatsapp) return;
-    const tel = whatsapp.replace(/\D/g, '');
+    const tel = normalizarTelefone(whatsapp);
     await pool.query(
       `INSERT INTO contatos (nome,telefone,email,segmento,origem) VALUES ($1,$2,$3,'Lead','popup')
        ON CONFLICT (telefone) DO UPDATE SET nome = CASE WHEN contatos.nome = '' OR contatos.nome IS NULL THEN EXCLUDED.nome ELSE contatos.nome END`,
@@ -560,14 +607,16 @@ app.delete('/api/sequencias/:id', async (req, res) => {
 
 async function iniciarSequencia(gatilho, telefone, nome) {
   try {
+    const tel = normalizarTelefone(telefone);
     const { rows: seqs } = await pool.query('SELECT * FROM sequencias WHERE gatilho=$1 AND ativo=1', [gatilho]);
     for (const seq of seqs) {
       const { rows: passos } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 ORDER BY ordem', [seq.id]);
       if (!passos.length) continue;
-      const { rows: exec } = await pool.query("SELECT id FROM sequencia_execucoes WHERE sequencia_id=$1 AND telefone=$2 AND status='ativo'", [seq.id, telefone]);
+      const { rows: exec } = await pool.query("SELECT id FROM sequencia_execucoes WHERE sequencia_id=$1 AND telefone=$2 AND status='ativo'", [seq.id, tel]);
       if (exec.length) continue;
       const proximo = new Date(Date.now() + (passos[0].delay_horas || 0) * 3600000);
-      await pool.query('INSERT INTO sequencia_execucoes (sequencia_id,telefone,passo_atual,status,proximo_envio) VALUES ($1,$2,$3,$4,$5)', [seq.id, telefone, 0, 'ativo', proximo]);
+      await pool.query('INSERT INTO sequencia_execucoes (sequencia_id,telefone,passo_atual,status,proximo_envio) VALUES ($1,$2,$3,$4,$5)', [seq.id, tel, 0, 'ativo', proximo]);
+      console.log(`Sequencia ${seq.nome} iniciada para ${tel}`);
     }
   } catch(e) { console.error('Erro iniciarSequencia:', e.message); }
 }
@@ -596,9 +645,9 @@ cron.schedule('* * * * *', async () => {
     `);
     for (const exec of execucoes) {
       try {
-        if (exec.gatilho === 'carrinho_abandonado') {
+        if (['carrinho_abandonado','resposta_carrinho'].includes(exec.gatilho)) {
           const { rows: check } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [exec.telefone]);
-          if (['Compradora Ativa','VIP'].includes(check[0]?.segmento)) {
+          if (['Compradora Ativa','VIP','Compradora Recente'].includes(check[0]?.segmento)) {
             await pool.query("UPDATE sequencia_execucoes SET status='cancelado' WHERE id=$1", [exec.id]);
             continue;
           }
@@ -611,6 +660,10 @@ cron.schedule('* * * * *', async () => {
           resultado = await wpp.enviarMidia(exec.telefone, exec.midia_tipo, exec.midia_url, msg);
         } else {
           resultado = await wpp.enviarMensagem(exec.telefone, msg);
+        }
+        if (resultado.ok) {
+          await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+            [exec.telefone, 'Madame Ka', msg, 'bot']);
         }
         console.log(`Seq ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok?'OK':'ERRO'}`);
         const { rows: proximo } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2', [exec.sequencia_id, exec.ordem + 1]);
@@ -633,11 +686,7 @@ cron.schedule('0 12 * * *', async () => {
     const { rows } = await pool.query(`
       SELECT c.* FROM contatos c
       WHERE (c.nascimento LIKE $1 OR c.nascimento LIKE $2)
-      AND NOT EXISTS (
-        SELECT 1 FROM disparos d WHERE d.telefone = c.telefone
-        AND d.enviado_em >= NOW() - INTERVAL '20 hours'
-        AND d.mensagem LIKE '%aniversario%'
-      )
+      AND NOT EXISTS (SELECT 1 FROM disparos d WHERE d.telefone = c.telefone AND d.enviado_em >= NOW() - INTERVAL '20 hours' AND d.mensagem LIKE '%aniversario%')
     `, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     for (const c of rows) {
       const nome = (c.nome||'Cliente').split(' ')[0];
@@ -666,10 +715,7 @@ app.get('/api/config', async (req, res) => {
 app.post('/api/config', async (req, res) => {
   try {
     const { chave, valor } = req.body;
-    await pool.query(
-      'INSERT INTO configuracoes (chave, valor) VALUES ($1,$2) ON CONFLICT (chave) DO UPDATE SET valor=$2, atualizado_em=NOW()',
-      [chave, valor]
-    );
+    await pool.query('INSERT INTO configuracoes (chave, valor) VALUES ($1,$2) ON CONFLICT (chave) DO UPDATE SET valor=$2, atualizado_em=NOW()', [chave, valor]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
@@ -679,10 +725,8 @@ app.get('/api/instancias', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM instancias ORDER BY id');
     for (const inst of rows) {
-      try {
-        await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', ['conectado', inst.id]);
-        inst.status = 'conectado';
-      } catch(e) { inst.status = 'erro'; }
+      try { await pool.query('UPDATE instancias SET status=$1 WHERE id=$2', ['conectado', inst.id]); inst.status = 'conectado'; }
+      catch(e) { inst.status = 'erro'; }
     }
     res.json({ ok: true, instancias: rows });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -691,11 +735,8 @@ app.get('/api/instancias', async (req, res) => {
 app.post('/api/instancias', async (req, res) => {
   try {
     const { nome, instance_id, token, client_token } = req.body;
-    if (!nome||!instance_id||!token||!client_token) return res.json({ ok: false, erro: 'Preencha todos os campos' });
-    const { rows } = await pool.query(
-      'INSERT INTO instancias (nome,instance_id,token,client_token) VALUES ($1,$2,$3,$4) RETURNING id',
-      [nome, instance_id, token, client_token]
-    );
+    if (!nome||!instance_id||!token||!client_token) return res.json({ ok: false, erro: 'Preencha todos' });
+    const { rows } = await pool.query('INSERT INTO instancias (nome,instance_id,token,client_token) VALUES ($1,$2,$3,$4) RETURNING id', [nome, instance_id, token, client_token]);
     res.json({ ok: true, id: rows[0].id });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
@@ -725,63 +766,73 @@ app.post('/webhook/meta', async (req, res) => {
       for (const change of entry.changes || []) {
         const value = change.value;
         for (const msg of value.messages || []) {
-          const from = msg.from;
+          const fromRaw = msg.from;
+          const from = normalizarTelefone(fromRaw);
           const text = (msg.text?.body || msg.button?.text || '').toLowerCase().trim();
           if (!text) continue;
 
-          const { rows } = await pool.query('SELECT * FROM contatos WHERE telefone LIKE $1', ['%' + from.slice(-9)]);
-          const nome = rows[0]?.nome || 'Cliente';
+          const contato = await buscarContatoPorTelefone(from);
+          const nome = contato?.nome || 'Cliente';
           const primeiro = nome.split(' ')[0];
 
+          // Salva conversa com número normalizado
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
           console.log(`Meta webhook: ${from} disse: ${text}`);
 
           const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa'].some(p => text.includes(p));
           if (!respondeuPositivo) continue;
 
-          // ✅ CORRIGIDO: busca por template:lancamento_vip também
+          // Verifica lançamento nas últimas 48h
           const { rows: dispLanc } = await pool.query(
-            "SELECT id FROM disparos WHERE telefone=$1 AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento_vip%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
-            [from]
+            "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            [from, from.slice(2)]
           );
 
-          const { rows: execCarrinho } = await pool.query(
-            "SELECT se.* FROM sequencia_execucoes se JOIN sequencias s ON s.id=se.sequencia_id WHERE se.telefone=$1 AND se.status='ativo' AND s.gatilho='carrinho_abandonado'",
-            [from]
+          // Verifica carrinho
+          const { rows: dispCarrinho } = await pool.query(
+            "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND mensagem LIKE '%carrinho_surpresa%' AND enviado_em >= NOW() - INTERVAL '48 hours'",
+            [from, from.slice(2)]
           );
 
           if (dispLanc.length > 0) {
-            // ✅ CORRIGIDO: mensagem com brindes corretos
-            await new Promise(r => setTimeout(r, 1500));
-            await wpp.enviarMensagem(from,
-              `Oi ${primeiro}! Que alegria! 🎉\n\nHoje é dia de lançamento na Madame Ka e você tem uma surpresa especial:\n\n🎁 Compras acima de R$299 → Ganhe um *Relógio surpresa*!\n💧 Compras acima de R$350 → Ganhe uma *Garrafa exclusiva* no lugar do relógio!\n\nE ainda use o cupom *MADAME12* para ganhar *12% de desconto* em tudo!\n\n👗 Aproveite agora: madameka.com.br\n\n⏰ Válido somente hoje!`
-            );
-            // Salva na conversa
-            await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-              [from, 'Madame Ka', 'Mensagem lancamento + cupom MADAME12 enviada', 'bot']);
-          } else if (execCarrinho.length > 0) {
-            await new Promise(r => setTimeout(r, 1500));
-            await wpp.enviarMensagem(from,
-              `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto* em qualquer peça!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=cupom`
-            );
-            setTimeout(async () => {
-              try {
-                const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
-                if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
-                await wpp.enviarMensagem(from,
-                  `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=urgencia`
-                );
-              } catch(e) {}
-            }, 3 * 3600 * 1000);
-            setTimeout(async () => {
-              try {
-                const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
-                if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
-                await wpp.enviarMensagem(from,
-                  `${primeiro}, última chance! 🎀\n\nUse o cupom *BRINDE10* e ganhe *10% de desconto + brinde surpresa*! 🎁\n\n👗 madameka.com.br/cart?utm_source=whatsapp&utm_campaign=carrinho&utm_content=brinde`
-                );
-              } catch(e) {}
-            }, 20 * 3600 * 1000);
+            // Tenta iniciar sequência de resposta ao lançamento
+            const seqIniciada = await iniciarSequencia('resposta_lancamento', from, nome);
+            // Se não tem sequência configurada, manda mensagem padrão
+            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_lancamento' AND ativo=1");
+            if (!seqExiste.length) {
+              await new Promise(r => setTimeout(r, 1500));
+              await wpp.enviarMensagem(from,
+                `Oi ${primeiro}! Que alegria! 🎉\n\nHoje é dia de lançamento na Madame Ka e você tem uma surpresa especial:\n\n🎁 Compras acima de R$299 → Ganhe um *Relógio surpresa*!\n💧 Compras acima de R$350 → Ganhe uma *Garrafa exclusiva* no lugar do relógio!\n\nE ainda use o cupom *MADAME12* para ganhar *12% de desconto* em tudo!\n\n👗 madameka.com.br\n\n⏰ Válido somente hoje!`
+              );
+              await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+                [from, 'Madame Ka', 'Mensagem lancamento enviada', 'bot']);
+            }
+          } else if (dispCarrinho.length > 0) {
+            // Tenta iniciar sequência de resposta ao carrinho
+            const { rows: seqExiste } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_carrinho' AND ativo=1");
+            if (seqExiste.length) {
+              await iniciarSequencia('resposta_carrinho', from, nome);
+            } else {
+              // Fallback: mensagem padrão
+              await new Promise(r => setTimeout(r, 1500));
+              await wpp.enviarMensagem(from,
+                `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *MADAME10* e ganhe *10% de desconto*!\n\n✅ Válido só hoje!\n\n👗 madameka.com.br`
+              );
+              setTimeout(async () => {
+                try {
+                  const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
+                  if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
+                  await wpp.enviarMensagem(from, `${primeiro}, o cupom *MADAME10* ainda está ativo! ⏰\n\n👗 madameka.com.br`);
+                } catch(e) {}
+              }, 3 * 3600 * 1000);
+              setTimeout(async () => {
+                try {
+                  const { rows: comprou } = await pool.query("SELECT segmento FROM contatos WHERE telefone=$1", [from]);
+                  if (['Compradora Ativa','VIP','Compradora Recente'].includes(comprou[0]?.segmento)) return;
+                  await wpp.enviarMensagem(from, `${primeiro}, última chance! 🎀\n\nCupom *BRINDE10* = 10% + brinde surpresa! 🎁\n\n👗 madameka.com.br`);
+                } catch(e) {}
+              }, 20 * 3600 * 1000);
+            }
           }
         }
       }
