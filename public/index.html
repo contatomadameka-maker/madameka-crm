@@ -348,6 +348,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
             <div id="conv-acoes" style="display:none;gap:6px">
               <button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContato()">&#127991; Etiqueta</button>
+              <button class="btn btn-outline btn-xs" onclick="salvarContatoConversa()" id="btn-salvar-contato">&#128100; Salvar contato</button>
             </div>
           </div>
           <div class="conv-msgs" id="msgs-conversa">
@@ -1320,6 +1321,38 @@ async function carregarEtiquetasHeader(tel) {
       return '<span class="etiqueta-tag" style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40">' + e.nome + '</span>';
     }).join('');
   } catch(e) {}
+}
+
+async function salvarContatoConversa() {
+  if (!convAtualTel) return;
+  var nome = prompt('Nome do contato:', convAtualNome && convAtualNome !== 'Cliente' ? convAtualNome : '');
+  if (nome === null) return;
+  try {
+    var r = await fetch('/api/contatos', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({nome: nome || 'Cliente', telefone: convAtualTel, segmento: 'Lead'})
+    });
+    var d = await r.json();
+    if (d.ok) {
+      toast('Contato salvo!');
+      convAtualNome = nome || convAtualTel;
+      var nomeEl = document.getElementById('conv-nome');
+      if (nomeEl) nomeEl.textContent = convAtualNome;
+    } else {
+      // Tenta atualizar se já existe
+      await fetch('/api/contatos/' + convAtualTel, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({nome: nome})
+      });
+      toast('Contato atualizado!');
+      convAtualNome = nome || convAtualTel;
+      var nomeEl = document.getElementById('conv-nome');
+      if (nomeEl) nomeEl.textContent = convAtualNome;
+    }
+    carregarConversas();
+  } catch(e) { toast('Erro ao salvar'); }
 }
 
 async function enviarResposta() {

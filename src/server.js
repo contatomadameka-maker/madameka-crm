@@ -109,6 +109,19 @@ async function initExtras() {
 }
 initExtras().catch(console.error);
 
+// ── RETOMA campanhas que estavam disparando antes do redeploy ─────────────────
+async function retomarCampanhasInterrompidas() {
+  try {
+    const { rows } = await pool.query("SELECT * FROM campanhas WHERE status='disparando'");
+    for (const c of rows) {
+      await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [c.id]);
+      console.log(`Campanha ${c.nome} (${c.id}) marcada como pausada após redeploy — reative manualmente`);
+    }
+    if (rows.length > 0) console.log(`⚠️ ${rows.length} campanha(s) interrompida(s) pelo redeploy. Reative no painel.`);
+  } catch(e) { console.error('Erro retomarCampanhas:', e.message); }
+}
+retomarCampanhasInterrompidas();
+
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 app.post('/api/login', (req, res) => {
   const { senha } = req.body;
@@ -202,6 +215,37 @@ app.get('/api/contatos', async (req, res) => {
     const count = await pool.query(countSql, countParams);
     res.json({ ok: true, contatos: rows, total: parseInt(count.rows[0].c) });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// Criar contato avulso (pelo chat de conversas)
+app.post('/api/contatos', async (req, res) => {
+  try {
+    const { nome, telefone, segmento } = req.body;
+    const tel = normalizarTelefone(telefone);
+    if (!tel) return res.json({ ok: false, erro: 'Telefone obrigatório' });
+    const { rows } = await pool.query(
+      `INSERT INTO contatos (nome, telefone, segmento) VALUES ($1, $2, $3) RETURNING id`,
+      [nome || 'Cliente', tel, segmento || 'Lead']
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch(e) {
+    if (e.code === '23505') return res.json({ ok: false, erro: 'Já existe' });
+    res.status(500).json({ ok: false, erro: e.message });
+  }
+});
+
+// Atualizar nome do contato
+app.put('/api/contatos/:telefone', async (req, res) => {
+  try {
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
+    const { nome } = req.body;
+    await pool.query(
+      'UPDATE contatos SET nome=$1 WHERE telefone=$2 OR telefone=$3',
+      [nome, tel, semDDI]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
 app.post('/api/contatos/importar', upload.single('arquivo'), async (req, res) => {
