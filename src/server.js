@@ -356,6 +356,25 @@ app.post('/api/campanhas', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+app.delete('/api/campanhas/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM disparos WHERE campanha_id=$1', [req.params.id]);
+    await pool.query('DELETE FROM campanhas WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.put('/api/campanhas/:id', async (req, res) => {
+  try {
+    const { nome, template_name, mensagem, intervalo_segundos } = req.body;
+    await pool.query(
+      'UPDATE campanhas SET nome=$1, template_name=$2, mensagem=$3, intervalo_segundos=$4 WHERE id=$5',
+      [nome, template_name||'', mensagem||'', intervalo_segundos||90, req.params.id]
+    );
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
 app.post('/api/campanhas/:id/pausar', async (req, res) => {
   try {
     await pool.query("UPDATE campanhas SET status='pausado' WHERE id=$1", [req.params.id]);

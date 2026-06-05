@@ -860,13 +860,81 @@ async function carregarCampanhas() {
       var tmpl = c.template_name ? 'Template: ' + c.template_name : '';
       var msg = c.mensagem ? c.mensagem.substring(0, 100) + (c.mensagem.length > 100 ? '...' : '') : tmpl;
       var segLabel = c.etiqueta_id ? 'Etiqueta #' + c.etiqueta_id : c.segmento;
+      var btnEditar = '<button class="btn btn-outline btn-sm" onclick="editarCampanha(' + c.id + ')">Editar</button>';
+      var btnExcluir = '<button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="excluirCampanha(' + c.id + ')">Excluir</button>';
       return '<div class="camp-card">' +
         '<div class="camp-card-header"><div class="camp-card-nome">' + c.nome + '</div><span class="badge badge-' + sb + '">' + c.status + '</span></div>' +
         '<div class="camp-card-meta">Publico: ' + segLabel + ' | ' + c.intervalo_segundos + 's | Enviados: ' + c.total_envios + ' | Erros: ' + c.total_erros + '</div>' +
         '<div class="camp-card-msg">' + msg + '</div>' +
-        '<div class="camp-acoes">' + acoes + '</div></div>';
+        '<div class="camp-acoes">' + acoes + ' ' + btnEditar + ' ' + btnExcluir + '</div></div>';
     }).join('');
   } catch(e) {}
+}
+
+async function excluirCampanha(id) {
+  if (!confirm('Excluir esta campanha? Esta ação não pode ser desfeita.')) return;
+  try {
+    var r = await fetch('/api/campanhas/' + id, { method: 'DELETE' });
+    var d = await r.json();
+    if (d.ok) { toast('Campanha excluída!'); carregarCampanhas(); }
+    else toast('Erro: ' + d.erro);
+  } catch(e) { toast('Erro ao excluir'); }
+}
+
+async function editarCampanha(id) {
+  try {
+    var r = await fetch('/api/campanhas');
+    var d = await r.json();
+    var c = (d.campanhas || []).find(function(x){ return x.id === id; });
+    if (!c) return toast('Campanha não encontrada');
+    // Remove modal anterior se existir
+    var old = document.getElementById('modal-editar-camp');
+    if (old) old.remove();
+    var modal = document.createElement('div');
+    modal.id = 'modal-editar-camp';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    var intervalOpts = [60,90,120,180,300].map(function(s){
+      return '<option value="'+s+'"'+(c.intervalo_segundos==s?' selected':'')+'>'+s+'s</option>';
+    }).join('');
+    modal.innerHTML = [
+      '<div style="background:var(--color-bg-primary);border-radius:12px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto">',
+      '<h3 style="margin:0 0 20px">Editar campanha</h3>',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">NOME</label>',
+      '<input id="edit-nome" value="'+c.nome+'" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box">',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">TEMPLATE META</label>',
+      '<input id="edit-template" value="'+(c.template_name||'')+'" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box">',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">MENSAGEM LIVRE</label>',
+      '<textarea id="edit-msg" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box;min-height:80px">'+(c.mensagem||'')+'</textarea>',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">INTERVALO</label>',
+      '<select id="edit-intervalo" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:24px">'+intervalOpts+'</select>',
+      '<div style="display:flex;gap:8px;justify-content:flex-end">',
+      '<button id="btn-cancelar-camp" style="padding:10px 20px;border:1px solid var(--color-border);border-radius:8px;background:transparent;color:var(--color-text-primary);cursor:pointer">Cancelar</button>',
+      '<button onclick="salvarEdicaoCampanha('+id+')" style="padding:10px 20px;border:none;border-radius:8px;background:#c9a87c;color:#fff;cursor:pointer;font-weight:600">Salvar</button>',
+      '</div></div>'
+    ].join('');
+    document.body.appendChild(modal);
+    document.getElementById('btn-cancelar-camp').onclick = function(){ modal.remove(); };
+  } catch(e) { toast('Erro ao carregar'); }
+}
+
+async function salvarEdicaoCampanha(id) {
+  var nome = document.getElementById('edit-nome').value;
+  var template = document.getElementById('edit-template').value;
+  var msg = document.getElementById('edit-msg').value;
+  var intervalo = document.getElementById('edit-intervalo').value;
+  try {
+    var r = await fetch('/api/campanhas/' + id, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ nome, template_name: template, mensagem: msg, intervalo_segundos: parseInt(intervalo) })
+    });
+    var d = await r.json();
+    if (d.ok) {
+      toast('Campanha atualizada!');
+      document.querySelector('div[style*="position:fixed"]').remove();
+      carregarCampanhas();
+    } else toast('Erro: ' + d.erro);
+  } catch(e) { toast('Erro ao salvar'); }
 }
 
 async function criarCampanha() {
@@ -1537,4 +1605,4 @@ async function enviarDireto() {
 }
 </script>
 </body>
-</html>
+</html>v
