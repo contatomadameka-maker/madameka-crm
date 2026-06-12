@@ -657,11 +657,19 @@ app.post('/api/enviar-audio', uploadAudio.single('audio'), async (req, res) => {
     const metaData = await metaRes.json();
 
     if (metaData.messages && metaData.messages[0]) {
-      // Salva na conversa como áudio
-      await pool.query(
-        'INSERT INTO conversas (telefone, nome, mensagem, de, lida, midia_url, midia_tipo) VALUES ($1,$2,$3,$4,1,$5,$6)',
-        [tel, 'Madame Ka', '🎵 Áudio enviado', 'bot', audioUrl, 'audio']
-      );
+      console.log('Audio enviado, salvando conversa:', tel, audioUrl);
+      try {
+        await pool.query(
+          'INSERT INTO conversas (telefone, nome, mensagem, de, lida, midia_url, midia_tipo) VALUES ($1,$2,$3,$4,1,$5,$6)',
+          [tel, 'Madame Ka', '🎵 Áudio enviado', 'bot', audioUrl, 'audio']
+        );
+      } catch(dbErr) {
+        console.error('Erro ao salvar audio com midia_url, tentando fallback:', dbErr.message);
+        await pool.query(
+          'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+          [tel, 'Madame Ka', '🎵 Áudio: ' + audioUrl, 'bot']
+        );
+      }
       res.json({ ok: true, url: audioUrl });
     } else {
       console.error('Meta audio erro:', metaData);
