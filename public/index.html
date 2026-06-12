@@ -1441,7 +1441,8 @@ function renderizarListaConversas() {
       var diff = new Date() - dd;
       hora = diff < 86400000 ? dd.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : dd.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
     }
-    var preview = c.ultima_msg_cliente ? c.ultima_msg_cliente.substring(0, 35) + (c.ultima_msg_cliente.length > 35 ? '...' : '') : '';
+    var previewTxt = c.ultima_msg_cliente || c.ultima_msg_bot || '';
+    var preview = previewTxt ? previewTxt.substring(0, 35) + (previewTxt.length > 35 ? '...' : '') : '';
     html += '<div class="conv-item' + ativoClass + '" data-tel="' + c.telefone + '" data-nome="' + (c.nome || 'Cliente') + '">' +
       '<div class="conv-avatar" style="background:' + cor + '">' + inicial + '</div>' +
       '<div class="conv-info">' +
@@ -1506,8 +1507,15 @@ async function abrirConversa(tel, nome, silencioso) {
 
         // ── NOVO: detecta se é áudio e renderiza player ─────────────────────
         var conteudo = '';
+        // detecta áudio por midia_tipo OU por mensagem começando com 🎵 Áudio: (fallback)
+        var audioUrl = null;
         if (m.midia_tipo === 'audio' && m.midia_url) {
-          conteudo = '<div class="audio-player">&#127908; <audio controls src="' + m.midia_url + '"></audio></div>';
+          audioUrl = m.midia_url;
+        } else if ((m.mensagem || '').startsWith('🎵 Áudio: http')) {
+          audioUrl = m.mensagem.replace('🎵 Áudio: ', '').trim();
+        }
+        if (audioUrl) {
+          conteudo = '<div class="audio-player">&#127908; <audio controls src="' + audioUrl + '" style="width:200px;height:32px"></audio></div>';
         } else {
           var msgText = (m.mensagem || '').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('\n').join('<br>');
           conteudo = msgText;

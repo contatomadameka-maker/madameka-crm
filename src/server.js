@@ -539,7 +539,8 @@ app.get('/api/conversas', async (req, res) => {
         MAX(c.criado_em) AS ultima,
         COUNT(*) AS total,
         COUNT(CASE WHEN c.de = 'cliente' AND c.lida = 0 THEN 1 END) AS nao_lidas,
-        MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente
+        MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente,
+        MAX(CASE WHEN c.de = 'bot' THEN c.mensagem END) AS ultima_msg_bot
       FROM conversas c
       WHERE c.criado_em >= NOW() - INTERVAL '60 days'
       ${whereExtra}
