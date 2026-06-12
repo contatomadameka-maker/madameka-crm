@@ -148,12 +148,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .msg-row.cliente .msg-bbl{background:#fff;border-radius:0 12px 12px 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .msg-row.bot .msg-bbl{background:#c9a87c;color:#fff;border-radius:12px 0 12px 12px}
 .msg-time{font-size:10px;color:#aaa;margin-top:3px;padding:0 2px}
-.conv-reply{border-top:1px solid #f0ece8;padding:12px;display:flex;gap:8px;align-items:flex-end;background:#fff}
+
+/* ── NOVO: player de áudio nas mensagens ── */
+.audio-player{display:flex;align-items:center;gap:8px;padding:6px 0}
+.audio-player audio{height:32px;width:180px;outline:none}
+.msg-row.bot .audio-player audio{filter:brightness(10) saturate(0)}
+
+/* ── NOVO: área de reply com botão de áudio ── */
+.conv-reply{border-top:1px solid #f0ece8;padding:10px 12px;display:flex;gap:6px;align-items:flex-end;background:#fff}
 .conv-reply textarea{flex:1;border:1.5px solid #e8e2db;border-radius:10px;padding:8px 12px;font-size:14px;outline:none;font-family:inherit;resize:none;min-height:42px;max-height:120px}
 .conv-reply textarea:focus{border-color:#c9a87c}
+.btn-audio{width:42px;height:42px;border-radius:10px;border:1.5px solid #e8e2db;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .2s;flex-shrink:0}
+.btn-audio:hover{border-color:#c9a87c;background:#fffbf5}
+.btn-audio.gravando{border-color:#ef4444;background:#fee2e2;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Preview de áudio antes de enviar ── */
+.audio-preview{background:#f5f0ea;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin:0 12px 8px;border:1px solid #e8e2db}
+.audio-preview audio{flex:1;height:32px;outline:none}
+.audio-preview-btns{display:flex;gap:6px}
+
 .etiqueta-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer}
 .cor-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.cor-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border .15s}
+.cor-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border .15px}
 .cor-opt.sel{border-color:#1a1a1a}
 .info-box{background:#fffbf5;border:1px solid #f0e4c8;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#92400e}
 </style>
@@ -346,15 +363,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <div class="conv-header-tel" id="conv-tel">Clique em um contato ao lado</div>
               <div class="conv-header-etiquetas" id="conv-etiquetas-header"></div>
             </div>
-            <div id="conv-acoes" style="display:none;gap:6px">
+            <!-- ── NOVO: ações do header incluindo Apagar Conversa ── -->
+            <div id="conv-acoes" style="display:none;gap:6px;flex-wrap:wrap">
               <button class="btn btn-outline btn-xs" onclick="abrirEtiquetasContato()">&#127991; Etiqueta</button>
-              <button class="btn btn-outline btn-xs" onclick="salvarContatoConversa()" id="btn-salvar-contato">&#128100; Salvar contato</button>
+              <button class="btn btn-outline btn-xs" onclick="salvarContatoConversa()" id="btn-salvar-contato">&#128100; Salvar</button>
+              <button class="btn btn-danger btn-xs" onclick="apagarConversa()" title="Apagar toda a conversa">&#128465; Apagar</button>
             </div>
           </div>
           <div class="conv-msgs" id="msgs-conversa">
             <div style="text-align:center;color:#aaa;font-size:13px;margin-top:60px">Selecione uma conversa ao lado</div>
           </div>
+
+          <!-- ── NOVO: preview de áudio antes de enviar ── -->
+          <div id="audio-preview-bar" style="display:none" class="audio-preview">
+            <audio id="audio-preview-player" controls></audio>
+            <div class="audio-preview-btns">
+              <button class="btn btn-gold btn-sm" onclick="enviarAudioGravado()">&#9658; Enviar</button>
+              <button class="btn btn-danger btn-sm" onclick="cancelarAudio()">&#10005; Cancelar</button>
+            </div>
+          </div>
+
           <div class="conv-reply">
+            <!-- ── NOVO: botão de microfone ── -->
+            <button class="btn-audio" id="btn-mic" onclick="toggleGravacao()" title="Gravar áudio">&#127908;</button>
+            <!-- ── NOVO: input de arquivo de áudio ── -->
+            <input type="file" id="input-audio-file" accept="audio/*" style="display:none" onchange="audioFileSelecionado(this)">
+            <button class="btn-audio" onclick="document.getElementById('input-audio-file').click()" title="Enviar arquivo de áudio">&#128266;</button>
             <textarea id="reply-msg" placeholder="Digite sua resposta... (Enter envia, Shift+Enter nova linha)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarResposta()}"></textarea>
             <button class="btn btn-gold btn-sm" onclick="enviarResposta()" style="flex-shrink:0;height:42px">Enviar</button>
           </div>
@@ -414,7 +448,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL CAMPANHA -->
+<!-- MODAIS (mantidos iguais) -->
 <div class="modal-bg" id="modal-campanha">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Nova campanha</div><button class="modal-close" onclick="document.getElementById('modal-campanha').classList.remove('open')">x</button></div>
@@ -461,7 +495,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL SEQUENCIA -->
 <div class="modal-bg" id="modal-sequencia">
   <div class="modal modal-lg">
     <div class="modal-header"><div class="modal-title" id="modal-seq-titulo">Nova Sequencia</div><button class="modal-close" onclick="fecharModalSeq()">x</button></div>
@@ -484,16 +517,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="form-row">
       <div class="form-group"><label>Publico</label>
         <select id="seq-segmento" onchange="toggleEtiquetaSeq(this.value)">
-          <option value="todos">Todos</option>
-          <option value="VIP">VIP</option>
-          <option value="Alta Frequencia">Alta Frequencia</option>
-          <option value="Compradora Recente">Compradora Recente</option>
-          <option value="Compradora Ativa">Compradora Ativa</option>
-          <option value="Em Risco">Em Risco</option>
-          <option value="Compradora Inativa">Compradora Inativa</option>
-          <option value="Lead">Lead</option>
-          <option value="Aniversariante">Aniversariantes</option>
-          <option value="etiqueta">Por Etiqueta &#127991;</option>
+          <option value="todos">Todos</option><option value="VIP">VIP</option>
+          <option value="Alta Frequencia">Alta Frequencia</option><option value="Compradora Recente">Compradora Recente</option>
+          <option value="Compradora Ativa">Compradora Ativa</option><option value="Em Risco">Em Risco</option>
+          <option value="Compradora Inativa">Compradora Inativa</option><option value="Lead">Lead</option>
+          <option value="Aniversariante">Aniversariantes</option><option value="etiqueta">Por Etiqueta &#127991;</option>
         </select>
       </div>
       <div class="form-group"><label>Descricao</label><input type="text" id="seq-desc" placeholder="Ex: Funil pos lancamento 24h"></div>
@@ -503,7 +531,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <select id="seq-etiqueta"><option value="">Selecione a etiqueta...</option></select>
     </div>
     <div style="font-size:13px;font-weight:500;margin:16px 0 8px">Mensagens da sequencia</div>
-    <div style="font-size:12px;color:#888;margin-bottom:12px">A primeira mensagem sera enviada imediatamente apos a cliente responder. Use delays para as proximas.</div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px">A primeira mensagem sera enviada imediatamente apos a cliente responder.</div>
     <div id="seq-passos-container"></div>
     <div class="seq-add-btn" onclick="adicionarPasso()">+ Adicionar mensagem</div>
     <div style="display:flex;gap:10px;margin-top:20px">
@@ -513,7 +541,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL NUMERO -->
 <div class="modal-bg" id="modal-numero">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Adicionar numero</div><button class="modal-close" onclick="document.getElementById('modal-numero').classList.remove('open')">x</button></div>
@@ -528,7 +555,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL ENVIO DIRETO -->
 <div class="modal-bg" id="modal-envio-direto">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Enviar mensagem direta</div><button class="modal-close" onclick="document.getElementById('modal-envio-direto').classList.remove('open')">x</button></div>
@@ -542,7 +568,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL ETIQUETAS GERENCIAR -->
 <div class="modal-bg" id="modal-etiquetas-mgr">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Gerenciar Etiquetas</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-mgr').classList.remove('open')">x</button></div>
@@ -566,7 +591,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL ETIQUETAS CONTATO -->
 <div class="modal-bg" id="modal-etiquetas-contato">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Etiquetas do contato</div><button class="modal-close" onclick="document.getElementById('modal-etiquetas-contato').classList.remove('open')">x</button></div>
@@ -597,6 +621,12 @@ var todasEtiquetas = [];
 var conversasCache = [];
 var buscaConvAtual = '';
 
+// ── NOVO: variáveis de gravação de áudio ──────────────────────────────────────
+var mediaRecorder = null;
+var audioChunks = [];
+var audioBlob = null;
+var gravando = false;
+
 var DELAYS_RAPIDOS = [
   {label:'Imediato',horas:0},{label:'30min',horas:0.5},{label:'1h',horas:1},
   {label:'3h',horas:3},{label:'6h',horas:6},{label:'12h',horas:12},
@@ -607,12 +637,14 @@ var DELAYS_RAPIDOS = [
 var GATILHO_LABELS = {
   carrinho_abandonado:'Carrinho Abandonado',boas_vindas:'Boas-vindas',
   pos_compra:'Pos-compra',reativacao:'Reativacao',manual:'Manual',
-  resposta_lancamento:'Resposta Lancamento',resposta_carrinho:'Resposta Carrinho',resposta_leads:'Resposta Leads',resposta_reativacao:'Resposta Reativacao'
+  resposta_lancamento:'Resposta Lancamento',resposta_carrinho:'Resposta Carrinho',
+  resposta_leads:'Resposta Leads',resposta_reativacao:'Resposta Reativacao'
 };
 var GATILHO_BADGE = {
   carrinho_abandonado:'gatilho-carrinho',boas_vindas:'gatilho-popup',
   pos_compra:'gatilho-compra',reativacao:'gatilho-inativa',manual:'gatilho-manual',
-  resposta_lancamento:'gatilho-resposta',resposta_carrinho:'gatilho-resposta',resposta_leads:'gatilho-resposta',resposta_reativacao:'gatilho-resposta'
+  resposta_lancamento:'gatilho-resposta',resposta_carrinho:'gatilho-resposta',
+  resposta_leads:'gatilho-resposta',resposta_reativacao:'gatilho-resposta'
 };
 var CORES_AVATAR = ['#c9a87c','#3b82f6','#22c55e','#ef4444','#8b5cf6','#f97316','#ec4899','#6b7280'];
 
@@ -627,6 +659,114 @@ function toast(msg) {
   el.textContent = msg;
   el.style.display = 'block';
   setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+
+// ── NOVO: gravar áudio com microfone ─────────────────────────────────────────
+async function toggleGravacao() {
+  if (gravando) {
+    // Para a gravação
+    mediaRecorder.stop();
+    gravando = false;
+    var btn = document.getElementById('btn-mic');
+    btn.classList.remove('gravando');
+    btn.title = 'Gravar áudio';
+    btn.innerHTML = '&#127908;';
+  } else {
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = function(e) { audioChunks.push(e.data); };
+      mediaRecorder.onstop = function() {
+        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        var url = URL.createObjectURL(audioBlob);
+        var preview = document.getElementById('audio-preview-bar');
+        var player = document.getElementById('audio-preview-player');
+        player.src = url;
+        preview.style.display = 'flex';
+        // Para o stream do microfone
+        stream.getTracks().forEach(function(t) { t.stop(); });
+      };
+      mediaRecorder.start();
+      gravando = true;
+      var btn = document.getElementById('btn-mic');
+      btn.classList.add('gravando');
+      btn.title = 'Parar gravação';
+      btn.innerHTML = '&#9632;';
+      toast('Gravando... Clique no botão para parar');
+    } catch(e) {
+      toast('Erro ao acessar microfone: ' + e.message);
+    }
+  }
+}
+
+// ── NOVO: selecionou arquivo de áudio ────────────────────────────────────────
+function audioFileSelecionado(input) {
+  if (!input.files[0]) return;
+  audioBlob = input.files[0];
+  var url = URL.createObjectURL(audioBlob);
+  var preview = document.getElementById('audio-preview-bar');
+  var player = document.getElementById('audio-preview-player');
+  player.src = url;
+  preview.style.display = 'flex';
+  input.value = '';
+}
+
+// ── NOVO: enviar áudio gravado/selecionado ───────────────────────────────────
+async function enviarAudioGravado() {
+  if (!convAtualTel) { toast('Selecione uma conversa'); return; }
+  if (!audioBlob) { toast('Nenhum áudio para enviar'); return; }
+  toast('Enviando áudio...');
+  try {
+    var fd = new FormData();
+    fd.append('telefone', convAtualTel);
+    fd.append('audio', audioBlob, 'audio.webm');
+    var r = await fetch('/api/enviar-audio', { method: 'POST', body: fd });
+    var d = await r.json();
+    if (d.ok) {
+      toast('Áudio enviado!');
+      cancelarAudio();
+      abrirConversa(convAtualTel, convAtualNome, false);
+    } else {
+      toast('Erro: ' + d.erro);
+    }
+  } catch(e) { toast('Erro ao enviar áudio'); }
+}
+
+// ── NOVO: cancelar preview de áudio ─────────────────────────────────────────
+function cancelarAudio() {
+  audioBlob = null;
+  audioChunks = [];
+  var preview = document.getElementById('audio-preview-bar');
+  var player = document.getElementById('audio-preview-player');
+  preview.style.display = 'none';
+  player.src = '';
+}
+
+// ── NOVO: apagar conversa completa ───────────────────────────────────────────
+async function apagarConversa() {
+  if (!convAtualTel) return;
+  var nome = convAtualNome || convAtualTel;
+  if (!confirm('Apagar TODAS as mensagens da conversa com ' + nome + '?\n\nEsta ação não pode ser desfeita.')) return;
+  try {
+    var r = await fetch('/api/conversas/' + convAtualTel, { method: 'DELETE' });
+    var d = await r.json();
+    if (d.ok) {
+      toast(d.apagadas + ' mensagens apagadas');
+      // Limpa a área de conversa
+      document.getElementById('msgs-conversa').innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;margin-top:60px">Conversa apagada</div>';
+      convAtualTel = null;
+      convAtualNome = null;
+      document.getElementById('conv-nome').textContent = 'Selecione uma conversa';
+      document.getElementById('conv-tel').textContent = 'Clique em um contato ao lado';
+      document.getElementById('conv-acoes').style.display = 'none';
+      document.getElementById('conv-avatar').textContent = '?';
+      document.getElementById('conv-avatar').style.background = '#e0dbd5';
+      carregarConversas();
+    } else {
+      toast('Erro ao apagar: ' + d.erro);
+    }
+  } catch(e) { toast('Erro ao apagar conversa'); }
 }
 
 function abrirModalEtiquetas() {
@@ -872,7 +1012,7 @@ async function carregarCampanhas() {
 }
 
 async function excluirCampanha(id) {
-  if (!confirm('Excluir esta campanha? Esta ação não pode ser desfeita.')) return;
+  if (!confirm('Excluir esta campanha?')) return;
   try {
     var r = await fetch('/api/campanhas/' + id, { method: 'DELETE' });
     var d = await r.json();
@@ -887,7 +1027,6 @@ async function editarCampanha(id) {
     var d = await r.json();
     var c = (d.campanhas || []).find(function(x){ return x.id === id; });
     if (!c) return toast('Campanha não encontrada');
-    // Remove modal anterior se existir
     var old = document.getElementById('modal-editar-camp');
     if (old) old.remove();
     var modal = document.createElement('div');
@@ -897,18 +1036,18 @@ async function editarCampanha(id) {
       return '<option value="'+s+'"'+(c.intervalo_segundos==s?' selected':'')+'>'+s+'s</option>';
     }).join('');
     modal.innerHTML = [
-      '<div style="background:var(--color-bg-primary);border-radius:12px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto">',
+      '<div style="background:#fff;border-radius:12px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto">',
       '<h3 style="margin:0 0 20px">Editar campanha</h3>',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">NOME</label>',
-      '<input id="edit-nome" value="'+c.nome+'" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box">',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">TEMPLATE META</label>',
-      '<input id="edit-template" value="'+(c.template_name||'')+'" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box">',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">MENSAGEM LIVRE</label>',
-      '<textarea id="edit-msg" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:14px;box-sizing:border-box;min-height:80px">'+(c.mensagem||'')+'</textarea>',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--color-text-secondary)">INTERVALO</label>',
-      '<select id="edit-intervalo" style="width:100%;padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-secondary);color:var(--color-text-primary);margin-bottom:24px">'+intervalOpts+'</select>',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">NOME</label>',
+      '<input id="edit-nome" value="'+c.nome+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">TEMPLATE META</label>',
+      '<input id="edit-template" value="'+(c.template_name||'')+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">MENSAGEM LIVRE</label>',
+      '<textarea id="edit-msg" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box;min-height:80px">'+(c.mensagem||'')+'</textarea>',
+      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">INTERVALO</label>',
+      '<select id="edit-intervalo" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:24px">'+intervalOpts+'</select>',
       '<div style="display:flex;gap:8px;justify-content:flex-end">',
-      '<button id="btn-cancelar-camp" style="padding:10px 20px;border:1px solid var(--color-border);border-radius:8px;background:transparent;color:var(--color-text-primary);cursor:pointer">Cancelar</button>',
+      '<button id="btn-cancelar-camp" style="padding:10px 20px;border:1px solid #e8e2db;border-radius:8px;background:transparent;cursor:pointer">Cancelar</button>',
       '<button onclick="salvarEdicaoCampanha('+id+')" style="padding:10px 20px;border:none;border-radius:8px;background:#c9a87c;color:#fff;cursor:pointer;font-weight:600">Salvar</button>',
       '</div></div>'
     ].join('');
@@ -931,7 +1070,8 @@ async function salvarEdicaoCampanha(id) {
     var d = await r.json();
     if (d.ok) {
       toast('Campanha atualizada!');
-      document.querySelector('div[style*="position:fixed"]').remove();
+      var modal = document.getElementById('modal-editar-camp');
+      if (modal) modal.remove();
       carregarCampanhas();
     } else toast('Erro: ' + d.erro);
   } catch(e) { toast('Erro ao salvar'); }
@@ -1086,7 +1226,7 @@ async function carregarSequencias() {
     var d = await r.json();
     var wrap = document.getElementById('lista-sequencias');
     if (!d.sequencias || !d.sequencias.length) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="margin-bottom:12px;color:#888">Crie sequencias automaticas para lancamentos e carrinhos abandonados</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequencia</button></div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:40px;margin-bottom:12px">⚡</div><div style="margin-bottom:12px;color:#888">Crie sequencias automaticas</div><button class="btn btn-gold" onclick="abrirNovaSequencia()">+ Criar primeira sequencia</button></div>';
       return;
     }
     wrap.innerHTML = d.sequencias.map(function(s) {
@@ -1231,7 +1371,6 @@ async function toggleSequencia(id, ativo, el) {
   var txt = el.previousElementSibling;
   if (txt) { txt.textContent = novoAtivo ? 'Ativo' : 'Inativo'; txt.style.color = novoAtivo ? '#16a34a' : '#aaa'; }
   try {
-    // Busca dados atuais antes de atualizar para não sobrescrever nome/gatilho/passos
     var rGet = await fetch('/api/sequencias');
     var dGet = await rGet.json();
     var seq = (dGet.sequencias || []).find(function(s){ return s.id === id; });
@@ -1239,14 +1378,7 @@ async function toggleSequencia(id, ativo, el) {
     await fetch('/api/sequencias/' + id, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        nome: seq.nome,
-        gatilho: seq.gatilho,
-        segmento: seq.segmento || 'todos',
-        descricao: seq.descricao || '',
-        ativo: novoAtivo,
-        passos: seq.passos || []
-      })
+      body:JSON.stringify({nome: seq.nome,gatilho: seq.gatilho,segmento: seq.segmento || 'todos',descricao: seq.descricao || '',ativo: novoAtivo,passos: seq.passos || []})
     });
     toast(novoAtivo ? 'Ativada' : 'Pausada');
   } catch(e) { toast('Erro'); }
@@ -1335,6 +1467,7 @@ async function carregarConversas() {
   } catch(e) {}
 }
 
+// ── MELHORIA: renderiza TODAS as mensagens (cliente + bot) com player de áudio
 async function abrirConversa(tel, nome, silencioso) {
   try {
     convAtualTel = tel;
@@ -1362,8 +1495,20 @@ async function abrirConversa(tel, nome, silencioso) {
         var tipo = m.de === 'cliente' ? 'cliente' : 'bot';
         var hora = new Date(m.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
         var label = m.de === 'bot' ? 'Madame Ka' : (m.nome && m.nome !== 'Cliente' ? m.nome : nome);
-        var msgText = m.mensagem.split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('\n').join('<br>');
-        html += '<div class="msg-row ' + tipo + '"><div class="msg-bbl">' + msgText + '</div><div class="msg-time">' + label + ' - ' + hora + '</div></div>';
+
+        // ── NOVO: detecta se é áudio e renderiza player ─────────────────────
+        var conteudo = '';
+        if (m.midia_tipo === 'audio' && m.midia_url) {
+          conteudo = '<div class="audio-player">&#127908; <audio controls src="' + m.midia_url + '"></audio></div>';
+        } else {
+          var msgText = (m.mensagem || '').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('\n').join('<br>');
+          conteudo = msgText;
+        }
+
+        html += '<div class="msg-row ' + tipo + '">' +
+          '<div class="msg-bbl">' + conteudo + '</div>' +
+          '<div class="msg-time">' + label + ' - ' + hora + '</div>' +
+          '</div>';
       }
       container.innerHTML = html;
       if (!silencioso || scrollBottom) container.scrollTop = container.scrollHeight;
@@ -1404,21 +1549,17 @@ async function salvarContatoConversa() {
     var d = await r.json();
     if (d.ok) {
       toast('Contato salvo!');
-      convAtualNome = nome || convAtualTel;
-      var nomeEl = document.getElementById('conv-nome');
-      if (nomeEl) nomeEl.textContent = convAtualNome;
     } else {
-      // Tenta atualizar se já existe
       await fetch('/api/contatos/' + convAtualTel, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({nome: nome})
       });
       toast('Contato atualizado!');
-      convAtualNome = nome || convAtualTel;
-      var nomeEl = document.getElementById('conv-nome');
-      if (nomeEl) nomeEl.textContent = convAtualNome;
     }
+    convAtualNome = nome || convAtualTel;
+    var nomeEl = document.getElementById('conv-nome');
+    if (nomeEl) nomeEl.textContent = convAtualNome;
     carregarConversas();
   } catch(e) { toast('Erro ao salvar'); }
 }
@@ -1449,7 +1590,6 @@ async function carregarEtiquetas() {
     var d = await r.json();
     todasEtiquetas = d.etiquetas || [];
     renderizarEtiquetasMgr();
-    // Atualiza selects de etiqueta em toda a página
     var opts = '<option value="">Todas etiquetas</option>' + todasEtiquetas.map(function(e) {
       return '<option value="' + e.id + '">' + e.nome + '</option>';
     }).join('');
@@ -1471,7 +1611,7 @@ async function carregarEtiquetas() {
 function renderizarEtiquetasMgr() {
   var el = document.getElementById('lista-etiquetas-mgr');
   if (!el) return;
-  if (!todasEtiquetas.length) { el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:10px 0">Nenhuma etiqueta ainda. Escolha uma cor acima e crie!</div>'; return; }
+  if (!todasEtiquetas.length) { el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:10px 0">Nenhuma etiqueta ainda.</div>'; return; }
   el.innerHTML = todasEtiquetas.map(function(e) {
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #f0ece8">' +
       '<span style="background:' + e.cor + '20;color:' + e.cor + ';border:1px solid ' + e.cor + '40;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500">' + e.nome + '</span>' +
@@ -1605,4 +1745,4 @@ async function enviarDireto() {
 }
 </script>
 </body>
-</html>v
+</html>

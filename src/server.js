@@ -76,7 +76,6 @@ async function initExtras() {
   await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS tipo TEXT DEFAULT 'mensagem'`);
 
   // ── MIGRAÇÃO: normaliza todos os telefones sem DDI 55 no banco ──────────────
-  // Isso elimina as duplicatas causadas por números salvos com e sem o prefixo 55
   await pool.query(`
     UPDATE conversas
     SET telefone = '55' || telefone
@@ -105,6 +104,11 @@ async function initExtras() {
 
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS template_name TEXT DEFAULT ''`);
   await pool.query(`ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS etiqueta_id INTEGER DEFAULT NULL`);
+
+  // ── MIGRAÇÃO: adiciona coluna midia_url em conversas para áudios e mídias ───
+  await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS midia_url TEXT DEFAULT NULL`);
+  await pool.query(`ALTER TABLE conversas ADD COLUMN IF NOT EXISTS midia_tipo TEXT DEFAULT NULL`);
+
   console.log('DB extras inicializados');
 }
 initExtras().catch(console.error);
@@ -503,7 +507,6 @@ app.get('/api/conversas', async (req, res) => {
   try {
     const { filtro, etiqueta } = req.query;
 
-    // Todos os filtros comparam pelo telefone JÁ normalizado (com 55)
     let whereExtra = '';
     if (filtro === 'nao_lidas') whereExtra += `
       AND EXISTS (
@@ -525,8 +528,7 @@ app.get('/api/conversas', async (req, res) => {
           AND ce.etiqueta_id = ${parseInt(etiqueta)}
       )`;
 
-    // GROUP BY só pelo telefone (já normalizado pela migração do initExtras)
-    // MAX(nome) prioriza nomes reais sobre null/vazio/'Cliente'
+    // ── MELHORIA: inclui mensagens dos últimos 60 dias ─────────────────────────
     const { rows } = await pool.query(`
       SELECT
         c.telefone,
@@ -539,7 +541,8 @@ app.get('/api/conversas', async (req, res) => {
         COUNT(CASE WHEN c.de = 'cliente' AND c.lida = 0 THEN 1 END) AS nao_lidas,
         MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente
       FROM conversas c
-      WHERE 1=1 ${whereExtra}
+      WHERE c.criado_em >= NOW() - INTERVAL '60 days'
+      ${whereExtra}
       GROUP BY c.telefone
       ORDER BY MAX(c.criado_em) DESC
       LIMIT 100
@@ -548,13 +551,16 @@ app.get('/api/conversas', async (req, res) => {
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
+// ── MELHORIA: retorna TODAS as mensagens (cliente + bot) dos últimos 60 dias ──
 app.get('/api/conversas/:telefone', async (req, res) => {
   try {
     const tel = normalizarTelefone(req.params.telefone);
     const semDDI = tel.slice(2);
-    // Busca mensagens tanto com 55 quanto sem (segurança para msgs antigas)
     const { rows } = await pool.query(
-      'SELECT * FROM conversas WHERE telefone=$1 OR telefone=$2 ORDER BY criado_em ASC',
+      `SELECT * FROM conversas 
+       WHERE (telefone=$1 OR telefone=$2)
+         AND criado_em >= NOW() - INTERVAL '60 days'
+       ORDER BY criado_em ASC`,
       [tel, semDDI]
     );
     res.json({ ok: true, mensagens: rows });
@@ -567,6 +573,19 @@ app.post('/api/conversas/:telefone/lida', async (req, res) => {
     const semDDI = tel.slice(2);
     await pool.query("UPDATE conversas SET lida=1 WHERE (telefone=$1 OR telefone=$2) AND de='cliente'", [tel, semDDI]);
     res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// ── NOVO: apagar conversa manualmente ─────────────────────────────────────────
+app.delete('/api/conversas/:telefone', async (req, res) => {
+  try {
+    const tel = normalizarTelefone(req.params.telefone);
+    const semDDI = tel.slice(2);
+    const { rows } = await pool.query(
+      'DELETE FROM conversas WHERE telefone=$1 OR telefone=$2 RETURNING id',
+      [tel, semDDI]
+    );
+    res.json({ ok: true, apagadas: rows.length });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
@@ -590,6 +609,68 @@ app.post('/api/enviar-direto', async (req, res) => {
     }
     res.json(resultado);
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+// ── NOVO: enviar áudio via Meta Cloud API ─────────────────────────────────────
+const uploadAudio = multer({
+  dest: '/tmp/audio/',
+  fileFilter: (req, file, cb) => {
+    const allowed = ['audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/wav', 'audio/webm'];
+    cb(null, allowed.includes(file.mimetype) || file.originalname.match(/\.(ogg|mp3|m4a|aac|wav|webm)$/i) ? true : false);
+  }
+});
+
+app.post('/api/enviar-audio', uploadAudio.single('audio'), async (req, res) => {
+  try {
+    const { telefone } = req.body;
+    if (!telefone || !req.file) return res.json({ ok: false, erro: 'Telefone e áudio obrigatórios' });
+    const tel = normalizarTelefone(telefone);
+
+    // Faz upload do áudio para Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'madameka-crm/audios',
+      resource_type: 'video', // Cloudinary usa 'video' para áudio também
+      format: 'mp3'
+    });
+    fs.unlinkSync(req.file.path);
+
+    const audioUrl = uploadResult.secure_url;
+
+    // Envia via Meta Cloud API
+    const META_TOKEN = process.env.META_TOKEN;
+    const PHONE_ID = process.env.META_PHONE_ID || '1207148405807761';
+
+    const metaRes = await fetch(`https://graph.facebook.com/v18.0/${PHONE_ID}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${META_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: tel,
+        type: 'audio',
+        audio: { link: audioUrl }
+      })
+    });
+
+    const metaData = await metaRes.json();
+
+    if (metaData.messages && metaData.messages[0]) {
+      // Salva na conversa como áudio
+      await pool.query(
+        'INSERT INTO conversas (telefone, nome, mensagem, de, lida, midia_url, midia_tipo) VALUES ($1,$2,$3,$4,1,$5,$6)',
+        [tel, 'Madame Ka', '🎵 Áudio enviado', 'bot', audioUrl, 'audio']
+      );
+      res.json({ ok: true, url: audioUrl });
+    } else {
+      console.error('Meta audio erro:', metaData);
+      res.json({ ok: false, erro: metaData.error?.message || 'Erro ao enviar áudio' });
+    }
+  } catch(e) {
+    console.error('Erro enviar audio:', e.message);
+    res.status(500).json({ ok: false, erro: e.message });
+  }
 });
 
 // ─── WEBHOOK YAMPI ────────────────────────────────────────────────────────────
@@ -814,6 +895,16 @@ cron.schedule('0 12 * * *', async () => {
   } catch(e) { console.error('Erro cron aniversariantes:', e.message); }
 });
 
+// ── CRON: limpeza automática de conversas com mais de 60 dias ─────────────────
+cron.schedule('0 3 * * *', async () => {
+  try {
+    const { rows } = await pool.query(
+      "DELETE FROM conversas WHERE criado_em < NOW() - INTERVAL '60 days' RETURNING id"
+    );
+    if (rows.length > 0) console.log(`🧹 Limpeza automática: ${rows.length} mensagens com +60 dias removidas`);
+  } catch(e) { console.error('Erro cron limpeza:', e.message); }
+});
+
 // ─── CONFIGURAÇÕES ────────────────────────────────────────────────────────────
 app.get('/api/config', async (req, res) => {
   try {
@@ -887,11 +978,9 @@ app.post('/webhook/meta', async (req, res) => {
           const nome = contato?.nome || 'Cliente';
           const primeiro = nome.split(' ')[0];
 
-          // Salva conversa sempre com telefone normalizado
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,0)', [from, nome, text, 'cliente']);
           console.log(`Meta webhook: ${from} disse: ${text}`);
 
-          // Ignora mensagens automáticas de outros bots/empresas
           const pareceAutomatica = [
             'aguardando atendimento', 'fora do horário', 'horário de atendimento',
             'mensagem automática', 'resposta automática', 'atendimento automático',
@@ -905,7 +994,6 @@ app.post('/webhook/meta', async (req, res) => {
           const respondeuPositivo = ['sim','quero','ok','surpresa','s','quero minha surpresa','quero ver','pode abrir','quero meu presente'].some(p => text.includes(p));
           if (!respondeuPositivo) continue;
 
-          // Verifica qual template originou a conversa (últimas 48h)
           const { rows: dispLanc } = await pool.query(
             "SELECT id FROM disparos WHERE (telefone=$1 OR telefone=$2) AND (mensagem LIKE '%lancamento%' OR mensagem LIKE '%template:lancamento%') AND enviado_em >= NOW() - INTERVAL '48 hours'",
             [from, from.slice(2)]
@@ -924,13 +1012,10 @@ app.post('/webhook/meta', async (req, res) => {
           );
 
           if (dispLeads.length > 0) {
-            // Cliente que nunca comprou respondeu ao template leads_surpresa
             const { rows: seqLeads } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_leads' AND ativo=1");
             if (seqLeads.length) {
-              // Tem sequência configurada — só inicia, ela envia o passo 1
               await iniciarSequencia('resposta_leads', from, nome);
             } else {
-              // Sem sequência — envia mensagem direta de fallback
               await new Promise(r => setTimeout(r, 1500));
               await wpp.enviarMensagem(from,
                 `Oi ${primeiro}! 🎁 Sua surpresa chegou!\n\nUse o cupom *FERIADO10* e ganhe *10% de desconto* em tudo!\n\n🎀 E nas compras acima de R$299 você ainda ganha um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
@@ -939,13 +1024,10 @@ app.post('/webhook/meta', async (req, res) => {
                 [from, 'Madame Ka', 'Mensagem leads_surpresa enviada', 'bot']);
             }
           } else if (dispReativacao.length > 0) {
-            // Cliente inativa respondeu ao template reativacao_surpresa
             const { rows: seqReativ } = await pool.query("SELECT id FROM sequencias WHERE gatilho='resposta_reativacao' AND ativo=1");
             if (seqReativ.length) {
-              // Tem sequência configurada — só inicia, ela envia o passo 1
               await iniciarSequencia('resposta_reativacao', from, nome);
             } else {
-              // Sem sequência — envia mensagem direta de fallback
               await new Promise(r => setTimeout(r, 1500));
               await wpp.enviarMensagem(from,
                 `Oi ${primeiro}! Que saudade! 💛\n\nComo você já é nossa cliente, separamos um desconto especial: use o cupom *VIP15* e ganhe *15% de desconto*!\n\n🎀 Compras acima de R$299 também ganham um *Relógio surpresa* de brinde!\n\n👗 madameka.com.br\n\n⏰ Válido só hoje!`
