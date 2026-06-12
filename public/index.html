@@ -716,33 +716,39 @@ function audioFileSelecionado(input) {
 async function enviarAudioGravado() {
   if (!convAtualTel) { toast('Selecione uma conversa'); return; }
   if (!audioBlob) { toast('Nenhum áudio para enviar'); return; }
+  var telSalvo = convAtualTel;
+  var nomeSalvo = convAtualNome;
   toast('Enviando áudio...');
   try {
-    var telSalvo = convAtualTel;
-    var nomeSalvo = convAtualNome;
     var fd = new FormData();
     fd.append('telefone', telSalvo);
     fd.append('audio', audioBlob, 'audio.webm');
     var r = await fetch('/api/enviar-audio', { method: 'POST', body: fd });
     var d = await r.json();
+    cancelarAudio();
     if (d.ok) {
-      cancelarAudio();
       toast('Áudio enviado!');
       await abrirConversa(telSalvo, nomeSalvo, false);
     } else {
       toast('Erro: ' + d.erro);
     }
-  } catch(e) { toast('Erro ao enviar áudio'); }
+  } catch(e) {
+    cancelarAudio();
+    toast('Erro ao enviar áudio');
+  }
 }
 
 // ── NOVO: cancelar preview de áudio ─────────────────────────────────────────
 function cancelarAudio() {
   audioBlob = null;
   audioChunks = [];
+  gravando = false;
+  var btn = document.getElementById('btn-mic');
+  if (btn) { btn.classList.remove('gravando'); btn.innerHTML = '&#127908;'; }
   var preview = document.getElementById('audio-preview-bar');
   var player = document.getElementById('audio-preview-player');
-  preview.style.display = 'none';
-  player.src = '';
+  if (preview) preview.style.display = 'none';
+  if (player) player.src = '';
 }
 
 // ── NOVO: apagar conversa completa ───────────────────────────────────────────
