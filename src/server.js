@@ -475,13 +475,7 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
       );
       await pool.query('UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3', [resultado.ok?1:0, resultado.ok?0:1, campanha.id]);
       await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
-      if (resultado.ok) {
-        const msgSalvaConv = campanha.template_name ? '📤 Template: ' + campanha.template_name : msg;
-        await pool.query(
-          'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-          [c.telefone, 'Madame Ka', msgSalvaConv, 'bot']
-        );
-      }
+      
       console.log(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ${resultado.ok?'OK':'ERRO'}`);
       setTimeout(enviarProximo, intervalo);
     }
