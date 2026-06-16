@@ -186,12 +186,13 @@ app.get('/api/contatos/stats', async (req, res) => {
     const inativas = await pool.query("SELECT COUNT(*) as c FROM contatos WHERE segmento='Compradora Inativa'");
     const leads = await pool.query("SELECT COUNT(*) as c FROM contatos WHERE segmento='Lead'");
     const disparos = await pool.query("SELECT COUNT(*) as c FROM disparos WHERE status='enviado'");
+    const erros = await pool.query("SELECT COUNT(*) as c FROM disparos WHERE status='erro'");
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
     const aniv = await pool.query(`SELECT COUNT(*) as c FROM contatos WHERE nascimento LIKE $1 OR nascimento LIKE $2`, [`%-${mes}-${dia}`, `${dia}/${mes}%`]);
     const envHoje = await enviosHoje();
-    res.json({ ok: true, total: parseInt(total.rows[0].c), vip: parseInt(vip.rows[0].c), ativas: parseInt(ativas.rows[0].c), inativas: parseInt(inativas.rows[0].c), leads: parseInt(leads.rows[0].c), disparos: parseInt(disparos.rows[0].c), aniversariantes: parseInt(aniv.rows[0].c), enviosHoje: envHoje });
+    res.json({ ok: true, total: parseInt(total.rows[0].c), vip: parseInt(vip.rows[0].c), ativas: parseInt(ativas.rows[0].c), inativas: parseInt(inativas.rows[0].c), leads: parseInt(leads.rows[0].c), disparos: parseInt(disparos.rows[0].c), erros: parseInt(erros.rows[0].c), aniversariantes: parseInt(aniv.rows[0].c), enviosHoje: envHoje });
   } catch (e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
 
@@ -474,9 +475,20 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
         [campanha.id, c.id, c.telefone, msgSalva, statusEnvio, resultado.erro||null]
       );
       await pool.query('UPDATE campanhas SET total_envios=total_envios+$1, total_erros=total_erros+$2 WHERE id=$3', [resultado.ok?1:0, resultado.ok?0:1, campanha.id]);
-      await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
-      
-      console.log(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ${resultado.ok?'OK':'ERRO'}`);
+
+      if (resultado.ok) {
+        // Só registra como entregue se a Meta confirmou
+        await pool.query('UPDATE contatos SET ultimo_disparo=NOW(), total_mensagens=total_mensagens+1 WHERE id=$1', [c.id]);
+        const telNorm = normalizarTelefone(c.telefone);
+        const msgConv = campanha.template_name ? '📤 Template: ' + campanha.template_name : msg;
+        await pool.query(
+          'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
+          [telNorm, 'Madame Ka', msgConv, 'bot']
+        );
+        console.log(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ✅ ENTREGUE`);
+      } else {
+        console.error(`Campanha ${campanha.id} [${i}/${contatos.length}] -> ${c.telefone}: ❌ ERRO Meta: ${resultado.erro}`);
+      }
       setTimeout(enviarProximo, intervalo);
     }
 
@@ -540,8 +552,7 @@ app.get('/api/conversas', async (req, res) => {
         MAX(c.criado_em) AS ultima,
         COUNT(*) AS total,
         COUNT(CASE WHEN c.de = 'cliente' AND c.lida = 0 THEN 1 END) AS nao_lidas,
-        MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente,
-        MAX(CASE WHEN c.de = 'bot' THEN c.mensagem END) AS ultima_msg_bot
+        MAX(CASE WHEN c.de = 'cliente' THEN c.mensagem END) AS ultima_msg_cliente
       FROM conversas c
       WHERE c.criado_em >= NOW() - INTERVAL '60 days'
       ${whereExtra}
@@ -659,19 +670,11 @@ app.post('/api/enviar-audio', uploadAudio.single('audio'), async (req, res) => {
     const metaData = await metaRes.json();
 
     if (metaData.messages && metaData.messages[0]) {
-      console.log('Audio enviado, salvando conversa:', tel, audioUrl);
-      try {
-        await pool.query(
-          'INSERT INTO conversas (telefone, nome, mensagem, de, lida, midia_url, midia_tipo) VALUES ($1,$2,$3,$4,1,$5,$6)',
-          [tel, 'Madame Ka', '🎵 Áudio enviado', 'bot', audioUrl, 'audio']
-        );
-      } catch(dbErr) {
-        console.error('Erro ao salvar audio com midia_url, tentando fallback:', dbErr.message);
-        await pool.query(
-          'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-          [tel, 'Madame Ka', '🎵 Áudio: ' + audioUrl, 'bot']
-        );
-      }
+      // Salva na conversa como áudio
+      await pool.query(
+        'INSERT INTO conversas (telefone, nome, mensagem, de, lida, midia_url, midia_tipo) VALUES ($1,$2,$3,$4,1,$5,$6)',
+        [tel, 'Madame Ka', '🎵 Áudio enviado', 'bot', audioUrl, 'audio']
+      );
       res.json({ ok: true, url: audioUrl });
     } else {
       console.error('Meta audio erro:', metaData);
@@ -722,10 +725,6 @@ app.post('/webhook/yampi', async (req, res) => {
           ]);
           await pool.query('INSERT INTO disparos (telefone,mensagem,status,enviado_em) VALUES ($1,$2,$3,NOW())',
             [telefone, 'template:carrinho_surpresa', 'enviado']);
-          await pool.query(
-            'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-            [telefone, 'Madame Ka', '📤 Template: carrinho_surpresa', 'bot']
-          );
           console.log(`Carrinho abandonado -> template enviado para ${telefone}`);
         } catch(e) { console.error('Erro carrinho abandonado:', e.message); }
       }, 1 * 60 * 60 * 1000);
@@ -871,14 +870,17 @@ cron.schedule('* * * * *', async () => {
         if (resultado.ok) {
           await pool.query('INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
             [exec.telefone, 'Madame Ka', msg, 'bot']);
-        }
-        console.log(`Seq ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ${resultado.ok?'OK':'ERRO'}`);
-        const { rows: proximo } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2', [exec.sequencia_id, exec.ordem + 1]);
-        if (proximo.length) {
-          const proximoEnvio = new Date(Date.now() + (proximo[0].delay_horas || 1) * 3600000);
-          await pool.query('UPDATE sequencia_execucoes SET passo_atual=$1, proximo_envio=$2 WHERE id=$3', [exec.ordem, proximoEnvio, exec.id]);
+          console.log(`Seq ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ✅ ENTREGUE`);
+          const { rows: proximo } = await pool.query('SELECT * FROM sequencia_passos WHERE sequencia_id=$1 AND ordem=$2', [exec.sequencia_id, exec.ordem + 1]);
+          if (proximo.length) {
+            const proximoEnvio = new Date(Date.now() + (proximo[0].delay_horas || 1) * 3600000);
+            await pool.query('UPDATE sequencia_execucoes SET passo_atual=$1, proximo_envio=$2 WHERE id=$3', [exec.ordem, proximoEnvio, exec.id]);
+          } else {
+            await pool.query("UPDATE sequencia_execucoes SET status='concluido', passo_atual=$1 WHERE id=$2", [exec.ordem, exec.id]);
+          }
         } else {
-          await pool.query("UPDATE sequencia_execucoes SET status='concluido', passo_atual=$1 WHERE id=$2", [exec.ordem, exec.id]);
+          console.error(`Seq ${exec.seq_nome} passo ${exec.ordem} -> ${exec.telefone}: ❌ ERRO Meta: ${resultado.erro}`);
+          // Não avança o passo — tenta novamente no próximo ciclo do cron
         }
       } catch(e) { console.error('Erro exec:', e.message); }
     }
@@ -903,10 +905,6 @@ cron.schedule('0 12 * * *', async () => {
       if (result.ok) {
         await pool.query('INSERT INTO disparos (telefone,mensagem,status,enviado_em) VALUES ($1,$2,$3,NOW())',
           [c.telefone, 'aniversario_madameka', 'enviado']);
-        await pool.query(
-          'INSERT INTO conversas (telefone, nome, mensagem, de, lida) VALUES ($1,$2,$3,$4,1)',
-          [c.telefone, 'Madame Ka', '🎂 Template: aniversario_madameka', 'bot']
-        );
       }
       await new Promise(r => setTimeout(r, 45000));
     }
