@@ -486,6 +486,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="form-group"><label>Template Meta aprovado (recomendado)</label>
       <input type="text" id="c-template" placeholder="Ex: lancamento_vip">
     </div>
+    <div class="form-group"><label>Mídia URL (imagem do header do template)</label>
+      <input type="text" id="c-midia-url" placeholder="https://res.cloudinary.com/...">
+    </div>
     <div class="form-group"><label>Mensagem livre (so se cliente respondeu nas 24h)</label>
       <textarea id="c-msg" placeholder="Oi {nome}!"></textarea>
     </div>
@@ -1091,13 +1094,14 @@ async function criarCampanha() {
   var limite = document.getElementById('c-limite').value;
   var instancia = document.getElementById('c-instancia').value || '1';
   var template = document.getElementById('c-template').value.trim();
+  var midiaUrl = document.getElementById('c-midia-url').value.trim();
   var etiquetaId = segmento === 'etiqueta' ? document.getElementById('c-etiqueta').value : null;
   if (!nome || (!mensagem && !template)) { toast('Preencha nome e mensagem ou template'); return; }
   if (segmento === 'etiqueta' && !etiquetaId) { toast('Selecione uma etiqueta'); return; }
   try {
     var body = {nome:nome,mensagem:mensagem,segmento:segmento === 'etiqueta' ? 'todos' : segmento,
       intervalo_segundos:parseInt(intervalo),limite:parseInt(limite)||0,
-      midia_tipo:'texto',midia_url:'',instancia_id:parseInt(instancia),template_name:template};
+      midia_tipo:'texto',midia_url:midiaUrl,instancia_id:parseInt(instancia),template_name:template};
     if (etiquetaId) body.etiqueta_id = parseInt(etiquetaId);
     var r = await fetch('/api/campanhas', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d = await r.json();
