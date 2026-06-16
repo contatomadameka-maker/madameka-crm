@@ -1038,25 +1038,27 @@ async function editarCampanha(id) {
     var intervalOpts = [60,90,120,180,300].map(function(s){
       return '<option value="'+s+'"'+(c.intervalo_segundos==s?' selected':'')+'>'+s+'s</option>';
     }).join('');
-    modal.innerHTML = [
-      '<div style="background:#fff;border-radius:12px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto">',
-      '<h3 style="margin:0 0 20px">Editar campanha</h3>',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">NOME</label>',
-      '<input id="edit-nome" value="'+c.nome+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">TEMPLATE META</label>',
-      '<input id="edit-template" value="'+(c.template_name||'')+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">MENSAGEM LIVRE</label>',
-      '<textarea id="edit-msg" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box;min-height:80px">'+(c.mensagem||'')+'</textarea>',
-      '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">INTERVALO</label>',
-      '<select id="edit-intervalo" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:24px">'+intervalOpts+'</select>',
-      '<div style="display:flex;gap:8px;justify-content:flex-end">',
-      '<button id="btn-cancelar-camp" style="padding:10px 20px;border:1px solid #e8e2db;border-radius:8px;background:transparent;cursor:pointer">Cancelar</button>',
-      '<button onclick="salvarEdicaoCampanha('+id+')" style="padding:10px 20px;border:none;border-radius:8px;background:#c9a87c;color:#fff;cursor:pointer;font-weight:600">Salvar</button>',
-      '</div></div>'
-    ].join('');
-    document.body.appendChild(modal);
-    document.getElementById('btn-cancelar-camp').onclick = function(){ modal.remove(); };
-  } catch(e) { toast('Erro ao carregar'); }
+   modal.innerHTML = [
+  '<div style="background:#fff;border-radius:12px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto">',
+  '<h3 style="margin:0 0 20px">Editar campanha</h3>',
+  '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">NOME</label>',
+  '<input id="edit-nome" value="'+c.nome+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
+  '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">TEMPLATE META</label>',
+  '<input id="edit-template" value="'+(c.template_name||'')+'" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
+  '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">MENSAGEM LIVRE</label>',
+  '<textarea id="edit-msg" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box;min-height:80px">'+(c.mensagem||'')+'</textarea>',
+  '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">MÍDIA URL (imagem do header do template)</label>',
+  '<input id="edit-midia-url" value="'+(c.midia_url||'')+'" placeholder="https://res.cloudinary.com/..." style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:14px;box-sizing:border-box">',
+  '<label style="display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:#888">INTERVALO</label>',
+  '<select id="edit-intervalo" style="width:100%;padding:10px;border:1px solid #e8e2db;border-radius:8px;margin-bottom:24px">'+intervalOpts+'</select>',
+  '<div style="display:flex;gap:8px;justify-content:flex-end">',
+  '<button id="btn-cancelar-camp" style="padding:10px 20px;border:1px solid #e8e2db;border-radius:8px;background:transparent;cursor:pointer">Cancelar</button>',
+  '<button onclick="salvarEdicaoCampanha('+id+')" style="padding:10px 20px;border:none;border-radius:8px;background:#c9a87c;color:#fff;cursor:pointer;font-weight:600">Salvar</button>',
+  '</div></div>'
+].join('');
+document.body.appendChild(modal);
+document.getElementById('btn-cancelar-camp').onclick = function(){ modal.remove(); };
+} catch(e) { toast('Erro ao carregar'); }
 }
 
 async function salvarEdicaoCampanha(id) {
@@ -1064,11 +1066,12 @@ async function salvarEdicaoCampanha(id) {
   var template = document.getElementById('edit-template').value;
   var msg = document.getElementById('edit-msg').value;
   var intervalo = document.getElementById('edit-intervalo').value;
+  var midiaUrl = document.getElementById('edit-midia-url').value;
   try {
     var r = await fetch('/api/campanhas/' + id, {
       method: 'PUT',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ nome, template_name: template, mensagem: msg, intervalo_segundos: parseInt(intervalo) })
+      body: JSON.stringify({ nome, template_name: template, mensagem: msg, intervalo_segundos: parseInt(intervalo), midia_url: midiaUrl })
     });
     var d = await r.json();
     if (d.ok) {

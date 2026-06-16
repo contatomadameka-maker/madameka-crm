@@ -371,10 +371,10 @@ app.delete('/api/campanhas/:id', async (req, res) => {
 
 app.put('/api/campanhas/:id', async (req, res) => {
   try {
-    const { nome, template_name, mensagem, intervalo_segundos } = req.body;
+    const { nome, template_name, mensagem, intervalo_segundos, midia_url } = req.body;
     await pool.query(
-      'UPDATE campanhas SET nome=$1, template_name=$2, mensagem=$3, intervalo_segundos=$4 WHERE id=$5',
-      [nome, template_name||'', mensagem||'', intervalo_segundos||90, req.params.id]
+      'UPDATE campanhas SET nome=$1, template_name=$2, mensagem=$3, intervalo_segundos=$4, midia_url=$5 WHERE id=$6',
+      [nome, template_name||'', mensagem||'', intervalo_segundos||90, midia_url||'', req.params.id]
     );
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
@@ -453,9 +453,19 @@ app.post('/api/campanhas/:id/disparar', async (req, res) => {
 
       let resultado;
       if (campanha.template_name) {
-        resultado = await wpp.enviarTemplate(c.telefone, campanha.template_name, 'pt_BR', [
-          { type: 'body', parameters: [{ type: 'text', text: nomeCliente }] }
-        ]);
+        const components = [];
+        // Se a campanha tem imagem no header (template com mídia variável)
+        if (campanha.midia_url && campanha.midia_url.trim() !== '') {
+          components.push({
+            type: 'header',
+            parameters: [{ type: 'image', image: { link: campanha.midia_url } }]
+          });
+        }
+        components.push({
+          type: 'body',
+          parameters: [{ type: 'text', text: nomeCliente }]
+        });
+        resultado = await wpp.enviarTemplate(c.telefone, campanha.template_name, 'pt_BR', components);
       } else {
         const { rows: instRows } = await pool.query('SELECT * FROM instancias WHERE id=$1 AND ativo=1', [campanha.instancia_id || 1]);
         const inst = instRows[0];
