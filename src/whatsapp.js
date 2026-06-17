@@ -42,6 +42,15 @@ async function enviarMensagem(telefone, mensagem) {
       type: 'text',
       text: { body: mensagem }
     }, { headers: HEADERS() });
+    if (data.error) {
+      console.error('Meta enviarMensagem erro silencioso:', data.error);
+      return { ok: false, erro: data.error.message };
+    }
+    if (!data.messages || !data.messages[0]?.id) {
+      console.error('Meta enviarMensagem sem confirmacao:', JSON.stringify(data));
+      return { ok: false, erro: 'Meta não confirmou o envio' };
+    }
+    console.log(`Meta mensagem OK -> ${num} | msg_id: ${data.messages[0].id}`);
     return { ok: true, data };
   } catch(e) {
     console.error('Meta enviarMensagem erro:', e.response?.data || e.message);
@@ -100,6 +109,18 @@ async function enviarTemplate(telefone, templateName, languageCode, components) 
         components: components || []
       }
     }, { headers: HEADERS() });
+
+    // Verifica se a Meta retornou erro mesmo com HTTP 200
+    if (data.error) {
+      console.error('Meta enviarTemplate erro silencioso:', data.error);
+      return { ok: false, erro: data.error.message };
+    }
+    // Verifica se retornou message_id — confirmação real de aceite
+    if (!data.messages || !data.messages[0]?.id) {
+      console.error('Meta enviarTemplate sem confirmacao:', JSON.stringify(data));
+      return { ok: false, erro: 'Meta não confirmou o envio' };
+    }
+    console.log(`Meta template OK: ${templateName} -> ${num} | msg_id: ${data.messages[0].id}`);
     return { ok: true, data };
   } catch(e) {
     console.error('Meta enviarTemplate erro:', e.response?.data || e.message);
