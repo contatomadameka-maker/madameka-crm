@@ -977,6 +977,70 @@ app.delete('/api/instancias/:id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
+// ─── PROVADOR VIRTUAL ─────────────────────────────────────────────────────────
+app.post('/api/provador', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_KEY) return res.status(500).json({ ok: false, erro: 'OPENAI_API_KEY não configurada no servidor.' });
+
+  const { modo, busto, cintura, quadril, altura, fotoBase64, fotoMime, grade } = req.body;
+
+  const gradeTexto = Object.entries(grade || {}).map(([t, v]) =>
+    `${t}: busto ${v.busto[0]}-${v.busto[1]}cm | cintura ${v.cintura[0]}-${v.cintura[1]}cm | quadril ${v.quadril[0]}-${v.quadril[1]}cm`
+  ).join('\n');
+
+  try {
+    let messages;
+
+    if (modo === 'medidas') {
+      if (!busto || !cintura || !quadril) return res.status(400).json({ ok: false, erro: 'Preencha busto, cintura e quadril.' });
+      const prompt = `Você é especialista em moda feminina da Madame Ka, loja brasileira de moda feminina elegante de Santa Catarina.\n\nGrade de tamanhos:\n${gradeTexto}\n\nMedidas da cliente:\n- Busto: ${busto}cm\n- Cintura: ${cintura}cm\n- Quadril: ${quadril}cm${altura ? `\n- Altura: ${altura}cm` : ''}\n\nAnalise e responda SOMENTE com JSON válido, sem texto antes ou depois:\n{"tamanho":"M","confianca":"alta","mensagem":"Texto amigável de 2-3 frases explicando o tamanho recomendado, tom caloroso e feminino."}\n\nConfiança: alta, média ou baixa. Se entre dois tamanhos, recomende o maior.`;
+      messages = [{ role: 'user', content: prompt }];
+
+    } else if (modo === 'foto') {
+      if (!fotoBase64) return res.status(400).json({ ok: false, erro: 'Foto não recebida.' });
+      const prompt = `Você é especialista em moda feminina da Madame Ka, loja brasileira de moda feminina elegante.\n\nGrade de tamanhos:\n${gradeTexto}\n\nAnalise a foto da cliente e estime o tamanho ideal com base no corpo visível. Considere proporções corporais, silhueta e postura. Responda SOMENTE com JSON válido:\n{"tamanho":"M","confianca":"media","mensagem":"Texto amigável de 2-3 frases explicando a recomendação de forma calorosa e feminina.","observacao":"Dica opcional de caimento para este tipo de corpo."}\n\nConfiança: alta, média ou baixa. Se incerto, use baixa.`;
+      messages = [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: `data:${fotoMime || 'image/jpeg'};base64,${fotoBase64}` } },
+          { type: 'text', text: prompt }
+        ]
+      }];
+
+    } else {
+      return res.status(400).json({ ok: false, erro: 'Modo inválido. Use "medidas" ou "foto".' });
+    }
+
+    const { data } = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o',
+      max_tokens: 400,
+      messages
+    }, {
+      headers: {
+        'Authorization': `Bearer ${OPENAI_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const txt = data.choices[0].message.content.replace(/```json|```/g, '').trim();
+    const resultado = JSON.parse(txt);
+    res.json({ ok: true, ...resultado });
+
+  } catch (e) {
+    console.error('[PROVADOR]', e.response?.data || e.message);
+    res.status(500).json({ ok: false, erro: 'Erro ao processar com IA. Tente novamente.' });
+  }
+});
+
+app.options('/api/provador', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
 
 // ─── WEBHOOK META ─────────────────────────────────────────────────────────────
 app.get('/webhook/meta', (req, res) => {
