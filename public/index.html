@@ -197,6 +197,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-item" onclick="irPara('sequencias',this)"><span>&#9889; Sequencias</span></div>
       <div class="nav-item" onclick="irPara('conversas',this)"><span>&#128172; Conversas</span><span class="nav-badge" id="badge-nao-lidas" style="display:none">0</span></div>
       <div class="nav-item" onclick="irPara('numeros',this)"><span>&#128241; Numeros</span></div>
+      <div class="nav-item" onclick="irPara('provador',this)"><span>&#128221; Provador IA</span></div>
       <div class="nav-item" onclick="irPara('config',this)"><span>&#9881; Config</span></div>
     </nav>
     <div class="wpp-status status-desconectado" id="wpp-status-sidebar">
@@ -405,7 +406,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div id="lista-numeros">Carregando...</div>
     </div>
-
+<!-- PROVADOR IA -->
+<div class="page" id="page-provador">
+  <div class="page-header"><div><div class="page-title">Provador Virtual — Grade de Medidas</div><div class="page-subtitle">Edite as medidas de cada tamanho. O site busca automaticamente.</div></div></div>
+  <div class="card">
+    <div class="config-section-title">Grade de Tamanhos (cm)</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px" id="tabela-grade">
+        <thead>
+          <tr style="border-bottom:2px solid #f0ece8">
+            <th style="padding:10px 8px;text-align:left;color:#888;font-weight:500;width:60px">Tamanho</th>
+            <th style="padding:10px 8px;text-align:center;color:#888;font-weight:500" colspan="2">Busto (cm)</th>
+            <th style="padding:10px 8px;text-align:center;color:#888;font-weight:500" colspan="2">Cintura (cm)</th>
+            <th style="padding:10px 8px;text-align:center;color:#888;font-weight:500" colspan="2">Quadril (cm)</th>
+          </tr>
+          <tr style="border-bottom:1px solid #f0ece8">
+            <th></th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">mín</th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">máx</th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">mín</th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">máx</th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">mín</th>
+            <th style="padding:4px 8px;text-align:center;color:#bbb;font-size:11px;font-weight:400">máx</th>
+          </tr>
+        </thead>
+        <tbody id="grade-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+      <button class="btn btn-gold" onclick="salvarGradeMedidas()">Salvar grade</button>
+      <span id="grade-msg" style="font-size:12px;color:#888"></span>
+    </div>
+  </div>
+</div>
     <!-- CONFIG -->
     <div class="page" id="page-config">
       <div class="page-header"><div><div class="page-title">Configuracoes</div></div></div>
@@ -829,6 +864,7 @@ function irPara(p, el) {
   document.querySelectorAll('.nav-item').forEach(function(e) { e.classList.remove('ativo'); });
   document.getElementById('page-' + p).classList.add('ativo');
   el.classList.add('ativo');
+  if (p === 'provador') carregarGradeMedidas();
 }
 
 function irParaSegmento(seg) {
@@ -845,6 +881,50 @@ function formatDelay(h) {
   if (h < 24) return h + 'h';
   var d = Math.floor(h / 24);
   return d + ' dia' + (d > 1 ? 's' : '');
+}
+async function carregarGradeMedidas() {
+  try {
+    var r = await fetch('/api/grade-medidas');
+    var d = await r.json();
+    if (!d.ok) return;
+    var tbody = document.getElementById('grade-tbody');
+    tbody.innerHTML = '';
+    d.grade.forEach(function(t) {
+      tbody.innerHTML += '<tr style="border-bottom:1px solid #f5f0ea" data-tam="'+t.tamanho+'">' +
+        '<td style="padding:10px 8px;font-weight:600;color:#c9a87c;font-size:14px">'+t.tamanho+'</td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.busto_min+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-busto-min"></td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.busto_max+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-busto-max"></td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.cintura_min+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-cintura-min"></td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.cintura_max+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-cintura-max"></td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.quadril_min+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-quadril-min"></td>' +
+        '<td style="padding:8px"><input type="number" value="'+t.quadril_max+'" style="width:60px;border:1px solid #e8e2db;border-radius:6px;padding:6px 8px;font-size:13px;text-align:center" class="g-quadril-max"></td>' +
+        '</tr>';
+    });
+  } catch(e) { document.getElementById('grade-tbody').innerHTML = '<tr><td colspan="7" style="color:#c00;padding:16px">Erro ao carregar grade.</td></tr>'; }
+}
+
+async function salvarGradeMedidas() {
+  var linhas = document.querySelectorAll('#grade-tbody tr[data-tam]');
+  var grade = [];
+  linhas.forEach(function(tr) {
+    grade.push({
+      tamanho: tr.getAttribute('data-tam'),
+      busto_min:   parseInt(tr.querySelector('.g-busto-min').value),
+      busto_max:   parseInt(tr.querySelector('.g-busto-max').value),
+      cintura_min: parseInt(tr.querySelector('.g-cintura-min').value),
+      cintura_max: parseInt(tr.querySelector('.g-cintura-max').value),
+      quadril_min: parseInt(tr.querySelector('.g-quadril-min').value),
+      quadril_max: parseInt(tr.querySelector('.g-quadril-max').value),
+    });
+  });
+  var msg = document.getElementById('grade-msg');
+  msg.textContent = 'Salvando...';
+  try {
+    var r = await fetch('/api/grade-medidas', {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({grade:grade})});
+    var d = await r.json();
+    if (d.ok) { msg.textContent = '✓ Grade salva!'; msg.style.color = '#2d7a4f'; setTimeout(function(){ msg.textContent=''; }, 3000); }
+    else { msg.textContent = 'Erro ao salvar.'; msg.style.color = '#c00'; }
+  } catch(e) { msg.textContent = 'Erro de conexão.'; msg.style.color = '#c00'; }
 }
 
 async function carregarConfig() {

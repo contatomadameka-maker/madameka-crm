@@ -977,6 +977,24 @@ app.delete('/api/instancias/:id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
 });
+// ─── GRADE DE MEDIDAS ─────────────────────────────────────────────────────────
+app.get('/api/grade-medidas', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM grade_medidas ORDER BY ordem');
+    res.json({ ok: true, grade: rows });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
+
+app.put('/api/grade-medidas', async (req, res) => {
+  try {
+    const { grade } = req.body;
+    for (const t of grade) {
+      await pool.query(`UPDATE grade_medidas SET busto_min=$1,busto_max=$2,cintura_min=$3,cintura_max=$4,quadril_min=$5,quadril_max=$6 WHERE tamanho=$7`,
+        [t.busto_min,t.busto_max,t.cintura_min,t.cintura_max,t.quadril_min,t.quadril_max,t.tamanho]);
+    }
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, erro: e.message }); }
+});
 // ─── PROVADOR VIRTUAL ─────────────────────────────────────────────────────────
 app.post('/api/provador', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -985,10 +1003,11 @@ app.post('/api/provador', async (req, res) => {
   const OPENAI_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_KEY) return res.status(500).json({ ok: false, erro: 'OPENAI_API_KEY não configurada no servidor.' });
 
-  const { modo, busto, cintura, quadril, altura, fotoBase64, fotoMime, grade } = req.body;
+  const { modo, busto, cintura, quadril, altura, fotoBase64, fotoMime } = req.body;
 
-  const gradeTexto = Object.entries(grade || {}).map(([t, v]) =>
-    `${t}: busto ${v.busto[0]}-${v.busto[1]}cm | cintura ${v.cintura[0]}-${v.cintura[1]}cm | quadril ${v.quadril[0]}-${v.quadril[1]}cm`
+  const { rows: gradeRows } = await pool.query('SELECT * FROM grade_medidas ORDER BY ordem');
+  const gradeTexto = gradeRows.map(r =>
+    `${r.tamanho}: busto ${r.busto_min}-${r.busto_max}cm | cintura ${r.cintura_min}-${r.cintura_max}cm | quadril ${r.quadril_min}-${r.quadril_max}cm`
   ).join('\n');
 
   try {

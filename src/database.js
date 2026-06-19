@@ -55,6 +55,16 @@ async function init() {
       status TEXT DEFAULT 'ativo', iniciado_em TIMESTAMP DEFAULT NOW(),
       proximo_envio TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS grade_medidas (
+      tamanho TEXT PRIMARY KEY,
+      busto_min INTEGER NOT NULL,
+      busto_max INTEGER NOT NULL,
+      cintura_min INTEGER NOT NULL,
+      cintura_max INTEGER NOT NULL,
+      quadril_min INTEGER NOT NULL,
+      quadril_max INTEGER NOT NULL,
+      ordem INTEGER DEFAULT 0
+    );
     CREATE TABLE IF NOT EXISTS configuracoes (
       chave TEXT PRIMARY KEY,
       valor TEXT NOT NULL,
@@ -74,6 +84,19 @@ async function init() {
 
   // Configurações padrão
   await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('limite_diario', '200') ON CONFLICT (chave) DO NOTHING`);
+  const gradeDefault = [
+    ['PP', 78, 82, 58, 62, 84, 88, 1],
+    ['P',  83, 88, 63, 68, 89, 94, 2],
+    ['M',  89, 94, 69, 74, 95,100, 3],
+    ['G',  95,102, 75, 82,101,108, 4],
+    ['GG',103,110, 83, 90,109,116, 5],
+    ['G1',111,120, 91,100,117,126, 6],
+  ];
+  for (const [t,bn,bx,cn,cx,qn,qx,o] of gradeDefault) {
+    await pool.query(`INSERT INTO grade_medidas (tamanho,busto_min,busto_max,cintura_min,cintura_max,quadril_min,quadril_max,ordem)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (tamanho) DO NOTHING`,
+      [t,bn,bx,cn,cx,qn,qx,o]);
+  }
   await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('horario_inicio', '9') ON CONFLICT (chave) DO NOTHING`);
   await pool.query(`INSERT INTO configuracoes (chave, valor) VALUES ('horario_fim', '20') ON CONFLICT (chave) DO NOTHING`);
 
